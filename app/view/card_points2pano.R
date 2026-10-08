@@ -98,12 +98,13 @@ server <- function(id, session) {
       pano_url <- build_points2pano_url_sdsc(row$site, row$plot, row$date)
 
       # the URL hides the page's site list and map (see
-      # build_points2pano_url_sdsc()), so the iframe fills the card unshifted
+      # build_points2pano_url_sdsc()); the page's header and bottom button bar
+      # are cropped out by .imn-pano-crop / .imn-pano-frame in main.scss
       shiny$div(
-        style = "width:100%; height:100%; overflow:hidden;",
+        class = "imn-pano-crop",
         shiny$tags$iframe(
+          class = "imn-pano-frame",
           src = pano_url,
-          style = "display:block; width:100%; height:100%; border:none;",
           title = paste("Points2Pano:", row$scan_name)
         )
       )

@@ -1736,3 +1736,47 @@ body .imn-sponsor-plate {
   padding: 0 6px !important;
   font-size: 12px !important;
 }
+
+/* Points2Pano: crop the pano page's header (plot, date, basal area - the
+   card header already shows them) and its bottom button bar. The page is
+   cross-origin, so the iframe is oversized and shifted up instead. The
+   footer is 48px; the header wraps as the card narrows (measured 38px above
+   552px, 48px above 332px, 72px above 196px with a 27-character site name),
+   so the breakpoints sit a little wider to cover longer names. */
+.imn-pano-crop {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.imn-pano-frame {
+  --pano-head: 38px;
+  --pano-foot: 48px;
+
+  position: absolute;
+  top: calc(-1 * var(--pano-head));
+  left: 0;
+  width: 100%;
+  height: calc(100% + var(--pano-head) + var(--pano-foot));
+  border: none;
+}
+
+@container (max-width: 600px) {
+  .imn-pano-frame {
+    --pano-head: 48px;
+  }
+}
+
+@container (max-width: 380px) {
+  .imn-pano-frame {
+    --pano-head: 72px;
+  }
+}
+
+@container (max-width: 220px) {
+  .imn-pano-frame {
+    --pano-head: 96px;
+  }
+}

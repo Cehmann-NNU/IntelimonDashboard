@@ -46,3 +46,13 @@ test_that("is_request_successful() reflects the response's error state", {
   expect_true(api$is_request_successful(ok_resp))
   expect_true(!api$is_request_successful(err_resp))
 })
+
+test_that("build_points2pano_url_sdsc() hides the site list and map", {
+  expect_identical(
+    api$build_points2pano_url_sdsc("CATNF", "6022", as.Date("2024-07-31")),
+    paste0(
+      "https://burnpro3d.sdsc.edu/points2pano/?plot=CATNF_6022&ts=20240731",
+      "&m=Basalarea&hplc=y&hm=y"
+    )
+  )
+})

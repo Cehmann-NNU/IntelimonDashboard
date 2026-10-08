@@ -7,15 +7,6 @@ box::use(
   app/logic/load_data_api[build_points2pano_url_sdsc],
 )
 
-# Points2Pano iframe crop (pixels). The burnpro3d page is cross-origin, so
-# its own UI (header, bottom nav bar, side arrows) can't be restyled from
-# this app; instead the iframe is oversized and shifted so those strips are
-# clipped out of view. Set all to 0 for the full page.
-PANO_CROP_TOP    <- 70   # px of the pano page's top header to hide
-PANO_CROP_BOTTOM <- 90   # px of the pano page's bottom nav bar to hide
-PANO_CROP_LEFT   <- 60   # px of the left edge (side arrow) to hide
-PANO_CROP_RIGHT  <- 60   # px of the right edge (side arrow) to hide
-
 #' @export
 ui <- function(id) {
   ns <- shiny$NS(id)
@@ -106,17 +97,13 @@ server <- function(id, session) {
 
       pano_url <- build_points2pano_url_sdsc(row$site, row$plot, row$date)
 
+      # the URL hides the page's site list and map (see
+      # build_points2pano_url_sdsc()), so the iframe fills the card unshifted
       shiny$div(
-        style = "width:100%; height:100%; overflow:hidden; position:relative;",
+        style = "width:100%; height:100%; overflow:hidden;",
         shiny$tags$iframe(
           src = pano_url,
-          style = sprintf(
-            "position:absolute; top:-%dpx; left:-%dpx;
-             width:calc(100%% + %dpx); height:calc(100%% + %dpx); border:none;",
-            PANO_CROP_TOP, PANO_CROP_LEFT,
-            PANO_CROP_LEFT + PANO_CROP_RIGHT,
-            PANO_CROP_TOP + PANO_CROP_BOTTOM
-          ),
+          style = "display:block; width:100%; height:100%; border:none;",
           title = paste("Points2Pano:", row$scan_name)
         )
       )

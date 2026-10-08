@@ -411,10 +411,14 @@ get_extra_models_for_scans <- function(scan_dt, progress = NULL) {
   generalize_model_name(model_dt)
 }
 
+#' Points2Pano viewer URL for one scan.
+#'
+#' `hplc=y` hides the page's site list and `hm=y` its map, leaving the
+#' panorama centered in the frame.
 #' @export
 build_points2pano_url_sdsc <- function(site, plot, date) {
   sprintf(
-    "https://burnpro3d.sdsc.edu/points2pano/?plot=%s_%s&ts=%s&m=Basalarea",
+    "https://burnpro3d.sdsc.edu/points2pano/?plot=%s_%s&ts=%s&m=Basalarea&hplc=y&hm=y",
     site, plot, format(date, "%Y%m%d")
   )
 }

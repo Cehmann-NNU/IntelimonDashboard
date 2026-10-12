@@ -5,7 +5,10 @@ box::use(
 
 box::use(
   app/logic/constants[COLNAME2LABEL],
+  app/logic/report[report_item],
   plt = app/view/plotting,
+  app/view/report_store[add_to_report],
+  app/view/sidebar_plot_controls[DATA_TYPES, ERROR_BARS, PLOT_TYPES, choice_label],
 )
 
 #' @export
@@ -25,8 +28,12 @@ ui <- function(id) {
 #' @param metric_col reactive() -> selected metric column, e.g. "MDBH".
 #' @param errorbars_on,treatlines_on,plot_mode,data_type reactive() -> the
 #'   matching sidebar control's current value.
+#' @param report_source Tab name recorded with items this card adds to the report.
+#' @param report_settings reactive() -> named list of extra settings recorded
+#'   with report items (e.g. the rothRmel fire behavior inputs).
 #' @export
-server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on, plot_type, data_type) {
+server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on, plot_type,
+                   data_type, report_source = "", report_settings = function() list()) {
   shiny$moduleServer(id, function(input, output, session) {
     # -- Metric time-series cards -------------------------------------------
     # Each card is a builder taking `light`: the screen render uses the Aurora
@@ -79,5 +86,46 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
     # the output stats are created reactively. Pass the reactiveObject, not the data.table,
     # so it can render reactively(dynamically)
     plt$render_plot_stats(output, "plot", stats_dt)
+
+    #------Add to report-------------------------
+    # Adds whichever view the card is showing, with the settings behind it:
+    # the plot (on the light export palette) or the statistics table.
+    shiny$observeEvent(input$plot_add_report, {
+      opts <- plt_options()
+      data_label <- choice_label(DATA_TYPES, data_type())
+      item <- tryCatch(
+        if (identical(input$plot_view, "stats")) {
+          tbl <- stats_dt()
+          report_item("table", attr(tbl, "imn_label"), report_source,
+            settings = c(list(`Data type` = data_label), report_settings()),
+            table = tbl, note = plt$STATS_NOTE
+          )
+        } else {
+          p <- plt_fn(light = TRUE)
+          bars <- if (opts$plot_type %in% c("timeseries", "bar")) {
+            choice_label(ERROR_BARS, opts$errorbars)
+          }
+          report_item("figure", p$labels$title, report_source,
+            settings = c(
+              list(
+                `Plot type` = choice_label(PLOT_TYPES, opts$plot_type),
+                `Data type` = data_label,
+                `Error bars` = bars,
+                `Treatment lines` = if (identical(opts$treatlines, "on")) "On" else "Off"
+              ),
+              report_settings()
+            ),
+            plot = p
+          )
+        },
+        error = function(e) NULL
+      )
+      if (is.null(item)) {
+        shiny$showNotification("Nothing to add yet: this card has no data to show.",
+                               type = "warning")
+        return()
+      }
+      add_to_report(session, item)
+    })
   })
 }

@@ -38,4 +38,6 @@ init_session_userdata <- function(session) {
   session$userData$fuel_tool_values <- reactiveVal(NULL)
   # contact email for external services, set via app/view/email_prompt
   session$userData$user_email <- reactiveVal(NULL)
+  # report items added from cards, arranged on the Report builder tab
+  session$userData$report_items <- reactiveVal(list())
 }

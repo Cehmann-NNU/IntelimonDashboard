@@ -128,7 +128,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Standard outputs"
     )
 
     card_metrics$server("canopyStats",
@@ -138,7 +139,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Standard outputs"
     )
 
     card_metrics$server("volumeStats",
@@ -148,7 +150,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Standard outputs"
     )
 
     # -- Points2Pano viewer --------------------------------------------------

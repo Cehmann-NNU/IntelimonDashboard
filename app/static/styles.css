@@ -735,7 +735,9 @@ main > .container-fluid,
 }
 .imn-card-view .radio-inline,
 .imn-card-view .form-check{
-  display:block; margin:0 !important; padding:0; min-height:0;
+  /* !important: Bootstrap's .radio-inline left padding (room for the hidden
+     radio) otherwise wins and widens the control by ~60px */
+  display:block; margin:0 !important; padding:0 !important; min-height:0;
 }
 .imn-card-view input[type="radio"]{
   position:absolute; opacity:0; width:0; height:0; margin:0; pointer-events:none;
@@ -981,3 +983,55 @@ main > .container-fluid,
     --pano-head: 96px;
   }
 }
+
+/* Help tab pages rendered from app/static/help/*.md (app/view/tab_help.R) */
+/* page_navbar fills the window (body overflow hidden), so the help area
+   scrolls inside the tab; the search box and topic list stay in view */
+.help-layout{ flex:1 1 0; min-height:0; overflow-y:auto; overflow-x:hidden; }
+.help-layout > .row > [class*="col-"]:first-child{ position:sticky; top:0; align-self:flex-start; }
+.help-page{ max-width:860px; line-height:1.6; }
+.help-page img{ max-width:100%; height:auto; border-radius:10px; }
+.help-page table{ margin:1rem 0; }
+.help-page th, .help-page td{ padding:.35rem .75rem; border-bottom:1px solid var(--imn-border); }
+.help-page .help-warning{ color:#ff6b7d; }
+.help-page blockquote{ border-left:3px solid var(--imn-accent); padding-left:1rem; color:var(--imn-dim); }
+.help-search{ margin-bottom:.75rem; }
+.help-search-empty{ margin-top:.5rem; font-size:.85rem; color:var(--imn-dim); }
+.help-page mark.help-hit{ background:var(--imn-accent2); color:#1b1b1b; padding:0 .1em; border-radius:3px; }
+
+/* ---- Report builder (app/view/tab_report.R) and the cards' "+ Report" button ---- */
+.imn-plot-dl{ display:flex; gap:4px; align-items:center; }
+/* Narrow cards can't fit the view toggle, "+ Report" and "Download" on one
+   row, so the two buttons shorten to "+" and the download arrow. */
+.imn-plot-wrap{ container-type:inline-size; }
+.imn-plot-dl .imn-btn-icon{ display:none; }
+@container (max-width: 330px) {
+  .imn-plot-dl .imn-btn-word{ display:none; }
+  .imn-plot-dl .imn-btn-icon{ display:inline; }
+}
+.imn-plot-dl .imn-add-report{ color:var(--imn-accent) !important; }
+.imn-report-item{
+  border:1px solid var(--imn-border); border-radius:var(--imn-radius);
+  background:var(--imn-panel-2); padding:.6rem .75rem .25rem; margin-bottom:.6rem;
+}
+.imn-report-head{ display:flex; gap:.6rem; align-items:flex-start; margin-bottom:.4rem; }
+.imn-report-num{ font-weight:700; color:var(--imn-dim); min-width:1.4rem; padding-top:.1rem; }
+.imn-report-kind{
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  border-radius:6px; padding:.15rem .45rem; margin-top:.1rem;
+  background:rgba(143,240,226,.16); color:var(--imn-accent);
+}
+/* "is-" prefix: a bare .table class would pick up Bootstrap table styles */
+.imn-report-kind.is-table{ background:rgba(255,210,155,.16); color:var(--imn-accent2); }
+.imn-report-text{ flex:1; min-width:0; }
+.imn-report-title{ font-weight:600; }
+.imn-report-settings{ font-size:12px; color:var(--imn-dim); }
+.imn-report-actions{ display:flex; gap:4px; flex:none; }
+.imn-report-btn{
+  background:rgba(11,18,38,.72); border:1px solid var(--imn-border); color:var(--imn-dim);
+  font-size:12px; line-height:1; padding:.3rem .5rem; border-radius:8px;
+}
+.imn-report-btn:hover:not([disabled]){ color:var(--imn-text); }
+.imn-report-btn[disabled]{ opacity:.35; }
+.imn-report-empty{ color:var(--imn-dim); max-width:640px; }
+.imn-report-status{ margin-top:.75rem; font-size:13px; color:var(--imn-dim); }

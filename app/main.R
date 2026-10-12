@@ -15,6 +15,7 @@ box::use(
   view/tab_histogram,
   view/tab_load_data,
   view/tab_predictive_models,
+  view/tab_report,
   view/tab_rothRmel,
   view/tab_selectionMap,
   view/tab_set_trtmt,
@@ -55,6 +56,8 @@ ui <- function(id) {
     tab_fuels$ui(ns("fuels_exports")),
     tab_forestry$ui(ns("forestry_exports")),
     tab_rothRmel$ui(ns("rothrmel")),
+    # last step: compiles what the other tabs added with their "+ Report" buttons
+    tab_report$ui(ns("report_builder")),
     tab_help$ui(ns("Help"))
   )
 }
@@ -78,5 +81,6 @@ server <- function(id) {
     tab_fuels$server("fuels_exports")
     tab_forestry$server("forestry_exports")
     tab_rothRmel$server("rothrmel")
+    tab_report$server("report_builder")
   })
 }

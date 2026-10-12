@@ -111,7 +111,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Custom models"
     )
 
     #---------Model B----------------------------
@@ -123,7 +124,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Custom models"
     )
 
     #---------Model C----------------------------
@@ -135,7 +137,8 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "Custom models"
     )
 
     #------Points2Pano---------------------------

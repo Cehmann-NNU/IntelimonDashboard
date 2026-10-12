@@ -400,7 +400,7 @@ metric_series_plot <- function(data_state, plt_options, light = FALSE) {
 }
 
 .fmt_stat <- function(x, digits) {
-  ifelse(is.na(x), "—",
+  ifelse(is.na(x), "\u2014",
          formatC(x, format = "f", digits = digits, big.mark = ","))
 }
 
@@ -443,8 +443,9 @@ metric_series_stats <- function(data_state) {
 
 #' Wrap a `metric_series_plot()` card with its controls along the bottom
 #' edge: the Graph / Statistics toggle in the lower left (beside bslib's
-#' full-screen expand button) and a "Download" menu in the lower right (CSV of
-#' the underlying data, or an SVG/PNG of the rendered plot). They're hidden
+#' full-screen expand button), and in the lower right a "+ Report" button
+#' (adds the showing view to the report) and a "Download" menu (CSV of the
+#' underlying data, or an SVG/PNG of the rendered plot). They're hidden
 #' until the card is hovered - see .imn-card-view and .imn-plot-dl in
 #' app/static/styles.css. Pair with `register_plot_download()` in the module
 #' server.
@@ -475,10 +476,18 @@ plot_card_ui <- function(id, height = "100%") {
     ),
     shiny$div(
       class = "dropdown imn-plot-dl",
+      # adds whichever view is showing (graph or statistics) to the report;
+      # handled by the card's server (see app/view/card_metrics.R)
+      # labels in spans so narrow cards can shorten them (see styles.css)
+      shiny$actionButton(paste0(id, "_add_report"),
+                         shiny$tagList("+", shiny$span(class = "imn-btn-word", " Report")),
+                         class = "btn-sm imn-add-report",
+                         title = "Add what this card shows to the report"),
       shiny$tags$button(
         class = "btn btn-sm dropdown-toggle", type = "button",
         `data-bs-toggle` = "dropdown", `aria-expanded` = "false",
-        "Download"
+        shiny$span(class = "imn-btn-icon", shiny$HTML("&#x2913;")),
+        shiny$span(class = "imn-btn-word", "Download")
       ),
       shiny$tags$ul(
         class = "dropdown-menu dropdown-menu-end",
@@ -492,6 +501,14 @@ plot_card_ui <- function(id, height = "100%") {
     )
   )
 }
+
+#' Note under every Statistics table, on screen and in the report.
+#' @export
+STATS_NOTE <- paste(
+  "One row per time step (see Help). Mode is the most frequent value at",
+  "3 significant figures, and reads \u2014 when no value repeats; SD is",
+  "\u2014 for a step holding a single scan."
+)
 
 #' Render the Statistics view for one card. `stats_fn` is a function of no
 #' arguments returning `metric_series_stats()` output.
@@ -512,12 +529,7 @@ render_plot_stats <- function(output, id, df_r) {
           }))
         }))
       ),
-      shiny$tags$div(
-        class = "imn-stats-note",
-        "One row per time step (see Help). Mode is the most frequent value at ",
-        "3 significant figures, and reads — when no value repeats; SD is ",
-        "— for a step holding a single scan."
-      )
+      shiny$tags$div(class = "imn-stats-note", STATS_NOTE)
     )
   })
 }

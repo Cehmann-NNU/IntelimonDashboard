@@ -232,6 +232,21 @@ server <- function(id) {
       )
     })
 
+    # Fire behavior inputs recorded with every report item from these cards
+    fire_settings <- shiny$reactive({
+      e <- env()
+      list(
+        `Surface fuels` = if (identical(input$fuel_src, "tool")) "Fuels exports values" else
+          "Scan level fuels",
+        `20-ft wind` = sprintf("%s mi/h", e$wind_mph),
+        WAF = as.character(e$waf),
+        Slope = sprintf("%s%%", e$slope_pct),
+        `Dead fuel moisture (1/10/100-h)` = sprintf("%s/%s/%s%%", e$m1, e$m10, e$m100),
+        `Live moisture (herb/woody)` = sprintf("%s/%s%%", e$m_herb, e$m_woody),
+        `Foliar moisture` = sprintf("%s%%", e$fmc)
+      )
+    })
+
     # One card renderer bound to a metric-dropdown input id. `light` switches
     # the palette for the SVG/PNG downloads (white page instead of glass card).
     # make input reactive so that it will update when passed to other module.
@@ -247,7 +262,9 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "rothRmel",
+      report_settings = fire_settings
     )
 
     card_metrics$server("card2",
@@ -257,7 +274,9 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "rothRmel",
+      report_settings = fire_settings
     )
 
     card_metrics$server("card3",
@@ -267,7 +286,9 @@ server <- function(id) {
       errorbars_on = btn_errorbars,
       treatlines_on = btn_treaments,
       plot_type = selected_plot_type,
-      data_type = selected_data_type
+      data_type = selected_data_type,
+      report_source = "rothRmel",
+      report_settings = fire_settings
     )
 
     # -- Points2Pano viewer --------------------------------------------------

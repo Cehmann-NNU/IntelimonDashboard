@@ -3,6 +3,10 @@ box::use(
   shiny[reactiveVal],
 )
 
+box::use(
+  app/logic/report[default_report_items],
+)
+
 init_session_userdata <- function(session) {
   # --------Shared User Data-------------------
   # User selected scans for anaylysis
@@ -38,6 +42,7 @@ init_session_userdata <- function(session) {
   session$userData$fuel_tool_values <- reactiveVal(NULL)
   # contact email for external services, set via app/view/email_prompt
   session$userData$user_email <- reactiveVal(NULL)
-  # report items added from cards, arranged on the Report builder tab
-  session$userData$report_items <- reactiveVal(list())
+  # report contents, arranged on the Report builder tab: the standard sections
+  # and notes, plus the figures and tables added from cards
+  session$userData$report_items <- reactiveVal(default_report_items())
 }

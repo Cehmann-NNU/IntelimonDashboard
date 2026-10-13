@@ -19,6 +19,18 @@ describe("render_pdf", {
   })
 })
 
+describe("layout_pass", {
+  it("finds a page for every contents entry, after the front matter", {
+    blocks <- sample_report_blocks()
+    toc <- Filter(function(b) b$type == "toc", blocks)[[1]]
+    lay <- impl$layout_pass(blocks, tempfile(fileext = ".pdf"), Sys.Date(), integer())
+    expect_equal(length(lay$headings), length(toc$entries))
+    # title page, cover photo page and contents come first
+    expect_true(all(lay$headings >= 4))
+    expect_true(all(diff(lay$headings) >= 0))
+  })
+})
+
 describe("wrap_text", {
   it("wraps to the width and keeps explicit line breaks", {
     pdf(NULL)
@@ -39,6 +51,16 @@ describe("table_geometry", {
     geo <- impl$table_geometry(df, 6.5)
     widest <- impl$text_width("A much longer site name", impl$gp(geo$size, face = "bold"))
     expect_true(geo$widths[1] > widest)
+  })
+})
+
+describe("shrink_image", {
+  it("thins a wide image to the pixel limit and leaves small ones alone", {
+    img <- array(0, c(1024, 3072, 3))
+    expect_equal(dim(impl$shrink_image(img, 1300)), c(342, 1024, 3))
+    small <- array(0, c(10, 20, 3))
+    expect_equal(impl$shrink_image(small, 1300), small)
+    expect_equal(impl$shrink_image(NULL, 1300), NULL)
   })
 })
 

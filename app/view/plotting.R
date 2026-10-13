@@ -443,7 +443,7 @@ metric_series_stats <- function(data_state) {
 
 #' Wrap a `metric_series_plot()` card with its controls along the bottom
 #' edge: the Graph / Statistics toggle in the lower left (beside bslib's
-#' full-screen expand button), and in the lower right a "+ Report" button
+#' full-screen expand button), and in the lower right a "+ Report data" button
 #' (adds the showing view to the report) and a "Download" menu (CSV of the
 #' underlying data, or an SVG/PNG of the rendered plot). They're hidden
 #' until the card is hovered - see .imn-card-view and .imn-plot-dl in
@@ -480,9 +480,9 @@ plot_card_ui <- function(id, height = "100%") {
       # handled by the card's server (see app/view/card_metrics.R)
       # labels in spans so narrow cards can shorten them (see styles.css)
       shiny$actionButton(paste0(id, "_add_report"),
-                         shiny$tagList("+", shiny$span(class = "imn-btn-word", " Report")),
+                         shiny$tagList("+", shiny$span(class = "imn-btn-word", " Report data")),
                          class = "btn-sm imn-add-report",
-                         title = "Add what this card shows to the report"),
+                         title = "Add report data: what this card shows, with an analysis"),
       shiny$tags$button(
         class = "btn btn-sm dropdown-toggle", type = "button",
         `data-bs-toggle` = "dropdown", `aria-expanded` = "false",

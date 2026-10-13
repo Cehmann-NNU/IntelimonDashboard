@@ -15,6 +15,7 @@
 box::use(
   bslib[card_body, card_header, nav_panel],
   data.table[copy, data.table, fwrite, rbindlist],
+  grDevices[dev.off, png],
   graphics[arrows, barplot, box, legend, lines, mtext, par, plot, points],
   gridlayout[grid_card, grid_container],
   shiny[...],
@@ -34,6 +35,8 @@ box::use(
     stand_metrics
   ],
   app/logic/fvs[build_keyfile, build_standinit, build_treeinit, thin_keyword],
+  app/logic/report[report_item],
+  app/view/report_store[add_to_report, file_thumbnail],
 )
 
 # Rows of `tbl` belonging to the scan identified by one-row table `key`.
@@ -230,7 +233,8 @@ ui <- function(id) {
               ),
               selected = "species", inline = TRUE
             ),
-            span(class = "pano-info", textOutput(ns("stem_count"), inline = TRUE))
+            span(class = "pano-info", textOutput(ns("stem_count"), inline = TRUE)),
+            report_button(ns("rep_stem"), "Add report data: the stem map as shown")
           )
         ),
         card_body(plotOutput(ns("stem_map"), height = "100%"))
@@ -240,7 +244,11 @@ ui <- function(id) {
       grid_card(
         area = "rightCol",
         card_body(
-          style = "padding:0;",
+          style = "padding:0; position:relative;",
+          div(
+            class = "imn-forest-add",
+            report_button(ns("rep_right"), "Add report data: the tab showing on this card")
+          ),
           tabsetPanel(
             id = ns("rtabs"), type = "pills",
             tabPanel(
@@ -274,6 +282,23 @@ ui <- function(id) {
       )
     )
   )
+}
+
+# Chart colours on the dark glass cards, and on the white page of a report.
+FOREST_SCREEN <- list(
+  fg = "#eaf1ff", axis = "#cdd6ee", main = "#ffffff", faint = "#ffffff55",
+  line = "#ffffffaa", mid = "#ffffff77", box = "#ffffff44", ring = "#8ff0e299",
+  dots = "#8ff0e2bb"
+)
+FOREST_PAPER <- list(
+  fg = "#1a1a1a", axis = "#343a40", main = "#000000", faint = "#00000055",
+  line = "#000000aa", mid = "#00000077", box = "#00000044", ring = "#0b7285cc",
+  dots = "#0b7285bb"
+)
+
+# "+ Report data" button for the Forestry cards.
+report_button <- function(id, title) {
+  actionButton(id, "+ Report data", class = "btn-sm imn-add-report imn-card-add", title = title)
 }
 
 #' @export
@@ -628,106 +653,103 @@ server <- function(id) {
     })
 
     # ---- stem map ---------------------------------------------------------
-    output$stem_map <- renderPlot(
-      {
-        if (identical(input$mode, "aoi")) {
-          s <- sim_stems()
-          validate(need(
-            nrow(s) > 0,
-            "No stems to simulate - load tree inventories on the Selection Map tab."
-          ))
-          op <- par(
-            bg = NA, mar = c(4, 4, 2, 1), fg = "#eaf1ff",
-            col.axis = "#cdd6ee", col.lab = "#cdd6ee", col.main = "#ffffff"
-          )
-          on.exit(par(op), add = TRUE)
-          plot(s$x, s$y,
-            asp = 1, pch = 16,
-            cex = pmax(0.25, s$DBH/max(s$DBH) * 1.1),
-            col = "#8ff0e2bb",
-            xlab = "Easting (m)", ylab = "Northing (m)",
-            main = sprintf(
-              "Simulated stem map \u2014 %s stems over %.2f ha",
-              format(nrow(s), big.mark = ","),
-              input$aoi_w * input$aoi_h/1e4
-            )
-          )
-          box(col = "#ffffff44")
-          mtext("SIMULATED \u2014 not measured",
-            side = 3, adj = 1, cex = 0.8,
-            col = "#ff6b7d"
-          )
-          return(invisible())
-        }
-
-        t <- stems_marked()
+    draw_stem_map <- function(pal) {
+      if (identical(input$mode, "aoi")) {
+        s <- sim_stems()
         validate(need(
-          nrow(t) > 0,
-          "No tree inventory for this scan - press Get Data on the Selection Map tab."
+          nrow(s) > 0,
+          "No stems to simulate - load tree inventories on the Selection Map tab."
         ))
-
-        x <- suppressWarnings(as.numeric(t$X))
-        y <- suppressWarnings(as.numeric(t$Y))
-        d <- suppressWarnings(as.numeric(t$DBH))
-        lim <- input$radius
-
-        cols <- if (identical(input$colorby, "species")) {
-          sp <- species_tbl()
-          m <- match(t$species, sp$code)
-          ifelse(is.na(m), "#7c8aa0", sp$col[m])
-        } else if (identical(input$colorby, "dbh")) {
-          SPECIES_COLS[pmin(6, pmax(1, ceiling(d/max(d, na.rm = TRUE) * 6)))]
-        } else {
-          cr <- suppressWarnings(as.numeric(t$cr))
-          cr[is.na(cr)] <- 0.3
-          SPECIES_COLS[pmin(6, pmax(1, ceiling(cr * 6)))]
-        }
-
         op <- par(
-          bg = NA, mar = c(4, 4, 2, 1), fg = "#eaf1ff",
-          col.axis = "#cdd6ee", col.lab = "#cdd6ee", col.main = "#ffffff"
+          bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+          col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
         )
         on.exit(par(op), add = TRUE)
-
-        plot(NA,
-          xlim = c(-lim, lim), ylim = c(-lim, lim), asp = 1,
-          xlab = "X (m)", ylab = "Y (m)",
+        plot(s$x, s$y,
+          asp = 1, pch = 16,
+          cex = pmax(0.25, s$DBH/max(s$DBH) * 1.1),
+          col = pal$dots,
+          xlab = "Easting (m)", ylab = "Northing (m)",
           main = sprintf(
-            "Stem map \u2014 scaled by %s",
-            if (identical(input$scaleby, "nonoc")) {
-              "nonocarea"
-            } else {
-              "full plot area"
-            }
+            "Simulated stem map \u2014 %s stems over %.2f ha",
+            format(nrow(s), big.mark = ","),
+            input$aoi_w * input$aoi_h/1e4
           )
         )
-        # plot boundary + visible-fraction ring
-        th <- seq(0, 2 * pi, length.out = 200)
-        lines(lim * cos(th), lim * sin(th), col = "#ffffff55", lty = 2)
-        no <- nonoc_area()
-        if (!is.na(no) && no > 0) {
-          r_eq <- sqrt(no/pi)
-          lines(r_eq * cos(th), r_eq * sin(th), col = "#8ff0e299", lwd = 2)
-        }
-        points(0, 0, pch = 3, col = "#ffd29b", cex = 1.2)
+        box(col = pal$box)
+        mtext("SIMULATED \u2014 not measured",
+          side = 3, adj = 1, cex = 0.8,
+          col = "#ff6b7d"
+        )
+        return(invisible())
+      }
 
-        keep <- !t$rm
-        points(x[keep], y[keep],
-          pch = 16, col = cols[keep],
-          cex = pmax(0.5, d[keep]/max(d, na.rm = TRUE) * 2.2)
+      t <- stems_marked()
+      validate(need(
+        nrow(t) > 0,
+        "No tree inventory for this scan - press Get Data on the Selection Map tab."
+      ))
+
+      x <- suppressWarnings(as.numeric(t$X))
+      y <- suppressWarnings(as.numeric(t$Y))
+      d <- suppressWarnings(as.numeric(t$DBH))
+      lim <- input$radius
+
+      cols <- if (identical(input$colorby, "species")) {
+        sp <- species_tbl()
+        m <- match(t$species, sp$code)
+        ifelse(is.na(m), "#7c8aa0", sp$col[m])
+      } else if (identical(input$colorby, "dbh")) {
+        SPECIES_COLS[pmin(6, pmax(1, ceiling(d/max(d, na.rm = TRUE) * 6)))]
+      } else {
+        cr <- suppressWarnings(as.numeric(t$cr))
+        cr[is.na(cr)] <- 0.3
+        SPECIES_COLS[pmin(6, pmax(1, ceiling(cr * 6)))]
+      }
+
+      op <- par(
+        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
+      )
+      on.exit(par(op), add = TRUE)
+
+      plot(NA,
+        xlim = c(-lim, lim), ylim = c(-lim, lim), asp = 1,
+        xlab = "X (m)", ylab = "Y (m)",
+        main = sprintf(
+          "Stem map \u2014 scaled by %s",
+          if (identical(input$scaleby, "nonoc")) {
+            "nonocarea"
+          } else {
+            "full plot area"
+          }
         )
-        if (any(t$rm)) {
-          points(x[!keep], y[!keep],
-            pch = 1, col = cols[!keep],
-            cex = pmax(0.5, d[!keep]/max(d, na.rm = TRUE) * 2.2)
-          )
-          points(x[!keep], y[!keep], pch = 4, col = "#ff6b7d", cex = 1.1)
-        }
-        box(col = "#ffffff44")
-      },
-      bg = "transparent",
-      res = 110
-    )
+      )
+      # plot boundary + visible-fraction ring
+      th <- seq(0, 2 * pi, length.out = 200)
+      lines(lim * cos(th), lim * sin(th), col = pal$faint, lty = 2)
+      no <- nonoc_area()
+      if (!is.na(no) && no > 0) {
+        r_eq <- sqrt(no/pi)
+        lines(r_eq * cos(th), r_eq * sin(th), col = pal$ring, lwd = 2)
+      }
+      points(0, 0, pch = 3, col = "#ffd29b", cex = 1.2)
+
+      keep <- !t$rm
+      points(x[keep], y[keep],
+        pch = 16, col = cols[keep],
+        cex = pmax(0.5, d[keep]/max(d, na.rm = TRUE) * 2.2)
+      )
+      if (any(t$rm)) {
+        points(x[!keep], y[!keep],
+          pch = 1, col = cols[!keep],
+          cex = pmax(0.5, d[!keep]/max(d, na.rm = TRUE) * 2.2)
+        )
+        points(x[!keep], y[!keep], pch = 4, col = "#ff6b7d", cex = 1.1)
+      }
+      box(col = pal$box)
+    }
+    output$stem_map <- renderPlot(draw_stem_map(FOREST_SCREEN), bg = "transparent", res = 110)
 
     # ---- metric cards -----------------------------------------------------
     output$metrics_cards <- renderUI({
@@ -758,46 +780,42 @@ server <- function(id) {
       )
     })
 
-    output$occ_table <- renderTable(
-      {
-        t <- stems_marked()
-        if (nrow(t) == 0) {
-          return(NULL)
-        }
-        full_a <- plot_area_m2(input$radius)
-        no <- nonoc_area()
-        if (is.na(no) || no <= 0) no <- full_a
-        mf <- stand_metrics(t, full_a)
-        mc <- stand_metrics(t, no)
-        pd <- function(a, b) sprintf("%+.1f%%", (b - a)/a * 100)
-        data.frame(
-          Metric = c(
-            "Trees/ac", "Basal area (ft2/ac)", "SDI",
-            "QMD (in)", "FVS TreeCount"
-          ),
-          `Full area` = c(
-            sprintf("%.0f", mf$tpa), sprintf("%.1f", mf$ba_ac),
-            sprintf("%.0f", mf$sdi), sprintf("%.1f", mf$qmd_in),
-            sprintf("%.2f", mf$ef_tpa)
-          ),
-          nonocarea = c(
-            sprintf("%.0f", mc$tpa), sprintf("%.1f", mc$ba_ac),
-            sprintf("%.0f", mc$sdi), sprintf("%.1f", mc$qmd_in),
-            sprintf("%.2f", mc$ef_tpa)
-          ),
-          Delta = c(
-            pd(mf$tpa, mc$tpa), pd(mf$ba_ac, mc$ba_ac),
-            pd(mf$sdi, mc$sdi), "unaffected", pd(mf$ef_tpa, mc$ef_tpa)
-          ),
-          check.names = FALSE
-        )
-      },
-      striped = FALSE,
-      spacing = "xs",
-      width = "100%"
-    )
+    occ_df <- reactive({
+      t <- stems_marked()
+      if (nrow(t) == 0) {
+        return(NULL)
+      }
+      full_a <- plot_area_m2(input$radius)
+      no <- nonoc_area()
+      if (is.na(no) || no <= 0) no <- full_a
+      mf <- stand_metrics(t, full_a)
+      mc <- stand_metrics(t, no)
+      pd <- function(a, b) sprintf("%+.1f%%", (b - a)/a * 100)
+      data.frame(
+        Metric = c(
+          "Trees/ac", "Basal area (ft2/ac)", "SDI",
+          "QMD (in)", "FVS TreeCount"
+        ),
+        `Full area` = c(
+          sprintf("%.0f", mf$tpa), sprintf("%.1f", mf$ba_ac),
+          sprintf("%.0f", mf$sdi), sprintf("%.1f", mf$qmd_in),
+          sprintf("%.2f", mf$ef_tpa)
+        ),
+        nonocarea = c(
+          sprintf("%.0f", mc$tpa), sprintf("%.1f", mc$ba_ac),
+          sprintf("%.0f", mc$sdi), sprintf("%.1f", mc$qmd_in),
+          sprintf("%.2f", mc$ef_tpa)
+        ),
+        Delta = c(
+          pd(mf$tpa, mc$tpa), pd(mf$ba_ac, mc$ba_ac),
+          pd(mf$sdi, mc$sdi), "unaffected", pd(mf$ef_tpa, mc$ef_tpa)
+        ),
+        check.names = FALSE
+      )
+    })
+    output$occ_table <- renderTable(occ_df(), striped = FALSE, spacing = "xs", width = "100%")
 
-    output$verdict <- renderUI({
+    verdict_text <- reactive({
       b <- mets_before()
       if (is.null(b)) {
         return(NULL)
@@ -840,113 +858,214 @@ server <- function(id) {
           }
         )
       }
+      list(occlusion = occ_txt, prescription = rx_txt)
+    })
+
+    output$verdict <- renderUI({
+      v <- verdict_text()
+      if (is.null(v)) {
+        return(NULL)
+      }
       tagList(
-        div(class = "imn-okbox", tags$b("Occlusion. "), occ_txt),
-        div(class = "imn-okbox", tags$b("Prescription. "), rx_txt)
+        div(class = "imn-okbox", tags$b("Occlusion. "), v$occlusion),
+        div(class = "imn-okbox", tags$b("Prescription. "), v$prescription)
       )
     })
 
-    output$species_table <- renderTable(
-      {
-        t <- stems_marked()
-        sp <- species_tbl()
-        if (nrow(t) == 0 || nrow(sp) == 0) {
-          return(NULL)
+    species_df <- reactive({
+      t <- stems_marked()
+      sp <- species_tbl()
+      if (nrow(t) == 0 || nrow(sp) == 0) {
+        return(NULL)
+      }
+      rows <- lapply(sp$code, function(cd) {
+        g <- t[species == cd]
+        if (nrow(g) == 0) {
+          return(data.frame(
+            Species = cd, Trees = 0L, `% stems` = "0%",
+            `BA ft2/ac` = "-", `QMD in` = "-", Removed = 0L,
+            check.names = FALSE
+          ))
         }
-        rows <- lapply(sp$code, function(cd) {
-          g <- t[species == cd]
-          if (nrow(g) == 0) {
-            return(data.frame(
-              Species = cd, Trees = 0L, `% stems` = "0%",
-              `BA ft2/ac` = "-", `QMD in` = "-", Removed = 0L,
-              check.names = FALSE
-            ))
+        m <- stand_metrics(g, scale_area())
+        data.frame(
+          Species = cd, Trees = nrow(g),
+          `% stems` = sprintf("%.0f%%", nrow(g)/nrow(t) * 100),
+          `BA ft2/ac` = sprintf("%.1f", m$ba_ac),
+          `QMD in` = sprintf("%.1f", m$qmd_in),
+          Removed = sum(g$rm), check.names = FALSE
+        )
+      })
+      do.call(rbind, rows)
+    })
+    output$species_table <- renderTable(species_df(), striped = FALSE, spacing = "xs",
+                                        width = "100%")
+
+    draw_stocking <- function(pal) {
+      b <- mets_before()
+      validate(need(!is.null(b), "No stems loaded."))
+      a <- mets_after()
+      op <- par(
+        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
+      )
+      on.exit(par(op), add = TRUE)
+      qs <- seq(2, 26, by = 0.4)
+      plot(NA,
+        xlim = c(2, 26), ylim = c(0, 700), xlab = "QMD (in)",
+        ylab = "Trees per acre", main = "Stocking (density - QMD)"
+      )
+      qmd_term <- (qs/10) ^ 1.605
+      for (i in seq_along(c(450, 250, 160))) {
+        sdi <- c(450, 250, 160)[i]
+        lines(qs, sdi/qmd_term,
+          col = c(pal$line, pal$mid, pal$faint)[i],
+          lty = if (i == 1) 1 else 2
+        )
+      }
+      points(b$qmd_in, b$tpa, pch = 21, bg = "#ffd29b", col = "#0a0f1f", cex = 2)
+      if (!is.null(a) && any(stems_marked()$rm)) {
+        arrows(b$qmd_in, b$tpa, a$qmd_in, a$tpa, length = 0.08, col = pal$mid)
+        points(a$qmd_in, a$tpa, pch = 21, bg = "#8ff0e2", col = "#0a0f1f", cex = 2)
+      }
+      legend("topright",
+        bty = "n", text.col = pal$axis,
+        legend = c("SDI 450 (max)", "55%", "35%", "before", "after"),
+        lty = c(1, 2, 2, NA, NA), pch = c(NA, NA, NA, 21, 21),
+        pt.bg = c(NA, NA, NA, "#ffd29b", "#8ff0e2"),
+        col = c(pal$line, pal$mid, pal$faint, "#0a0f1f", "#0a0f1f")
+      )
+    }
+    output$stocking <- renderPlot(draw_stocking(FOREST_SCREEN), bg = "transparent", res = 110)
+
+    draw_bias <- function(pal) {
+      t <- stems_marked()
+      validate(need(nrow(t) > 0, "No stems loaded."))
+      full_a <- plot_area_m2(input$radius)
+      no <- nonoc_area()
+      vf <- if (is.na(no) || no <= 0) 1 else no/full_a
+      sh <- detection_shortfall(suppressWarnings(as.numeric(t$DBH)), vf)
+      validate(need(nrow(sh) > 0, "No diameters available."))
+      op <- par(
+        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
+      )
+      on.exit(par(op), add = TRUE)
+      m <- rbind(sh$detected, sh$missing)
+      barplot(m,
+        names.arg = sh$cls, col = c("#8ff0e2", "#ff6b7d88"),
+        border = NA, xlab = "DBH class (in)", ylab = "Stems",
+        main = "Detected vs inferred missing"
+      )
+      legend("topright",
+        bty = "n", text.col = pal$axis,
+        fill = c("#8ff0e2", "#ff6b7d88"), border = NA,
+        legend = c("detected", "inferred missing")
+      )
+    }
+    output$bias <- renderPlot(draw_bias(FOREST_SCREEN), bg = "transparent", res = 110)
+
+    # ---- Add to report ----------------------------------------------------
+    # The stem map and the right-hand card's open tab go into the report as
+    # shown, with the scan and the settings behind them. Charts are redrawn on
+    # the white-page palette.
+    forestry_context <- function() {
+      cs <- current_scan()
+      list(
+        Scan = if (is.null(cs)) NULL else sprintf("%s plot %s, %s", cs$site, cs$plot, cs$date),
+        `Plot radius` = sprintf("%s m", input$radius),
+        `Per-area values` = if (identical(input$scaleby, "nonoc")) "nonocarea" else
+          "full plot area",
+        Prescription = switch(input$method,
+          none = "None (inventory only)", below = "Thin from below", above = "Thin from above",
+          species = "By species", spacing = "Spacing / crop-tree", input$method
+        ),
+        `Residual BA target` = if (!identical(input$method, "none")) {
+          sprintf("%s ft2/ac", input$target_ba)
+        }
+      )
+    }
+    # Draw one chart to a PNG on the white-page palette; NULL if it can't be drawn.
+    chart_file <- function(draw, width = 1500, height = 1200) {
+      path <- tempfile("forestry_", fileext = ".png")
+      png(path, width = width, height = height, res = 200, bg = "white", type = "cairo")
+      ok <- tryCatch({
+        draw(FOREST_PAPER)
+        TRUE
+      }, error = function(e) FALSE)
+      dev.off()
+      if (ok) path else NULL
+    }
+    add_chart <- function(draw, title, extra = list(), ...) {
+      path <- chart_file(draw, ...)
+      if (is.null(path)) {
+        showNotification("Nothing to add yet: load tree inventories first.", type = "warning")
+        return()
+      }
+      add_to_report(session, report_item(
+        "image", title, "Forestry exports", settings = c(forestry_context(), extra),
+        image = path, group = "Forestry", thumb = file_thumbnail(path)
+      ))
+    }
+    add_forest_table <- function(tbl, title, analysis = NULL) {
+      if (is.null(tbl) || nrow(tbl) == 0) {
+        showNotification("Nothing to add yet: load tree inventories first.", type = "warning")
+        return()
+      }
+      add_to_report(session, report_item(
+        "table", title, "Forestry exports", settings = forestry_context(), table = tbl,
+        analysis = analysis, group = "Forestry"
+      ))
+    }
+
+    observeEvent(input$rep_stem, {
+      if (identical(input$mode, "aoi")) {
+        add_chart(draw_stem_map, "Simulated stem map", list(Mode = "Generative AOI map"))
+      } else {
+        add_chart(draw_stem_map, "Stem map",
+                  list(`Coloured by` = switch(input$colorby, species = "Species", dbh = "DBH",
+                                              cr = "Crown ratio")),
+                  width = 1400, height = 1400)
+      }
+    })
+
+    observeEvent(input$rep_right, {
+      switch(input$rtabs,
+        Metrics = {
+          b <- mets_before()
+          a <- mets_after()
+          if (is.null(b)) {
+            showNotification("Nothing to add yet: load tree inventories first.",
+                             type = "warning")
+            return()
           }
-          m <- stand_metrics(g, scale_area())
-          data.frame(
-            Species = cd, Trees = nrow(g),
-            `% stems` = sprintf("%.0f%%", nrow(g)/nrow(t) * 100),
-            `BA ft2/ac` = sprintf("%.1f", m$ba_ac),
-            `QMD in` = sprintf("%.1f", m$qmd_in),
-            Removed = sum(g$rm), check.names = FALSE
+          row <- function(m) {
+            c(sprintf("%.0f", m$tpa), sprintf("%.1f", m$ba_ac), sprintf("%.1f", m$qmd_in),
+              sprintf("%.0f", m$sdi), sprintf("%.1f", m$rd),
+              if (is.na(m$cr_mean)) "\u2014" else sprintf("%.0f", m$cr_mean * 100))
+          }
+          tbl <- data.frame(
+            Metric = c("Density (trees/ac)", "Basal area (ft2/ac)", "QMD (in)",
+                       "SDI (Reineke)", "Relative density (Curtis)", "Mean crown ratio (%)"),
+            Inventory = row(b), check.names = FALSE, stringsAsFactors = FALSE
           )
-        })
-        do.call(rbind, rows)
-      },
-      striped = FALSE,
-      spacing = "xs",
-      width = "100%"
-    )
-
-    output$stocking <- renderPlot(
-      {
-        b <- mets_before()
-        validate(need(!is.null(b), "No stems loaded."))
-        a <- mets_after()
-        op <- par(
-          bg = NA, mar = c(4, 4, 2, 1), fg = "#eaf1ff",
-          col.axis = "#cdd6ee", col.lab = "#cdd6ee", col.main = "#ffffff"
-        )
-        on.exit(par(op), add = TRUE)
-        qs <- seq(2, 26, by = 0.4)
-        plot(NA,
-          xlim = c(2, 26), ylim = c(0, 700), xlab = "QMD (in)",
-          ylab = "Trees per acre", main = "Stocking (density - QMD)"
-        )
-        qmd_term <- (qs/10) ^ 1.605
-        for (i in seq_along(c(450, 250, 160))) {
-          sdi <- c(450, 250, 160)[i]
-          lines(qs, sdi/qmd_term,
-            col = c("#ffffffaa", "#ffffff77", "#ffffff55")[i],
-            lty = if (i == 1) 1 else 2
-          )
-        }
-        points(b$qmd_in, b$tpa, pch = 21, bg = "#ffd29b", col = "#0a0f1f", cex = 2)
-        if (!is.null(a) && any(stems_marked()$rm)) {
-          arrows(b$qmd_in, b$tpa, a$qmd_in, a$tpa, length = 0.08, col = "#ffffff88")
-          points(a$qmd_in, a$tpa, pch = 21, bg = "#8ff0e2", col = "#0a0f1f", cex = 2)
-        }
-        legend("topright",
-          bty = "n", text.col = "#cdd6ee",
-          legend = c("SDI 450 (max)", "55%", "35%", "before", "after"),
-          lty = c(1, 2, 2, NA, NA), pch = c(NA, NA, NA, 21, 21),
-          pt.bg = c(NA, NA, NA, "#ffd29b", "#8ff0e2"),
-          col = c("#ffffffaa", "#ffffff77", "#ffffff55", "#0a0f1f", "#0a0f1f")
-        )
-      },
-      bg = "transparent",
-      res = 110
-    )
-
-    output$bias <- renderPlot(
-      {
-        t <- stems_marked()
-        validate(need(nrow(t) > 0, "No stems loaded."))
-        full_a <- plot_area_m2(input$radius)
-        no <- nonoc_area()
-        vf <- if (is.na(no) || no <= 0) 1 else no/full_a
-        sh <- detection_shortfall(suppressWarnings(as.numeric(t$DBH)), vf)
-        validate(need(nrow(sh) > 0, "No diameters available."))
-        op <- par(
-          bg = NA, mar = c(4, 4, 2, 1), fg = "#eaf1ff",
-          col.axis = "#cdd6ee", col.lab = "#cdd6ee", col.main = "#ffffff"
-        )
-        on.exit(par(op), add = TRUE)
-        m <- rbind(sh$detected, sh$missing)
-        barplot(m,
-          names.arg = sh$cls, col = c("#8ff0e2", "#ff6b7d88"),
-          border = NA, xlab = "DBH class (in)", ylab = "Stems",
-          main = "Detected vs inferred missing"
-        )
-        legend("topright",
-          bty = "n", text.col = "#cdd6ee",
-          fill = c("#8ff0e2", "#ff6b7d88"), border = NA,
-          legend = c("detected", "inferred missing")
-        )
-      },
-      bg = "transparent",
-      res = 110
-    )
+          if (!identical(input$method, "none")) {
+            tbl$`After prescription` <- if (is.null(a)) "\u2014" else row(a)
+          }
+          v <- verdict_text()
+          add_forest_table(tbl, "Stand metrics", list(
+            summary = paste(v$occlusion, v$prescription), cautions = character(),
+            implication = NULL
+          ))
+          add_forest_table(occ_df(), "Occlusion correction")
+        },
+        Species = add_forest_table(species_df(), "Species composition"),
+        Stocking = add_chart(draw_stocking, "Stocking (density and QMD)"),
+        `Size bias` = add_chart(draw_bias, "Size bias: detected and inferred missing stems"),
+        showNotification("The FVS preview can't be added to the report; download it instead.",
+                         type = "warning")
+      )
+    })
 
     # ---- FVS preview + downloads ------------------------------------------
     fvs_bits <- reactive({

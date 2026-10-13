@@ -6,9 +6,18 @@ box::use(
 box::use(
   app/logic/constants[COLNAME2LABEL],
   app/logic/report[report_item],
+  app/logic/report_analysis[describe_series],
   plt = app/view/plotting,
-  app/view/report_store[add_to_report],
+  app/view/report_store[add_to_report, plot_thumbnail],
   app/view/sidebar_plot_controls[DATA_TYPES, ERROR_BARS, PLOT_TYPES, choice_label],
+)
+
+# Subheading of a graph in the report, under its metric's heading.
+PLOT_SUBHEADINGS <- list(
+  timeseries = "Time series plot",
+  individual = "Individual plot time series",
+  boxplot = "Box and Whisker plot",
+  bar = "Bar chart"
 )
 
 #' @export
@@ -90,15 +99,25 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
     #------Add to report-------------------------
     # Adds whichever view the card is showing, with the settings behind it:
     # the plot (on the light export palette) or the statistics table.
+    # The automated description is built from the same per-scan rows and time
+    # steps the card draws (see app/logic/report_analysis.R).
+    describe_card <- function() {
+      st <- data_state()
+      prep <- plt$.series_prep(st$metric, st$label, st$data_dt, st$trtmt_dates, st$data_type)
+      describe_series(prep$raw, prep$y_label, prep$pct, st$trtmt_dates$TreatmentDate, st$metric)
+    }
+
     shiny$observeEvent(input$plot_add_report, {
       opts <- plt_options()
       data_label <- choice_label(DATA_TYPES, data_type())
+      analysis <- tryCatch(describe_card(), error = function(e) NULL)
       item <- tryCatch(
         if (identical(input$plot_view, "stats")) {
           tbl <- stats_dt()
           report_item("table", attr(tbl, "imn_label"), report_source,
             settings = c(list(`Data type` = data_label), report_settings()),
-            table = tbl, note = plt$STATS_NOTE
+            table = tbl, note = plt$STATS_NOTE, analysis = analysis,
+            subheading = "Statistics"
           )
         } else {
           p <- plt_fn(light = TRUE)
@@ -115,7 +134,8 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
               ),
               report_settings()
             ),
-            plot = p
+            plot = p, analysis = analysis,
+            subheading = PLOT_SUBHEADINGS[[opts$plot_type]], thumb = plot_thumbnail(p)
           )
         },
         error = function(e) NULL

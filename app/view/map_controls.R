@@ -190,6 +190,11 @@ update_dwnld_scan_points <- function(session,
   )
 }
 
+#' Deepest zoom the maps fit to: Esri World Imagery has no tiles past about
+#' level 18 in many areas, and fitting to one plot would otherwise go to 20.
+#' @export
+MAX_FIT_ZOOM <- 17
+
 #' Adjust map extent of leaflet$leafletProxy. This function uses a shiny$observeEvent() based on changes
 #' to fit2pts.
 #'
@@ -211,7 +216,9 @@ update_extent <- function(proxy_map, fit2pts, col_names = list(lat = "Latitude",
                    leaflet$fitBounds(
                      lng1 = min(pts[[col_names$lng]]), lat1 = min(pts[[col_names$lat]]),
                      lng2 = max(pts[[col_names$lng]]), lat2 = max(pts[[col_names$lat]]),
-                     options = list(padding = c(15, 15))
+                     # a single plot gives a zero-size extent, which would zoom
+                     # past the deepest level the basemap imagery has
+                     options = list(padding = c(15, 15), maxZoom = MAX_FIT_ZOOM)
                    )
                })
 }

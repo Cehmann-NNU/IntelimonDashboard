@@ -2,9 +2,11 @@
 # Report builder core. Pure functions, no Shiny.
 #
 # Cards add *items* to the session's report (a figure or a table, exactly as
-# the card showed it, plus the settings behind it). `report_blocks()` lays the
-# items out as a flat list of *blocks* (title, heading, paragraph, warning,
-# figure, table) with figures and tables numbered. The Word and PDF writers
+# the card showed it, plus the settings behind it and an automated analysis);
+# the Report builder adds notes and the standard sections, all in one ordered
+# list. `report_blocks()` lays the items out as a flat list of *blocks*
+# (title, heading, paragraph, bullet, warning, figure, table) with figures and
+# tables numbered. The Word and PDF writers
 # (app/logic/report_docx.R, app/logic/report_pdf.R) render the same blocks
 # with the same REPORT_STYLE, so both formats share one template.
 # ---------------------------------------------------------------------------
@@ -16,9 +18,11 @@
 REPORT_STYLE <- list(
   font          = "Arial",
   size_title    = 22,
+  size_cover    = 28,
   size_subtitle = 13,
   size_h1       = 15,
   size_h2       = 12,
+  size_h3       = 11,
   size_body     = 10,
   size_caption  = 9,
   size_table    = 8.5,
@@ -31,6 +35,7 @@ REPORT_STYLE <- list(
   head_ink      = "#ffffff",
   stripe        = "#eef3f5",
   warn          = "#c92a2a",
+  caution       = "#8a5300",
   page_width    = 8.5,
   page_height   = 11,
   margin        = 1,
@@ -71,32 +76,107 @@ REFERENCES <- c(
   )
 )
 
+#' Disclaimer printed on the page after the title page.
+#' @export
+DISCLAIMER <- paste(
+  "Ecological monitoring utilizing terrestrial based lidar is a new and quickly evolving",
+  "technology. The IntELiMon viewer represents the current state of this technology in fuels",
+  "and ecological monitoring. The Science Advisory Panel for the IntELiMon viewer welcomes",
+  "discussion/input on peer reviewed methodologies that could be utilized to enhance the",
+  "system. USGS, or any person associated with IntELiMon, is not responsible for your use of",
+  "the information contained in or linked to this data or analysis from the IntELiMon",
+  "Decision Support tool."
+)
+
+#' Statement of origin printed under the disclaimer.
+#' @export
+ORIGIN_TEXT <- "This report was generated using the IntELiMon Decision Support Tool."
+
+#' Title used when the report details leave it blank.
+#' @export
+DEFAULT_TITLE <- "IntELiMon monitoring report"
+
+#' Caption for the cover photo: "Cover Photo: Agency, Site, plot 1085, 2022-02-15,
+#' Points2Pano image". Blank parts are left out.
+#' @export
+cover_caption <- function(agency, site, plot, date) {
+  parts <- c(agency, site, if (nonblank(plot)) paste("plot", plot), format(as.Date(date)))
+  parts <- parts[!is.na(parts) & nzchar(parts)]
+  paste0("Cover Photo: ", paste(c(parts, "Points2Pano image"), collapse = ", "))
+}
+
 .item_counter <- new.env()
 .item_counter$n <- 0L
 
+next_id <- function() {
+  .item_counter$n <- .item_counter$n + 1L
+  paste0("item", .item_counter$n)
+}
+
+#' Standard sections that can be placed in the report like any other item.
+#' @export
+SECTIONS <- list(
+  context = "Scans, plots and treatments",
+  map = "Plot locations",
+  design = "Sample size and design"
+)
+
+#' Preset headings offered for notes; any other text can be typed instead.
+#' @export
+NOTE_HEADINGS <- c(
+  "Introduction", "Methods", "Data description", "Results", "Discussion", "Conclusions",
+  "Management relevance", "Suggested management actions"
+)
+
 #' One report item, as added from a card.
-#' @param kind "figure" (a ggplot in `plot`) or "table" (a data.frame in `table`).
+#' @param kind "figure" (a ggplot in `plot`), "table" (a data.frame in `table`)
+#'   or "image" (a picture file in `image`, or a Points2Pano scan in `photo`
+#'   that is downloaded when the report is built).
 #' @param title Caption title, e.g. the metric label.
 #' @param source Tab the card is on, e.g. "Standard outputs".
 #' @param settings Named list of the card's settings, shown under the caption.
 #' @param note Footnote printed under a table (fixed text from the card).
+#' @param analysis Automated description from `describe_series()`
+#'   (app/logic/report_analysis.R), or list(summary, cautions, implication).
+#' @param group Heading the item is listed under in the report and its table of
+#'   contents; consecutive items with the same group share one heading.
+#'   Defaults to the title.
+#' @param subheading Subheading for this item under its group, e.g. "Statistics"
+#'   or "Box and Whisker plot"; NULL for none.
+#' @param thumb Preview for the Report builder: an image URL or data URI.
 #' @return A list with a session-unique `id`.
 #' @export
 report_item <- function(kind, title, source, settings = list(), plot = NULL,
-                        table = NULL, note = NULL) {
-  stopifnot(kind %in% c("figure", "table"))
-  .item_counter$n <- .item_counter$n + 1L
+                        table = NULL, note = NULL, analysis = NULL, group = title,
+                        subheading = NULL, image = NULL, photo = NULL, thumb = NULL) {
+  stopifnot(kind %in% c("figure", "table", "image"))
   list(
-    id = paste0("item", .item_counter$n),
-    kind = kind,
-    title = title,
-    source = source,
-    settings = settings,
-    plot = plot,
-    table = table,
-    note = note,
-    comment = ""
+    id = next_id(), kind = kind, title = title, source = source, settings = settings,
+    plot = plot, table = table, note = note, analysis = analysis, group = group,
+    subheading = subheading, image = image, photo = photo, thumb = thumb,
+    include_analysis = TRUE, comment = ""
   )
+}
+
+#' A free note: optional heading and text, placed anywhere in the report.
+#' @export
+note_item <- function(heading = "", text = "") {
+  list(id = next_id(), kind = "note", title = "Note", heading = heading, text = text)
+}
+
+#' One of the standard SECTIONS, by key.
+#' @export
+section_item <- function(key) {
+  stopifnot(key %in% names(SECTIONS))
+  list(id = next_id(), kind = "section", key = key, title = SECTIONS[[key]])
+}
+
+#' Contents of a new report: the standard sections, then a "Results" heading
+#' that the added figures and tables follow.
+#' @export
+default_report_items <- function() {
+  list(section_item("context"), section_item("map"), section_item("design"),
+       note_item("Results"))
 }
 
 #' Settings as one line: "Plot type: Box and Whisker; Data type: Percent change".
@@ -109,11 +189,13 @@ settings_line <- function(settings) {
   paste(paste0(names(settings), ": ", unlist(settings)), collapse = "; ")
 }
 
+item_ids <- function(items) vapply(items, `[[`, character(1), "id")
+
 #' Move an item one place up or down in the list; out-of-range moves are no-ops.
 #' @export
 move_item <- function(items, id, direction = c("up", "down")) {
   direction <- match.arg(direction)
-  i <- match(id, vapply(items, `[[`, character(1), "id"))
+  i <- match(id, item_ids(items))
   j <- if (direction == "up") i - 1 else i + 1
   if (is.na(i) || j < 1 || j > length(items)) return(items)
   items[c(i, j)] <- items[c(j, i)]
@@ -123,82 +205,219 @@ move_item <- function(items, id, direction = c("up", "down")) {
 #' Drop the item with this id.
 #' @export
 remove_item <- function(items, id) {
-  items[vapply(items, `[[`, character(1), "id") != id]
+  items[item_ids(items) != id]
+}
+
+#' Standard sections not currently in the report (keys).
+#' @export
+missing_sections <- function(items) {
+  present <- unlist(lapply(items, function(it) if (identical(it$kind, "section")) it$key))
+  setdiff(names(SECTIONS), present)
 }
 
 blk <- function(type, ...) list(type = type, ...)
 
 nonblank <- function(x) !is.null(x) && length(x) == 1 && !is.na(x) && nzchar(trimws(x))
 
+paragraphs <- function(text) {
+  p <- trimws(strsplit(text, "\n[[:space:]]*\n")[[1]])
+  p[nzchar(p)]
+}
+
 #' Lay out a report as a flat list of blocks for the writers.
 #'
-#' @param items Report items, in report order (see `report_item()`).
+#' @param items Report items in report order: figures and tables from cards,
+#'   notes and standard sections (see `report_item()`, `note_item()`,
+#'   `section_item()`).
 #' @param meta list(title, subtitle, author, organization, date, summary).
-#' @param plots_table Optional data.frame describing the plots and scans
-#'   included; NULL leaves the section out.
-#' @param treatments_table Optional data.frame of treatment dates; NULL or no
-#'   rows leaves the section out.
-#' @param include_about Add the "About these data" section and references.
+#' @param context list(scan = scan_context(), checks = design_checks()) from
+#'   app/logic/report_analysis.R, for the standard sections; NULL when no
+#'   scans are loaded.
+#'   `context$points` (site, plot, lon, lat) are the plots drawn by the Plot
+#'   locations section.
+#' @param cover list(caption, image) for the title page and the cover photo
+#'   caption; `image` is a local file (see app/logic/report_cover.R) or NULL.
 #' @export
-report_blocks <- function(items, meta, plots_table = NULL, treatments_table = NULL,
-                          include_about = TRUE) {
+report_blocks <- function(items, meta, context = NULL, cover = NULL) {
   out <- list()
   add <- function(b) out[[length(out) + 1]] <<- b
   n_fig <- 0L
   n_tab <- 0L
-  add_table <- function(df, title, note = NULL) {
+  add_table <- function(df, title, note = NULL, settings = "") {
     n_tab <<- n_tab + 1L
     add(blk("table", label = paste0("Table ", n_tab, "."), title = title, data = df,
-            note = note, settings = ""))
+            note = note, settings = settings))
   }
-
-  add(blk("title",
-    title = if (nonblank(meta$title)) meta$title else "IntELiMon monitoring report",
-    subtitle = if (nonblank(meta$subtitle)) meta$subtitle else NULL,
-    lines = Filter(nonblank, list(meta$author, meta$organization, meta$date))
-  ))
+  # summaries already printed, named by the figure or table they sit under, so
+  # a graph and its statistics table don't repeat the same description
+  described <- character()
+  # Sample size and design notes for individual figures and tables, gathered
+  # into that section (when the report has it) with a pointer under each one
+  has_design <- any(vapply(items, function(it) identical(it$key, "design"), logical(1)))
+  object_notes <- list()
+  design_at <- NULL
+  # heading of the run of items being laid out: consecutive items from one
+  # card share it, each with its own subheading
+  current_group <- NULL
 
   if (nonblank(meta$summary)) {
     add(blk("heading", level = 1, text = "Summary"))
-    for (p in strsplit(meta$summary, "\n[[:space:]]*\n")[[1]]) add(blk("paragraph", text = p))
+    for (p in paragraphs(meta$summary)) add(blk("paragraph", text = p))
   }
 
-  has_plots <- !is.null(plots_table) && nrow(plots_table) > 0
-  has_treat <- !is.null(treatments_table) && nrow(treatments_table) > 0
-  if (has_plots || has_treat) {
-    add(blk("heading", level = 1, text = "Data"))
-    if (has_plots) add_table(plots_table, "Plots and scans included in this report.")
-    if (has_treat) {
-      add_table(treatments_table, "Treatment dates.",
-                note = "Scans collected after a treatment date start a new time step.")
-    }
-  }
-
-  if (length(items) > 0) {
-    add(blk("heading", level = 1, text = "Results"))
-    for (it in items) {
-      if (it$kind == "figure") {
-        n_fig <- n_fig + 1L
-        add(blk("figure", label = paste0("Figure ", n_fig, "."), title = it$title,
-                plot = it$plot, settings = settings_line(c(list(Source = it$source), it$settings))))
-      } else {
-        n_tab <- n_tab + 1L
-        add(blk("table", label = paste0("Table ", n_tab, "."), title = it$title,
-                data = it$table, note = it$note,
-                settings = settings_line(c(list(Source = it$source), it$settings))))
+  for (it in items) {
+    if (!it$kind %in% c("figure", "table", "image")) current_group <- NULL
+    switch(it$kind,
+      section = {
+        if (it$key == "map") {
+          add(blk("heading", level = 1, text = it$title))
+          n_plots <- if (is.null(context$points)) 0 else nrow(context$points)
+          if (n_plots == 0) {
+            add(blk("paragraph", text = "No plots were selected when this report was built."))
+          } else {
+            n_fig <- n_fig + 1L
+            add(blk("image", label = paste0("Figure ", n_fig, "."),
+                    title = sprintf("Locations of the %d plot%s in this report.", n_plots,
+                                    if (n_plots == 1) "" else "s"),
+                    path = NULL, map = context$points,
+                    settings = "Basemap: Esri World Imagery"))
+          }
+        } else if (it$key == "context") {
+          add(blk("heading", level = 1, text = it$title))
+          scan <- context$scan
+          if (is.null(scan)) {
+            add(blk("paragraph", text = "No scans were loaded when this report was built."))
+          } else {
+            add(blk("paragraph", text = scan$text))
+            add_table(scan$plots, "Plots included in this report.")
+            add_table(scan$steps, "Time steps: how scans were grouped for analysis.",
+                      note = "Scans collected after a treatment date start a new time step.")
+          }
+        } else {
+          # filled in once every figure and table has its number
+          add(blk("design_placeholder"))
+          design_at <- length(out)
+        }
+      },
+      note = {
+        if (nonblank(it$heading)) add(blk("heading", level = 1, text = it$heading))
+        if (nonblank(it$text)) for (p in paragraphs(it$text)) add(blk("paragraph", text = p))
+      },
+      {
+        settings <- settings_line(c(list(Source = it$source), it$settings))
+        group <- if (nonblank(it$group)) it$group else it$title
+        if (!identical(group, current_group)) {
+          add(blk("heading", level = 2, text = group))
+          current_group <- group
+        }
+        if (nonblank(it$subheading)) add(blk("heading", level = 3, text = it$subheading))
+        if (it$kind == "figure") {
+          n_fig <- n_fig + 1L
+          label <- paste("Figure", n_fig)
+          add(blk("figure", label = paste0(label, "."), title = it$title,
+                  plot = it$plot, settings = settings))
+        } else if (it$kind == "image") {
+          n_fig <- n_fig + 1L
+          label <- paste("Figure", n_fig)
+          add(blk("image", label = paste0(label, "."), title = it$title,
+                  path = it$image, photo = it$photo, settings = settings))
+        } else {
+          add_table(it$table, it$title, note = it$note, settings = settings)
+          label <- paste("Table", n_tab)
+        }
+        a <- it$analysis
+        cautions <- if (is.null(a)) character() else a$cautions
+        repeated <- !is.null(a) && a$summary %in% described
+        if (length(cautions) > 0 && has_design) {
+          # a graph and its statistics table share one entry: "Figure 1 and Table 3"
+          same <- Position(function(n) identical(n$summary, a$summary), object_notes)
+          if (is.na(same)) {
+            object_notes[[length(object_notes) + 1]] <- list(
+              labels = label, title = it$title, summary = a$summary, cautions = cautions
+            )
+          } else {
+            object_notes[[same]]$labels <- c(object_notes[[same]]$labels, label)
+          }
+          add(blk("flag", text = DESIGN_POINTER))
+        }
+        if (!is.null(a) && !isFALSE(it$include_analysis)) {
+          if (repeated) {
+            add(blk("paragraph", text = sprintf(
+              "These data are described under %s.", names(described)[match(a$summary, described)]
+            )))
+          } else {
+            described[label] <- a$summary
+            add(blk("paragraph", text = a$summary))
+            if (!has_design) for (ck in cautions) add(blk("bullet", text = ck, tone = "caution"))
+            if (nonblank(a$implication)) {
+              add(blk("paragraph", text = a$implication, face = "italic"))
+            }
+          }
+        }
+        if (nonblank(it$comment)) add(blk("paragraph", text = it$comment))
       }
-      if (nonblank(it$comment)) add(blk("paragraph", text = it$comment))
-    }
-    if (any(vapply(items, function(it) identical(it$source, "rothRmel"), logical(1)))) {
-      add(blk("warning", text = ROTHRMEL_CAVEAT))
-    }
+    )
   }
 
-  if (include_about) {
-    add(blk("heading", level = 1, text = "About these data"))
-    add(blk("paragraph", text = ABOUT_TEXT))
-    add(blk("heading", level = 2, text = "References"))
-    for (r in REFERENCES) add(blk("paragraph", text = r, size = "small"))
+  if (!is.null(design_at)) {
+    section <- design_blocks(context, object_notes)
+    out <- c(out[seq_len(design_at - 1)], section, out[-seq_len(design_at)])
+  }
+
+  if (any(vapply(items, function(it) identical(it$source, "rothRmel"), logical(1)))) {
+    add(blk("warning", text = ROTHRMEL_CAVEAT))
+  }
+  # About these data closes the report as well as opening it
+  for (b in about_blocks(toc = TRUE)) add(b)
+
+  # front matter, then the table of contents listing the body's headings
+  toc <- Filter(function(b) b$type == "heading", out)
+  toc <- lapply(toc, function(b) list(text = b$text, level = b$level))
+  c(front_blocks(meta, cover),
+    list(blk("toc", entries = toc), blk("page_break")), out)
+}
+
+# "About these data" and the references. `toc = FALSE` keeps the copy in the
+# front matter out of the table of contents.
+about_blocks <- function(toc) {
+  c(list(
+    blk("heading", level = 1, text = "About these data", toc = toc),
+    blk("paragraph", text = ABOUT_TEXT),
+    blk("heading", level = 2, text = "References", toc = toc)
+  ), lapply(REFERENCES, function(r) blk("paragraph", text = r, size = "small")))
+}
+
+#' Red line under a figure or table whose data have sample size or design
+#' issues, pointing to where they are listed.
+#' @export
+DESIGN_POINTER <- "See notes in sample size and design"
+
+# The "Sample size and design" section: issues across all loaded scans, then
+# the issues of each figure and table under its label.
+design_blocks <- function(context, object_notes) {
+  out <- list(blk("heading", level = 1, text = SECTIONS$design))
+  checks <- context$checks
+  if (length(checks) == 0 && length(object_notes) == 0) {
+    return(c(out, list(blk("paragraph", text = paste(
+      "No sample size or design issues were detected in the loaded scans or in the figures",
+      "and tables of this report."
+    )))))
+  }
+  out <- c(out, list(blk("paragraph", text = paste(
+    "The following points limit how far the results can be generalized and should be",
+    "considered when interpreting the figures and tables."
+  ))))
+  if (length(checks) > 0) {
+    out <- c(out, list(blk("heading", level = 2, text = "All loaded scans")))
+    out <- c(out, lapply(checks, function(ck) blk("bullet", text = ck, tone = "caution")))
+  }
+  if (length(object_notes) > 0) {
+    out <- c(out, list(blk("heading", level = 2, text = "Figures and tables")))
+    for (n in object_notes) {
+      label <- paste0(paste(n$labels, collapse = " and "), ". ", n$title)
+      out <- c(out, list(blk("label", text = label)),
+               lapply(n$cautions, function(ck) blk("bullet", text = ck, tone = "caution")))
+    }
   }
   out
 }
@@ -209,38 +428,45 @@ footer_text <- function(date = Sys.Date()) {
   paste0(REPORT_STYLE$product, " \u00b7 Generated ", format(date, "%Y-%m-%d"))
 }
 
-#' Plots-and-scans table for the Data section from the loaded metrics
-#' (columns site, plot, date). NULL when nothing is loaded.
-#' @export
-plots_summary <- function(metrics) {
-  if (is.null(metrics) || nrow(metrics) == 0 || !all(c("site", "plot", "date") %in% names(metrics))) {
-    return(NULL)
-  }
-  key <- paste(metrics$site, metrics$plot, sep = "\r")
-  groups <- split(as.Date(metrics$date), key)
-  parts <- do.call(rbind, strsplit(names(groups), "\r", fixed = TRUE))
-  out <- data.frame(
-    Site = parts[, 1],
-    Plot = parts[, 2],
-    Scans = vapply(groups, function(d) length(unique(d)), integer(1)),
-    `First scan` = vapply(groups, function(d) format(min(d)), character(1)),
-    `Last scan` = vapply(groups, function(d) format(max(d)), character(1)),
-    check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
+# Front matter, before the table of contents: the title page, then a page
+# with the cover photo caption, lines for notes, About these data, the
+# disclaimer and the statement of origin. Its headings stay out of the
+# table of contents.
+front_blocks <- function(meta, cover) {
+  out <- list(
+    blk("title_page",
+      title = if (nonblank(meta$title)) meta$title else DEFAULT_TITLE,
+      subtitle = if (nonblank(meta$subtitle)) meta$subtitle else NULL,
+      lines = Filter(nonblank, list(
+        if (nonblank(meta$author)) paste("Prepared by", meta$author),
+        meta$organization, meta$date
+      )),
+      image = cover$image
+    ),
+    blk("page_break"),
+    blk("cover_caption", text = if (is.null(cover$caption)) {
+      "Cover Photo: Points2Pano image"
+    } else {
+      cover$caption
+    }),
+    blk("ruled_lines", n = 5)
   )
-  out[order(out$Site, out$Plot), , drop = FALSE]
+  c(out, about_blocks(toc = FALSE), list(
+    blk("label", text = "Disclaimer:"),
+    blk("paragraph", text = DISCLAIMER),
+    blk("paragraph", text = ORIGIN_TEXT, face = "italic"),
+    blk("page_break")
+  ))
 }
 
-#' Treatment dates table for the Data section; NULL when there are none.
+#' File name for a built report: the title with anything but letters, digits,
+#' dashes and underscores turned into underscores, then the date code, e.g.
+#' "GAFSQ_treatment_monitoring_20261013.docx".
 #' @export
-treatments_summary <- function(trtmt_dates) {
-  if (is.null(trtmt_dates) || nrow(trtmt_dates) == 0) return(NULL)
-  d <- sort(as.Date(trtmt_dates$TreatmentDate))
-  data.frame(`Treatment date` = format(d, "%Y-%m-%d"), check.names = FALSE)
-}
-
-#' File name for a built report, e.g. "intelimon_report_20261012.docx".
-#' @export
-report_filename <- function(format = c("docx", "pdf"), date = Sys.Date()) {
+report_filename <- function(title, format = c("docx", "pdf"), date = Sys.Date()) {
   format <- match.arg(format)
-  paste0("intelimon_report_", format(date, "%Y%m%d"), ".", format)
+  if (!nonblank(title)) title <- DEFAULT_TITLE
+  stem <- gsub("_+", "_", gsub("[^A-Za-z0-9_-]+", "_", trimws(title)))
+  stem <- gsub("^_|_$", "", stem)
+  paste0(stem, "_", format(as.Date(date), "%Y%m%d"), ".", format)
 }

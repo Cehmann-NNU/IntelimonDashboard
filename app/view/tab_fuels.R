@@ -41,8 +41,10 @@ box::use(
   app/logic/lcp[build_flammap_lcp, bundle_fuel_rasters, describe_iftdss_tif, mean_plot_metrics],
   app/logic/lcp_canopy[describe_canopy_correction, describe_crown_check],
   app/logic/manage_data[pivot_on_model],
+  app/logic/report[report_item],
   app/view/card_mapLeaflet,
   app/view/map_controls[update_dwnld_scan_points, update_point_labels],
+  app/view/report_store[add_to_report],
 )
 
 #' @export
@@ -103,24 +105,27 @@ ui <- function(id) {
             gap_size = "10px",
             grid_card(
               area = "surfaceFuelGridArea", class = "fuel-card",
-              card_header("Surface fuels"),
+              card_header(class = "imn-card-head", "Surface fuels",
+                          report_button(ns("rep_surface"))),
               card_body(uiOutput(ns("surface_fuel_ui")))
             ),
             grid_card(
               area = "canopyFuelGridArea", class = "fuel-card",
-              card_header("Canopy fuels"),
+              card_header(class = "imn-card-head", "Canopy fuels", report_button(ns("rep_canopy"))),
               card_body(uiOutput(ns("canopy_fuel_ui")))
             ),
             grid_card(
               area = "timelagFuelGridArea", class = "fuel-card",
-              card_header("Time lag fuels"),
+              card_header(class = "imn-card-head", "Time lag fuels",
+                          report_button(ns("rep_timelag"))),
               card_body(uiOutput(ns("timelag_fuel_ui")))
             ),
             grid_card(
               area = "calcFuelGridArea", class = "fuel-card imn-calc-card",
               card_header(
                 class = "imn-calc-head",
-                "Mean fuel loading", uiOutput(ns("calc_model_tag"), inline = TRUE)
+                "Mean fuel loading", uiOutput(ns("calc_model_tag"), inline = TRUE),
+                report_button(ns("rep_calc"))
               ),
               card_body(
                 uiOutput(ns("calc_fuel_ui")),
@@ -155,6 +160,13 @@ ui <- function(id) {
       )
     )
   )
+}
+
+# "+ Report data" button for a fuel card header: adds the card's values to the
+# report with the fuel source and point in time they came from.
+report_button <- function(id) {
+  actionButton(id, "+ Report data", class = "btn-sm imn-add-report imn-card-add",
+               title = "Add report data: this card's values and where they came from")
 }
 
 #' @export
@@ -685,6 +697,111 @@ server <- function(id) {
           )
         }
       )
+    })
+
+    # ---- Add fuel cards to the report --------------------------------------
+    # Each card goes in as a table of the values showing (including any edits)
+    # beside the scan means they were prefilled from, with the fuel source,
+    # point in time and number of scans behind them.
+    fuel_context <- function() {
+      list(
+        `Fuel data source` = if (identical(input$fuel_source, "landfire")) {
+          "LANDFIRE derived"
+        } else {
+          "Modeled/User defined"
+        },
+        `Point in time` = point_in_time_label(input$fuel_agg, input$fuel_date),
+        Scans = as.character(nrow(fuel_scans()))
+      )
+    }
+    fmt_cell <- function(x, digits) {
+      if (is.na(x)) "\u2014" else formatC(x, format = "f", digits = digits)
+    }
+    edited_rows <- function(tbl) {
+      tbl$Measure[tbl$Value != tbl$`Scan mean` & tbl$`Scan mean` != "\u2014"]
+    }
+    fuel_description <- function(card, edited) {
+      ctx <- fuel_context()
+      text <- sprintf(
+        "%s values are means over %s scans (%s), from the %s fuel source.",
+        card, ctx$Scans, tolower(ctx$`Point in time`), ctx$`Fuel data source`
+      )
+      if (length(edited) > 0) {
+        text <- paste(text, sprintf(
+          "Edited by the user: %s.", paste(edited, collapse = ", ")
+        ))
+      }
+      list(summary = text, cautions = character(), implication = NULL)
+    }
+    add_fuel_table <- function(card, tbl, edited = character(), note = NULL) {
+      if (nrow(fuel_scans()) == 0) {
+        showNotification("Load scans before adding fuels to the report.", type = "warning")
+        return()
+      }
+      add_to_report(session, report_item(
+        "table", card, "Fuels exports", settings = fuel_context(), table = tbl, note = note,
+        analysis = fuel_description(card, edited), group = "Fuels"
+      ))
+    }
+    value_table <- function(rows, prefix, scale = function(col, v) v) {
+      data.frame(
+        Measure = vapply(rows, `[[`, character(1), "label"),
+        Value = vapply(names(rows), function(k) fmt_cell(num_input(paste0(prefix, k)), 2),
+                       character(1)),
+        `Scan mean` = vapply(rows, function(r) fmt_cell(scale(r$col, fuel_mean(r$col)), 2),
+                             character(1)),
+        check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
+      )
+    }
+
+    observeEvent(input$rep_surface, {
+      tbl <- value_table(SURFACE_FUEL_MODELS, "sf_")
+      add_fuel_table("Surface fuels", tbl, edited_rows(tbl))
+    })
+    observeEvent(input$rep_canopy, {
+      landfire <- identical(input$fuel_source, "landfire")
+      tbl <- value_table(CANOPY_FUEL_ROWS, "cf_", function(col, v) {
+        if (landfire && col != "LF_CBD") NA else if (col == "canopyCover") v * 100 else v
+      })
+      add_fuel_table("Canopy fuels", tbl, edited_rows(tbl))
+    })
+    observeEvent(input$rep_timelag, {
+      loads <- vapply(names(TIMELAG_FUEL_MODELS), function(k) {
+        brown_class_load(input[[paste0("tl_", k)]], BROWN_CLASSES[[k]])
+      }, numeric(1))
+      tbl <- data.frame(
+        Class = c(vapply(TIMELAG_FUEL_MODELS, `[[`, character(1), "label"), "Total"),
+        Count = c(vapply(names(TIMELAG_FUEL_MODELS), function(k) {
+          fmt_cell(num_input(paste0("tl_", k)), 1)
+        }, character(1)), ""),
+        `Tons/acre` = c(vapply(loads, fmt_cell, character(1), digits = 3),
+                        fmt_cell(sum(loads, na.rm = TRUE), 3)),
+        `Scan mean count` = c(vapply(TIMELAG_FUEL_MODELS, function(m) {
+          fmt_cell(fuel_mean(m$col), 1)
+        }, character(1)), ""),
+        check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
+      )
+      edited <- tbl$Class[tbl$Count != tbl$`Scan mean count` & nzchar(tbl$Count)]
+      add_fuel_table("Time lag fuels", tbl, edited,
+                     note = "Counts are modeled per 40 m of transect; loads use Brown's equations.")
+    })
+    observeEvent(input$rep_calc, {
+      m <- mean_loading()
+      keys <- names(calc_labels)
+      loads <- unlist(m$load_tonsac[keys])
+      tbl <- data.frame(
+        Measure = c(unname(calc_labels[keys]), "Total load", "Fuel bed depth (ft)", "Dead Mx (%)"),
+        `Derived from` = c(vapply(keys, function(k) {
+          src <- m$sources[[k]]
+          if (is.null(src) || length(src) == 0) "" else as.character(src)
+        }, character(1)), "", as.character(m$depth_source), as.character(m$mx_source)),
+        Value = c(vapply(loads, fmt_cell, character(1), digits = 3),
+                  fmt_cell(if (all(is.na(loads))) NA else sum(loads, na.rm = TRUE), 3),
+                  fmt_cell(m$depth_ft, 2), fmt_cell(m$mx_dead_pct, 0)),
+        check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
+      )
+      add_fuel_table("Mean fuel loading", tbl,
+                     note = "Loads in tons/acre: means of each scan's own surface fuel loadings.")
     })
 
     # ---- Submit fuel loadings to the rothRmel tab --------------------------

@@ -7,15 +7,15 @@
 
 box::use(
   flextable,
-  here[here],
   officer,
+  utils[unzip],
+  zip[zip],
 )
 
 box::use(
   app/logic/report[REPORT_STYLE, footer_text],
+  app/logic/report_cover[image_ratio, read_image],
 )
-
-LOGO <- here("app", "static", "images", "intelimon_logo.png")
 
 txt <- function(size, color = REPORT_STYLE$ink, bold = FALSE, italic = FALSE) {
   officer$fp_text(
@@ -24,9 +24,9 @@ txt <- function(size, color = REPORT_STYLE$ink, bold = FALSE, italic = FALSE) {
   )
 }
 
-pp <- function(before = 0, after = 6, align = "left", rule = FALSE) {
+pp <- function(before = 0, after = 6, align = "left", rule = FALSE, indent = 0) {
   officer$fp_par(
-    text.align = align, padding.top = before, padding.bottom = after,
+    text.align = align, padding.top = before, padding.bottom = after, padding.left = indent,
     line_spacing = 1.15,
     border.bottom = if (rule) officer$fp_border(color = REPORT_STYLE$rule, width = 1) else
       officer$fp_border(width = 0)
@@ -46,7 +46,9 @@ add_caption <- function(doc, b, before = 4) {
   )
   if (nzchar(b$settings)) {
     doc <- add_par(doc,
-      officer$ftext(b$settings, txt(REPORT_STYLE$size_caption - 1, REPORT_STYLE$dim, italic = TRUE)),
+      officer$ftext(
+        b$settings, txt(REPORT_STYLE$size_caption - 1, REPORT_STYLE$dim, italic = TRUE)
+      ),
       fp_p = pp(after = 6)
     )
   }
@@ -80,35 +82,91 @@ style_table <- function(df) {
 add_block <- function(doc, b) {
   s <- REPORT_STYLE
   switch(b$type,
-    title = {
-      if (file.exists(LOGO)) {
-        doc <- add_par(doc, officer$external_img(LOGO, width = 0.6, height = 0.6 * 132 / 114),
-                       fp_p = pp(after = 4))
+    title_page = {
+      center <- function(before = 0, after = 6) pp(before = before, after = after, align = "center")
+      doc <- add_par(doc, officer$ftext(b$title, txt(s$size_cover, s$accent, bold = TRUE)),
+                     fp_p = center(before = 48, after = 18))
+      img <- read_image(b$image)
+      if (is.null(img)) {
+        # placeholder where the Points2Pano image goes when it can't be fetched
+        doc <- add_par(doc,
+                       officer$ftext("Points2Pano image not available", txt(s$size_body, s$dim)),
+                       fp_p = officer$fp_par(text.align = "center", padding.top = 70,
+                                             padding.bottom = 70, shading.color = s$stripe))
+      } else {
+        doc <- add_par(doc, officer$external_img(b$image, width = s$fig_width,
+                                                 height = s$fig_width * image_ratio(img)),
+                       fp_p = center(after = 0))
       }
-      doc <- add_par(doc, officer$ftext(b$title, txt(s$size_title, s$accent, bold = TRUE)),
-                     fp_p = pp(after = 2))
       if (!is.null(b$subtitle)) {
-        doc <- add_par(doc, officer$ftext(b$subtitle, txt(s$size_subtitle, s$dim)),
-                       fp_p = pp(after = 2))
+        doc <- add_par(doc, officer$ftext(b$subtitle, txt(s$size_subtitle + 2, s$dim)),
+                       fp_p = center(before = 18, after = 24))
       }
-      for (l in b$lines) doc <- add_par(doc, officer$ftext(l, txt(s$size_body, s$dim)), fp_p = pp(after = 0))
-      add_par(doc, officer$ftext(" ", txt(4)), fp_p = pp(after = 10, rule = TRUE))
+      for (l in b$lines) {
+        doc <- add_par(doc, officer$ftext(l, txt(s$size_body + 1, s$dim)), fp_p = center(after = 2))
+      }
+      doc
+    },
+    page_break = officer$body_add_break(doc),
+    cover_caption = add_par(doc, officer$ftext(b$text, txt(s$size_body, bold = TRUE)),
+                            fp_p = pp(after = 10)),
+    # blank ruled lines for handwritten notes
+    ruled_lines = {
+      for (i in seq_len(b$n)) {
+        doc <- add_par(doc, officer$ftext(" ", txt(s$size_body)),
+                       fp_p = pp(before = 12, rule = TRUE))
+      }
+      add_par(doc, officer$ftext(" ", txt(4)), fp_p = pp(after = 10))
+    },
+    # Word builds the table itself from the heading styles; render_docx() sets
+    # the document to refresh it (and its page numbers) when opened
+    toc = {
+      doc <- add_par(doc, officer$ftext("Contents", txt(s$size_h1, s$accent, bold = TRUE)),
+                     fp_p = pp(after = 8))
+      officer$body_add_toc(doc, level = 2)
     },
     heading = {
-      size <- if (b$level == 1) s$size_h1 else s$size_h2
-      add_par(doc, officer$ftext(b$text, txt(size, s$accent, bold = TRUE)),
-              fp_p = pp(before = if (b$level == 1) 14 else 8, after = 4),
-              style = paste("heading", b$level))
+      size <- switch(b$level, s$size_h1, s$size_h2, s$size_h3)
+      # front-matter headings use Normal so Word's table of contents skips them
+      add_par(doc, officer$ftext(b$text, txt(size, if (b$level == 3) s$ink else s$accent,
+                                             bold = TRUE)),
+              fp_p = pp(before = switch(b$level, 14, 10, 6), after = 4),
+              style = if (isFALSE(b$toc)) "Normal" else paste("heading", b$level))
     },
     paragraph = {
       size <- if (identical(b$size, "small")) s$size_caption else s$size_body
-      add_par(doc, officer$ftext(b$text, txt(size)))
+      add_par(doc, officer$ftext(b$text, txt(size, italic = identical(b$face, "italic"))))
+    },
+    bullet = {
+      color <- if (identical(b$tone, "caution")) s$caution else s$ink
+      add_par(doc, officer$ftext(paste0("\u2022  ", b$text), txt(s$size_body - 0.5, color)),
+              fp_p = pp(after = 3, indent = 12))
     },
     warning = add_par(doc, officer$ftext(b$text, txt(s$size_body, s$warn, bold = TRUE)),
                       fp_p = pp(before = 6, after = 8)),
+    # red pointer under a figure or table with sample size or design notes
+    flag = add_par(doc, officer$ftext(b$text, txt(s$size_caption, s$warn, bold = TRUE)),
+                   fp_p = pp(after = 6)),
+    # figure or table named in the Sample size and design section
+    label = add_par(doc, officer$ftext(b$text, txt(s$size_body, bold = TRUE)),
+                    fp_p = pp(before = 6, after = 2)),
     figure = {
       doc <- officer$body_add_gg(doc, value = b$plot, width = s$fig_width, height = s$fig_height,
                                  res = 200, style = "centered")
+      add_caption(doc, b, before = 2)
+    },
+    # a picture file (Forestry chart, Points2Pano photo, plot map) and its caption
+    image = {
+      img <- read_image(b$path)
+      if (is.null(img)) {
+        doc <- add_par(doc, officer$ftext("Image not available", txt(s$size_body, s$dim)),
+                       fp_p = officer$fp_par(text.align = "center", padding.top = 40,
+                                             padding.bottom = 40, shading.color = s$stripe))
+      } else {
+        size <- image_size(img)
+        doc <- add_par(doc, officer$external_img(b$path, width = size$w, height = size$h),
+                       fp_p = pp(after = 0, align = "center"))
+      }
       add_caption(doc, b, before = 2)
     },
     table = {
@@ -123,6 +181,20 @@ add_block <- function(doc, b) {
     doc
   )
 }
+
+# Page size of a picture: full figure width, shrunk so it is no taller than
+# MAX_IMAGE_H inches.
+image_size <- function(img) {
+  w <- REPORT_STYLE$fig_width
+  h <- w * image_ratio(img)
+  if (h > MAX_IMAGE_H) {
+    w <- w * MAX_IMAGE_H / h
+    h <- MAX_IMAGE_H
+  }
+  list(w = w, h = h)
+}
+
+MAX_IMAGE_H <- 4.5
 
 #' Write report blocks to a .docx file.
 #' @param blocks Output of `report_blocks()`.
@@ -144,7 +216,9 @@ render_docx <- function(blocks, path, date = Sys.Date()) {
     fp_p = pp(after = 0, align = "right")
   ))
   doc <- officer$body_set_default_section(doc, officer$prop_section(
-    page_size = officer$page_size(width = s$page_width, height = s$page_height, orient = "portrait"),
+    page_size = officer$page_size(
+      width = s$page_width, height = s$page_height, orient = "portrait"
+    ),
     page_margins = officer$page_mar(
       top = s$margin, bottom = s$margin, left = s$margin, right = s$margin,
       header = 0.5, footer = 0.5, gutter = 0
@@ -152,5 +226,23 @@ render_docx <- function(blocks, path, date = Sys.Date()) {
     footer_default = footer
   ))
   print(doc, target = path)
+  update_fields_on_open(path)
   invisible(path)
+}
+
+# Set the document to refresh its fields when Word opens it, so the table of
+# contents fills in with page numbers. officer has no setting for this, so the
+# flag is written into word/settings.xml directly.
+update_fields_on_open <- function(path) {
+  dir <- tempfile("docx_")
+  unzip(path, exdir = dir)
+  settings <- file.path(dir, "word", "settings.xml")
+  xml <- paste(readLines(settings, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  if (!grepl("w:updateFields", xml, fixed = TRUE)) {
+    xml <- sub("(<w:settings[^>]*>)", "\\1<w:updateFields w:val=\"true\"/>", xml)
+    writeLines(xml, settings, useBytes = TRUE)
+  }
+  file.remove(path)
+  zip(path, files = list.files(dir, recursive = TRUE, all.files = TRUE, no.. = TRUE), root = dir)
+  unlink(dir, recursive = TRUE)
 }

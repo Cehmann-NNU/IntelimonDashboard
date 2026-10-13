@@ -5,6 +5,9 @@ box::use(
 
 box::use(
   app/logic/load_data_api[build_points2pano_url_sdsc],
+  app/logic/report[report_item],
+  app/logic/report_cover[p2p_tile_url],
+  app/view/report_store[add_to_report],
 )
 
 #' @export
@@ -24,7 +27,11 @@ ui <- function(id) {
                   class = "pano-info",
                   shiny$textOutput(ns("pano_label"), inline = TRUE)
                 ),
-                shiny$actionButton(ns("btn_pano_next"), "\u25B6", class = "btn-sm"))
+                shiny$actionButton(ns("btn_pano_next"), "\u25B6", class = "btn-sm"),
+                # adds a photo of the plot showing to the report
+                shiny$actionButton(ns("add_report"), "+ Report data",
+                                   class = "btn-sm imn-add-report imn-card-add",
+                                   title = "Add report data: a photo of the plot showing"))
     ),
     bslib$card_body(
       padding = 0,
@@ -79,6 +86,23 @@ server <- function(id, session) {
         "Site: %s | Plot: %s | %s | Scanner: %s",
         row$site, row$plot, date_fmt, row$scanner_id
       )
+    })
+
+    shiny$observeEvent(input$add_report, {
+      df <- pano_scans()
+      if (nrow(df) == 0) {
+        shiny$showNotification("No plot is showing to add.", type = "warning")
+        return()
+      }
+      row <- df[min(pano_idx(), nrow(df))]
+      title <- sprintf("Points2Pano view of %s plot %s, %s", row$site, row$plot, format(row$date))
+      photo <- list(site = row$site, plot = row$plot, date = row$date, scanner = row$scanner_id)
+      add_to_report(session, report_item(
+        "image", title, "Points2Pano",
+        settings = list(View = "Front of the scanner, 90\u00b0 field of view"),
+        photo = photo, group = "Points2Pano photos",
+        thumb = p2p_tile_url(row$site, row$plot, row$date, row$scanner_id)
+      ))
     })
 
     output$pano_frame <- shiny$renderUI({

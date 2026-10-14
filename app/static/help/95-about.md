@@ -97,10 +97,37 @@ _Version number and release date go here._
 
 ## References
 
+Works cited in these help pages and in the tool's calculations.
+
+Anderson, H. E. (1982). Aids to determining fuel models for estimating fire
+behavior. Gen. Tech. Rep. INT-122. Ogden, UT: U.S. Department of Agriculture,
+Forest Service, Intermountain Forest and Range Experiment Station. 22 p.
+<https://doi.org/10.2737/INT-GTR-122>
+
+Andrews, P. L. (2018). The Rothermel surface fire spread model and associated
+developments: a comprehensive explanation. Gen. Tech. Rep. RMRS-GTR-371. Fort
+Collins, CO: U.S. Department of Agriculture, Forest Service, Rocky Mountain
+Research Station. 121 p. <https://doi.org/10.2737/RMRS-GTR-371>
+
+Brown, J. K. (1974). Handbook for inventorying downed woody material. Gen.
+Tech. Rep. INT-16. Ogden, UT: U.S. Department of Agriculture, Forest Service,
+Intermountain Forest and Range Experiment Station. 24 p.
+
+Byram, G. M. (1959). Combustion of forest fuels. In K. P. Davis (Ed.),
+*Forest fire: control and use* (pp. 61-89). New York: McGraw-Hill.
+
+Curtis, R. O. (1982). A simple index of stand density for Douglas-fir.
+*Forest Science*, 28(1), 92-94.
+
 Murphy, M. C., Loudermilk, E. L., Pokswinski, S., et al. (2024). Terrestrial
 3D laser scanning for ecosystem and fire effects monitoring. Gen. Tech. Rep.
 SRS-277. Asheville, NC: U.S. Department of Agriculture, Forest Service,
 Southern Research Station. 19 p. <https://doi.org/10.2737/SRS-GTR-277>
+
+Pokswinski, S., Gallagher, M. R., Skowronski, N. S., et al. (2021). A
+simplified and affordable approach to forest monitoring using single
+terrestrial laser scans and transect sampling. *MethodsX*, 8, 101484.
+<https://doi.org/10.1016/j.mex.2021.101484>
 
 Pokswinski, S., Nelson, K., Maxwell, A., et al. (2026). IntELiMon: an
 automated framework for standardized terrestrial lidar processing in
@@ -108,10 +135,31 @@ multi-disciplinary ecosystem monitoring. *Forestry: An International Journal
 of Forest Research*, 99(5), cpag083.
 <https://doi.org/10.1093/forestry/cpag083>
 
-Pokswinski, S., Gallagher, M. R., Skowronski, N. S., et al. (2021). A
-simplified and affordable approach to forest monitoring using single
-terrestrial laser scans and transect sampling. *MethodsX*, 8, 101484.
-<https://doi.org/10.1016/j.mex.2021.101484>
+Reineke, L. H. (1933). Perfecting a stand-density index for even-aged
+forests. *Journal of Agricultural Research*, 46(7), 627-638.
+
+Rothermel, R. C. (1972). A mathematical model for predicting fire spread in
+wildland fuels. Res. Pap. INT-115. Ogden, UT: U.S. Department of Agriculture,
+Forest Service, Intermountain Forest and Range Experiment Station. 40 p.
+
+Rothermel, R. C. (1991). Predicting behavior and size of crown fires in the
+Northern Rocky Mountains. Res. Pap. INT-438. Ogden, UT: U.S. Department of
+Agriculture, Forest Service, Intermountain Research Station. 46 p.
+
+Scott, J. H., & Burgan, R. E. (2005). Standard fire behavior fuel models: a
+comprehensive set for use with Rothermel's surface fire spread model. Gen.
+Tech. Rep. RMRS-GTR-153. Fort Collins, CO: U.S. Department of Agriculture,
+Forest Service, Rocky Mountain Research Station. 72 p.
+<https://doi.org/10.2737/RMRS-GTR-153>
+
+Scott, J. H., & Reinhardt, E. D. (2001). Assessing crown fire potential by
+linking models of surface and crown fire behavior. Res. Pap. RMRS-RP-29. Fort
+Collins, CO: U.S. Department of Agriculture, Forest Service, Rocky Mountain
+Research Station. 59 p. <https://doi.org/10.2737/RMRS-RP-29>
+
+Van Wagner, C. E. (1977). Conditions for the start and spread of crown fire.
+*Canadian Journal of Forest Research*, 7(1), 23-34.
+<https://doi.org/10.1139/x77-004>
 
 ## Contact
 

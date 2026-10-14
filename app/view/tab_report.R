@@ -4,11 +4,14 @@
 #   * figures and tables added with the "+ Report data" buttons on cards, each
 #     with an automated description (app/logic/report_analysis.R) and an
 #     optional comment;
-#   * notes - a heading and/or text written here;
+#   * text blocks - a heading and/or text written here (a new report starts
+#     with optional Introduction, Data description, Results and Management
+#     relevance blocks);
 #   * the standard sections ("Scans, plots and treatments", "Sample size and
 #     design"), built from the loaded scans when the report is built.
-# Every entry can be moved up or down or removed, so notes and sections can
-# sit anywhere between the data. The sidebar collects the report details.
+# Every entry can be moved up or down or removed, so text blocks and sections
+# can sit anywhere between the data. Clicking an entry selects it; new text
+# blocks and sections go right after the selected entry. The sidebar collects the report details.
 #
 # The build runs in a separate R process (mirai) so a report with many figures
 # doesn't block the session; the writers are app/logic/report_docx.R and
@@ -61,7 +64,7 @@ ui <- function(id) {
           shiny$span("Report contents"),
           shiny$div(
             class = "d-flex align-items-center gap-2 flex-wrap",
-            shiny$actionButton(ns("add_note"), "+ Note", class = "btn-sm imn-report-btn"),
+            shiny$actionButton(ns("add_note"), "+ Text block", class = "btn-sm imn-report-btn"),
             shiny$uiOutput(ns("section_buttons"), inline = TRUE),
             shiny$actionLink(ns("reset"), "Start over", class = "imn-report-clear")
           )
@@ -72,7 +75,8 @@ ui <- function(id) {
             "Add figures and tables with the ", shiny$tags$b("+ Report data"), " button on ",
             "each graph card: it adds what the card is showing (the graph, or the summary ",
             "table in Statistics view) with its settings and an automated description. ",
-            "Use the arrows to place notes and sections anywhere in the report."
+            "Click an entry to select it: new text blocks and sections go right after it. ",
+            "Use the arrows to move entries anywhere in the report."
           ),
           shiny$uiOutput(ns("items"))
         )
@@ -105,10 +109,20 @@ action_buttons <- function(ns, id, n, n_items) {
 
 # One entry in the contents list: number, badge, title and move / remove
 # buttons on top; the detail line (settings, or a section's preview) and any
-# inputs below at full width.
-row_frame <- function(ns, item, n, n_items, badge, title, detail, ...) {
+# inputs below at full width. Clicking it selects it (highlighted at once in
+# the browser, and reported through `select_item`).
+row_frame <- function(ns, item, n, n_items, badge, title, detail, ..., selected = FALSE) {
   shiny$div(
-    class = paste0("imn-report-item is-", item$kind),
+    class = paste0("imn-report-item is-", item$kind, if (selected) " is-selected"),
+    onclick = sprintf(
+      paste(
+        "document.querySelectorAll('.imn-report-item.is-selected')",
+        ".forEach(function(e) { e.classList.remove('is-selected'); });",
+        "this.classList.add('is-selected');",
+        "Shiny.setInputValue('%s', '%s', {priority: 'event'})"
+      ),
+      ns("select_item"), item$id
+    ),
     shiny$div(
       class = "imn-report-head",
       shiny$span(class = "imn-report-num", n),
@@ -204,6 +218,8 @@ cover_scan <- function(scans) {
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
     items <- session$userData$report_items
+    # id of the selected entry: new text blocks and sections go after it
+    selected <- shiny$reactiveVal(NULL)
 
     # Values typed into the rows live in inputs; `typed()` reads one back,
     # falling back to the value stored on the item.
@@ -263,21 +279,31 @@ server <- function(id) {
       its <- items()
       if (length(its) == 0) {
         return(shiny$div(class = "imn-report-empty",
-                         "The report is empty. Add a note or a section."))
+                         "The report is empty. Add a text block or a section."))
       }
       n_items <- length(its)
       ns <- session$ns
+      sel <- shiny$isolate(selected())
       # typed values are fed back in so they survive reordering and removal
       shiny$tagList(lapply(seq_along(its), function(i) {
         it <- shiny$isolate(with_inputs(its[[i]]))
+        is_sel <- identical(it$id, sel)
         switch(it$kind,
-          section = row_frame(ns, it, i, n_items, "Section", it$title, section_detail(it$key, its)),
+          section = row_frame(ns, it, i, n_items, "Section", it$title, section_detail(it$key, its),
+                              selected = is_sel),
           note = row_frame(
-            ns, it, i, n_items, "Note", "Note", NULL,
+            ns, it, i, n_items, "Text", "Text block", NULL,
             note_heading_input(ns(paste0("head_", it$id)), it$heading),
-            shiny$textAreaInput(ns(paste0("text_", it$id)), label = NULL, value = it$text,
-                                rows = 3, width = "100%", resize = "vertical",
-                                placeholder = "Note text. Blank lines start new paragraphs.")
+            shiny$textAreaInput(
+              ns(paste0("text_", it$id)), label = NULL, value = it$text, rows = 3,
+              width = "100%", resize = "vertical",
+              placeholder = if (isTRUE(it$optional)) {
+                "Optional"
+              } else {
+                "Text. Blank lines start new paragraphs."
+              }
+            ),
+            selected = is_sel
           ),
           row_frame(
             ns, it, i, n_items, if (it$kind == "table") "Table" else "Figure", it$title,
@@ -288,7 +314,8 @@ server <- function(id) {
               ns(paste0("comment_", it$id)), label = NULL, value = it$comment, rows = 2,
               width = "100%", resize = "vertical",
               placeholder = "Comment printed below this item in the report (optional)"
-            )
+            ),
+            selected = is_sel
           )
         )
       }))
@@ -321,17 +348,22 @@ server <- function(id) {
         )
       })
     })
-    shiny$observeEvent(input$add_note, update_items(function(its) c(its, list(report$note_item()))))
-    shiny$observeEvent(input$add_section, {
-      update_items(function(its) c(its, list(report$section_item(input$add_section))))
-    })
+    shiny$observeEvent(input$select_item, selected(input$select_item))
+    # a new entry goes after the selected one (at the end with none) and is
+    # selected in turn, so several added in a row keep their order
+    add_item <- function(new) {
+      update_items(function(its) report$insert_after(its, new, selected()))
+      selected(new$id)
+    }
+    shiny$observeEvent(input$add_note, add_item(report$note_item()))
+    shiny$observeEvent(input$add_section, add_item(report$section_item(input$add_section)))
 
     shiny$observeEvent(input$reset, {
       shiny$showModal(shiny$modalDialog(
         title = "Start the report over?",
         paste(
-          "This removes every figure, table and note from the report and restores the",
-          "standard sections. The cards are not affected."
+          "This removes every figure, table and text block from the report and restores the",
+          "standard sections and text blocks. The cards are not affected."
         ),
         footer = shiny$tagList(
           shiny$modalButton("Cancel"),
@@ -341,6 +373,7 @@ server <- function(id) {
       ))
     })
     shiny$observeEvent(input$reset_confirm, {
+      selected(NULL)
       items(report$default_report_items())
       shiny$removeModal()
     })

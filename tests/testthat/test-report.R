@@ -36,14 +36,34 @@ describe("report items", {
     expect_false(fig()$id == fig()$id)
   })
 
-  it("starts a report with the standard sections and a Results heading", {
+  it("starts a report with optional text blocks around the standard sections", {
     items <- report$default_report_items()
     expect_equal(vapply(items, `[[`, character(1), "kind"),
-                 c("section", "section", "section", "note"))
-    expect_equal(vapply(items[1:3], `[[`, character(1), "key"), c("context", "map", "design"))
-    expect_equal(items[[4]]$heading, "Results")
+                 c("note", "note", "section", "section", "section", "note", "note"))
+    expect_equal(vapply(items[3:5], `[[`, character(1), "key"), c("context", "map", "design"))
+    expect_equal(vapply(items[c(1, 2, 6, 7)], `[[`, character(1), "heading"),
+                 c("Introduction", "Data description", "Results", "Management relevance"))
+    expect_true(all(vapply(items[c(1, 2, 6, 7)], `[[`, logical(1), "optional")))
     expect_equal(report$missing_sections(items), character())
-    expect_equal(report$missing_sections(items[4]), c("context", "map", "design"))
+    expect_equal(report$missing_sections(items[6]), c("context", "map", "design"))
+  })
+})
+
+describe("insert_after and add_data_item", {
+  it("inserts after the given id, or at the end", {
+    items <- list(fig("A"), fig("B"))
+    expect_equal(titles(report$insert_after(items, fig("C"), items[[1]]$id)), c("A", "C", "B"))
+    expect_equal(titles(report$insert_after(items, fig("C"))), c("A", "B", "C"))
+    expect_equal(titles(report$insert_after(items, fig("C"), "gone")), c("A", "B", "C"))
+  })
+
+  it("puts card data after Results, then after the last figure or table", {
+    items <- report$default_report_items()
+    items <- report$add_data_item(items, fig("A"))
+    items <- report$add_data_item(items, fig("B"))
+    expect_equal(tail(titles(items), 4), c("Text block", "A", "B", "Text block"))
+    expect_equal(items[[length(items)]]$heading, "Management relevance")
+    expect_equal(titles(report$add_data_item(list(), fig("A"))), "A")
   })
 })
 
@@ -59,10 +79,10 @@ describe("move_item and remove_item", {
   items <- list(fig("A"), report$note_item("B"), fig("C"))
 
   it("swaps neighbours of any kind and ignores moves past either end", {
-    expect_equal(titles(report$move_item(items, items[[2]]$id, "up")), c("Note", "A", "C"))
-    expect_equal(titles(report$move_item(items, items[[2]]$id, "down")), c("A", "C", "Note"))
-    expect_equal(titles(report$move_item(items, items[[1]]$id, "up")), c("A", "Note", "C"))
-    expect_equal(titles(report$move_item(items, items[[3]]$id, "down")), c("A", "Note", "C"))
+    expect_equal(titles(report$move_item(items, items[[2]]$id, "up")), c("Text block", "A", "C"))
+    expect_equal(titles(report$move_item(items, items[[2]]$id, "down")), c("A", "C", "Text block"))
+    expect_equal(titles(report$move_item(items, items[[1]]$id, "up")), c("A", "Text block", "C"))
+    expect_equal(titles(report$move_item(items, items[[3]]$id, "down")), c("A", "Text block", "C"))
   })
 
   it("removes by id", {
@@ -280,5 +300,19 @@ describe("report_filename", {
       report$report_filename("", "docx", as.Date("2026-10-13")),
       "IntELiMon_monitoring_report_20261013.docx"
     )
+  })
+})
+
+describe("optional text blocks", {
+  it("are left out while blank, unless figures or tables follow", {
+    items <- list(
+      report$note_item("Introduction", optional = TRUE),
+      report$note_item("Results", optional = TRUE), fig(),
+      report$note_item("Management relevance", "Thin before burning.", optional = TRUE),
+      report$note_item("Plain heading")
+    )
+    expect_equal(headings(blocks_of(items, list())), c(
+      "Results", "Midstory volume", "Management relevance", "Plain heading"
+    ))
   })
 })

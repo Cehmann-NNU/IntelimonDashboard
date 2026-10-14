@@ -158,10 +158,13 @@ report_item <- function(kind, title, source, settings = list(), plot = NULL,
   )
 }
 
-#' A free note: optional heading and text, placed anywhere in the report.
+#' A text block: optional heading and text, placed anywhere in the report.
+#' @param optional TRUE for the blocks a new report starts with: left out of the
+#'   report while their text is blank, unless figures or tables follow them.
 #' @export
-note_item <- function(heading = "", text = "") {
-  list(id = next_id(), kind = "note", title = "Note", heading = heading, text = text)
+note_item <- function(heading = "", text = "", optional = FALSE) {
+  list(id = next_id(), kind = "note", title = "Text block", heading = heading, text = text,
+       optional = optional)
 }
 
 #' One of the standard SECTIONS, by key.
@@ -171,12 +174,44 @@ section_item <- function(key) {
   list(id = next_id(), kind = "section", key = key, title = SECTIONS[[key]])
 }
 
-#' Contents of a new report: the standard sections, then a "Results" heading
-#' that the added figures and tables follow.
+#' Contents of a new report: optional Introduction and Data description text
+#' blocks, the standard sections, a "Results" block that the added figures and
+#' tables follow, and a closing Management relevance block.
 #' @export
 default_report_items <- function() {
-  list(section_item("context"), section_item("map"), section_item("design"),
-       note_item("Results"))
+  list(
+    note_item("Introduction", optional = TRUE), note_item("Data description", optional = TRUE),
+    section_item("context"), section_item("map"), section_item("design"),
+    note_item("Results", optional = TRUE), note_item("Management relevance", optional = TRUE)
+  )
+}
+
+#' Insert `item` right after the item with id `after`; at the end when `after`
+#' is NULL or not in the list.
+#' @export
+insert_after <- function(items, item, after = NULL) {
+  i <- if (is.null(after)) NA else match(after, item_ids(items))
+  if (is.na(i)) i <- length(items)
+  append(items, list(item), after = i)
+}
+
+#' Where a figure or table from a card goes: after the last figure, table or
+#' image, or after the "Results" block when there are none yet, so the data
+#' stay ahead of closing blocks such as Management relevance. At the end
+#' otherwise.
+#' @export
+add_data_item <- function(items, item) {
+  kinds <- vapply(items, `[[`, character(1), "kind")
+  data_at <- which(kinds %in% c("figure", "table", "image"))
+  results_at <- which(vapply(items, function(it) {
+    identical(it$kind, "note") && identical(it$heading, "Results")
+  }, logical(1)))
+  after <- if (length(data_at) > 0) {
+    items[[max(data_at)]]$id
+  } else if (length(results_at) > 0) {
+    items[[results_at[1]]]$id
+  }
+  insert_after(items, item, after)
 }
 
 #' Settings as one line: "Plot type: Box and Whisker; Data type: Percent change".
@@ -265,8 +300,14 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
     for (p in paragraphs(meta$summary)) add(blk("paragraph", text = p))
   }
 
-  for (it in items) {
+  for (k in seq_along(items)) {
+    it <- items[[k]]
     if (!it$kind %in% c("figure", "table", "image")) current_group <- NULL
+    # a blank optional block is dropped, unless it heads figures or tables
+    if (identical(it$kind, "note") && isTRUE(it$optional) && !nonblank(it$text)) {
+      nxt <- if (k < length(items)) items[[k + 1]]$kind else ""
+      if (!nxt %in% c("figure", "table", "image")) next
+    }
     switch(it$kind,
       section = {
         if (it$key == "map") {

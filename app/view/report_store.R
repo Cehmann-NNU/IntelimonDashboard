@@ -13,13 +13,15 @@ box::use(
 )
 
 box::use(
+  app/logic/report[add_data_item],
   app/logic/report_cover[image_ratio, read_image],
 )
 
-#' Append an item to the session's report and confirm it with a notification.
+#' Add an item to the session's report (after the figures and tables already
+#' there, see `add_data_item()`) and confirm it with a notification.
 #' @export
 add_to_report <- function(session, item) {
-  items <- c(isolate(session$userData$report_items()), list(item))
+  items <- add_data_item(isolate(session$userData$report_items()), item)
   session$userData$report_items(items)
   kind <- switch(item$kind, figure = "Figure", image = "Figure", "Table")
   showNotification(

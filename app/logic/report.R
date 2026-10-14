@@ -61,20 +61,138 @@ ABOUT_TEXT <- paste(
   "steps, and treatment dates separate pre- and post-treatment scans."
 )
 
-REFERENCES <- c(
-  paste(
+# Every work the report can cite, keyed. A report always lists BASE_REFERENCES;
+# the others are listed when a figure or table in it uses a METHOD citing them.
+# Entries are listed alphabetically by their text.
+REFERENCE_TEXT <- list(
+  anderson1982 = paste(
+    "Anderson, H. E. (1982). Aids to determining fuel models for estimating fire behavior.",
+    "Gen. Tech. Rep. INT-122. Ogden, UT: U.S. Department of Agriculture, Forest Service,",
+    "Intermountain Forest and Range Experiment Station. 22 p.",
+    "https://doi.org/10.2737/INT-GTR-122"
+  ),
+  andrews2018 = paste(
+    "Andrews, P. L. (2018). The Rothermel surface fire spread model and associated",
+    "developments: a comprehensive explanation. Gen. Tech. Rep. RMRS-GTR-371. Fort Collins,",
+    "CO: U.S. Department of Agriculture, Forest Service, Rocky Mountain Research Station.",
+    "121 p. https://doi.org/10.2737/RMRS-GTR-371"
+  ),
+  brown1974 = paste(
+    "Brown, J. K. (1974). Handbook for inventorying downed woody material. Gen. Tech. Rep.",
+    "INT-16. Ogden, UT: U.S. Department of Agriculture, Forest Service, Intermountain Forest",
+    "and Range Experiment Station. 24 p."
+  ),
+  byram1959 = paste(
+    "Byram, G. M. (1959). Combustion of forest fuels. In K. P. Davis (Ed.), Forest fire:",
+    "control and use (pp. 61-89). New York: McGraw-Hill."
+  ),
+  curtis1982 = paste(
+    "Curtis, R. O. (1982). A simple index of stand density for Douglas-fir. Forest Science,",
+    "28(1), 92-94."
+  ),
+  murphy2024 = paste(
     "Murphy, M. C., Loudermilk, E. L., Pokswinski, S., et al. (2024). Terrestrial 3D",
     "laser scanning for ecosystem and fire effects monitoring. Gen. Tech. Rep. SRS-277.",
     "Asheville, NC: U.S. Department of Agriculture, Forest Service, Southern Research",
     "Station. https://doi.org/10.2737/SRS-GTR-277"
   ),
-  paste(
+  pokswinski2026 = paste(
     "Pokswinski, S., Nelson, K., Maxwell, A., et al. (2026). IntELiMon: an automated",
     "framework for standardized terrestrial lidar processing in multi-disciplinary",
     "ecosystem monitoring. Forestry: An International Journal of Forest Research, 99(5),",
     "cpag083. https://doi.org/10.1093/forestry/cpag083"
+  ),
+  reineke1933 = paste(
+    "Reineke, L. H. (1933). Perfecting a stand-density index for even-aged forests.",
+    "Journal of Agricultural Research, 46(7), 627-638."
+  ),
+  rothermel1972 = paste(
+    "Rothermel, R. C. (1972). A mathematical model for predicting fire spread in wildland",
+    "fuels. Res. Pap. INT-115. Ogden, UT: U.S. Department of Agriculture, Forest Service,",
+    "Intermountain Forest and Range Experiment Station. 40 p."
+  ),
+  rothermel1991 = paste(
+    "Rothermel, R. C. (1991). Predicting behavior and size of crown fires in the Northern",
+    "Rocky Mountains. Res. Pap. INT-438. Ogden, UT: U.S. Department of Agriculture, Forest",
+    "Service, Intermountain Research Station. 46 p."
+  ),
+  scott_burgan2005 = paste(
+    "Scott, J. H., & Burgan, R. E. (2005). Standard fire behavior fuel models: a",
+    "comprehensive set for use with Rothermel's surface fire spread model. Gen. Tech. Rep.",
+    "RMRS-GTR-153. Fort Collins, CO: U.S. Department of Agriculture, Forest Service, Rocky",
+    "Mountain Research Station. 72 p. https://doi.org/10.2737/RMRS-GTR-153"
+  ),
+  scott_reinhardt2001 = paste(
+    "Scott, J. H., & Reinhardt, E. D. (2001). Assessing crown fire potential by linking",
+    "models of surface and crown fire behavior. Res. Pap. RMRS-RP-29. Fort Collins, CO:",
+    "U.S. Department of Agriculture, Forest Service, Rocky Mountain Research Station. 59 p.",
+    "https://doi.org/10.2737/RMRS-RP-29"
+  ),
+  vanwagner1977 = paste(
+    "Van Wagner, C. E. (1977). Conditions for the start and spread of crown fire. Canadian",
+    "Journal of Forest Research, 7(1), 23-34. https://doi.org/10.1139/x77-004"
   )
 )
+
+BASE_REFERENCES <- c("murphy2024", "pokswinski2026")
+
+#' Methods behind report items, keyed. A report holding an item that uses one
+#' (the `methods` of report_item()) explains it in "About these data", in this
+#' order, and lists its references.
+#' @export
+METHODS <- list(
+  fire_model = list(
+    text = paste(
+      "Fire behavior estimates (rothRmel) use the Rothermel (1972) surface fire spread",
+      "model, implemented as described by Andrews (2018), with fireline intensity and flame",
+      "length from Byram (1959). Crown fire initiation follows Van Wagner (1977), crown fire",
+      "spread follows Rothermel (1991) using standard fuel model 10 (Anderson, 1982), and",
+      "torching and crowning indices follow Scott and Reinhardt (2001)."
+    ),
+    refs = c("rothermel1972", "andrews2018", "byram1959", "vanwagner1977", "rothermel1991",
+             "anderson1982", "scott_reinhardt2001")
+  ),
+  brown = list(
+    text = paste(
+      "Downed woody fuel loads (1-, 10- and 100-hour) are calculated from time-lag",
+      "intercept counts, modeled from each scan per 40 m of transect, with the planar",
+      "intersect equations of Brown (1974)."
+    ),
+    refs = "brown1974"
+  ),
+  fbfm13 = list(
+    text = paste(
+      "Live herbaceous and woody loads, and dead loads without a usable count, come from",
+      "the 13 fire behavior fuel models of Anderson (1982), scaled to the fuel bed depth."
+    ),
+    refs = "anderson1982"
+  ),
+  fbfm40 = list(
+    text = paste(
+      "Live herbaceous and woody loads, and dead loads without a usable count, come from",
+      "the 40 standard fire behavior fuel models of Scott and Burgan (2005), scaled to the",
+      "fuel bed depth."
+    ),
+    refs = "scott_burgan2005"
+  ),
+  stand_density = list(
+    text = paste(
+      "Stand density index follows Reineke (1933) and relative density follows",
+      "Curtis (1982)."
+    ),
+    refs = c("reineke1933", "curtis1982")
+  )
+)
+
+#' Method of each fire behavior fuel model set, by its Fuels exports key.
+#' @export
+FUEL_MODEL_METHODS <- c(FBFM13 = "fbfm13", FBFM40 = "fbfm40")
+
+# Reference texts for these keys plus the base ones, alphabetically.
+reference_texts <- function(keys = character()) {
+  keys <- intersect(unique(c(BASE_REFERENCES, keys)), names(REFERENCE_TEXT))
+  sort(unlist(REFERENCE_TEXT[keys], use.names = FALSE), method = "radix")
+}
 
 #' Disclaimer printed on the page after the title page.
 #' @export
@@ -144,16 +262,20 @@ NOTE_HEADINGS <- c(
 #' @param subheading Subheading for this item under its group, e.g. "Statistics"
 #'   or "Box and Whisker plot"; NULL for none.
 #' @param thumb Preview for the Report builder: an image URL or data URI.
+#' @param methods Keys of METHODS behind the item's values; a report holding it
+#'   explains them in "About these data" and lists their references.
 #' @return A list with a session-unique `id`.
 #' @export
 report_item <- function(kind, title, source, settings = list(), plot = NULL,
                         table = NULL, note = NULL, analysis = NULL, group = title,
-                        subheading = NULL, image = NULL, photo = NULL, thumb = NULL) {
+                        subheading = NULL, image = NULL, photo = NULL, thumb = NULL,
+                        methods = character()) {
   stopifnot(kind %in% c("figure", "table", "image"))
   list(
     id = next_id(), kind = kind, title = title, source = source, settings = settings,
     plot = plot, table = table, note = note, analysis = analysis, group = group,
     subheading = subheading, image = image, photo = photo, thumb = thumb,
+    methods = methods,
     include_analysis = TRUE, comment = ""
   )
 }
@@ -274,6 +396,8 @@ paragraphs <- function(text) {
 #'   caption; `image` is a local file (see app/logic/report_cover.R) or NULL.
 #' @export
 report_blocks <- function(items, meta, context = NULL, cover = NULL) {
+  # methods behind the figures and tables, explained in About these data
+  methods <- unique(unlist(lapply(items, `[[`, "methods")))
   out <- list()
   add <- function(b) out[[length(out) + 1]] <<- b
   n_fig <- 0L
@@ -408,24 +532,40 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
   if (any(vapply(items, function(it) identical(it$source, "rothRmel"), logical(1)))) {
     add(blk("warning", text = ROTHRMEL_CAVEAT))
   }
-  # About these data closes the report as well as opening it
-  for (b in about_blocks(toc = TRUE)) add(b)
+  # About these data closes the report as well as opening it, followed by
+  # the one list of references
+  for (b in about_blocks(toc = TRUE, methods = methods)) add(b)
+  for (b in reference_blocks(methods)) add(b)
 
   # front matter, then the table of contents listing the body's headings
   toc <- Filter(function(b) b$type == "heading", out)
   toc <- lapply(toc, function(b) list(text = b$text, level = b$level))
-  c(front_blocks(meta, cover),
+  c(front_blocks(meta, cover, methods),
     list(blk("toc", entries = toc), blk("page_break")), out)
 }
 
-# "About these data" and the references. `toc = FALSE` keeps the copy in the
-# front matter out of the table of contents.
-about_blocks <- function(toc) {
-  c(list(
-    blk("heading", level = 1, text = "About these data", toc = toc),
-    blk("paragraph", text = ABOUT_TEXT),
-    blk("heading", level = 2, text = "References", toc = toc)
-  ), lapply(REFERENCES, function(r) blk("paragraph", text = r, size = "small")))
+# "About these data": the standard text and a paragraph for each of
+# `methods` (keys of METHODS). `toc = FALSE` keeps the copy in the front
+# matter out of the table of contents.
+about_blocks <- function(toc, methods = character()) {
+  methods <- intersect(names(METHODS), methods)
+  c(
+    list(
+      blk("heading", level = 1, text = "About these data", toc = toc),
+      blk("paragraph", text = ABOUT_TEXT)
+    ),
+    lapply(unname(METHODS[methods]), function(m) blk("paragraph", text = m$text))
+  )
+}
+
+# The References section ending the report: the base references plus those
+# of `methods`, alphabetically.
+reference_blocks <- function(methods = character()) {
+  refs <- unlist(lapply(METHODS[intersect(names(METHODS), methods)], `[[`, "refs"))
+  c(
+    list(blk("heading", level = 1, text = "References")),
+    lapply(reference_texts(refs), function(r) blk("paragraph", text = r, size = "small"))
+  )
 }
 
 #' Red line under a figure or table whose data have sample size or design
@@ -473,7 +613,7 @@ footer_text <- function(date = Sys.Date()) {
 # with the cover photo caption, lines for notes, About these data, the
 # disclaimer and the statement of origin. Its headings stay out of the
 # table of contents.
-front_blocks <- function(meta, cover) {
+front_blocks <- function(meta, cover, methods = character()) {
   out <- list(
     blk("title_page",
       title = if (nonblank(meta$title)) meta$title else DEFAULT_TITLE,
@@ -492,7 +632,7 @@ front_blocks <- function(meta, cover) {
     }),
     blk("ruled_lines", n = 5)
   )
-  c(out, about_blocks(toc = FALSE), list(
+  c(out, about_blocks(toc = FALSE, methods = methods), list(
     blk("label", text = "Disclaimer:"),
     blk("paragraph", text = DISCLAIMER),
     blk("paragraph", text = ORIGIN_TEXT, face = "italic"),

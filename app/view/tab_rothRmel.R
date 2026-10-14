@@ -247,6 +247,17 @@ server <- function(id) {
       )
     })
 
+    # Methods explained in the report: the fire model, plus Brown's loads from
+    # the scans' time-lag counts, or whatever the submitted Fuels exports bed used
+    fire_methods <- shiny$reactive({
+      surface <- if (identical(input$fuel_src, "tool")) {
+        session$userData$fuel_tool_values()$methods
+      } else {
+        "brown"
+      }
+      unique(c("fire_model", surface))
+    })
+
     # One card renderer bound to a metric-dropdown input id. `light` switches
     # the palette for the SVG/PNG downloads (white page instead of glass card).
     # make input reactive so that it will update when passed to other module.
@@ -264,7 +275,8 @@ server <- function(id) {
       plot_type = selected_plot_type,
       data_type = selected_data_type,
       report_source = "rothRmel",
-      report_settings = fire_settings
+      report_settings = fire_settings,
+      report_methods = fire_methods
     )
 
     card_metrics$server("card2",
@@ -276,7 +288,8 @@ server <- function(id) {
       plot_type = selected_plot_type,
       data_type = selected_data_type,
       report_source = "rothRmel",
-      report_settings = fire_settings
+      report_settings = fire_settings,
+      report_methods = fire_methods
     )
 
     card_metrics$server("card3",
@@ -288,7 +301,8 @@ server <- function(id) {
       plot_type = selected_plot_type,
       data_type = selected_data_type,
       report_source = "rothRmel",
-      report_settings = fire_settings
+      report_settings = fire_settings,
+      report_methods = fire_methods
     )
 
     # -- Points2Pano viewer --------------------------------------------------

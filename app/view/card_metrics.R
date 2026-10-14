@@ -40,9 +40,12 @@ ui <- function(id) {
 #' @param report_source Tab name recorded with items this card adds to the report.
 #' @param report_settings reactive() -> named list of extra settings recorded
 #'   with report items (e.g. the rothRmel fire behavior inputs).
+#' @param report_methods reactive() -> keys of METHODS (app/logic/report.R)
+#'   behind the card's values, explained in any report holding its items.
 #' @export
 server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on, plot_type,
-                   data_type, report_source = "", report_settings = function() list()) {
+                   data_type, report_source = "", report_settings = function() list(),
+                   report_methods = function() character()) {
   shiny$moduleServer(id, function(input, output, session) {
     # -- Metric time-series cards -------------------------------------------
     # Each card is a builder taking `light`: the screen render uses the Aurora
@@ -117,7 +120,7 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
           report_item("table", attr(tbl, "imn_label"), report_source,
             settings = c(list(`Data type` = data_label), report_settings()),
             table = tbl, note = plt$STATS_NOTE, analysis = analysis,
-            subheading = "Statistics"
+            subheading = "Statistics", methods = report_methods()
           )
         } else {
           p <- plt_fn(light = TRUE)
@@ -135,7 +138,8 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
               report_settings()
             ),
             plot = p, analysis = analysis,
-            subheading = PLOT_SUBHEADINGS[[opts$plot_type]], thumb = plot_thumbnail(p)
+            subheading = PLOT_SUBHEADINGS[[opts$plot_type]], thumb = plot_thumbnail(p),
+            methods = report_methods()
           )
         },
         error = function(e) NULL

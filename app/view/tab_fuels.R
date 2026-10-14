@@ -41,7 +41,7 @@ box::use(
   app/logic/lcp[build_flammap_lcp, bundle_fuel_rasters, describe_iftdss_tif, mean_plot_metrics],
   app/logic/lcp_canopy[describe_canopy_correction, describe_crown_check],
   app/logic/manage_data[pivot_on_model],
-  app/logic/report[report_item],
+  app/logic/report[FUEL_MODEL_METHODS, report_item],
   app/view/card_mapLeaflet,
   app/view/map_controls[update_dwnld_scan_points, update_point_labels],
   app/view/report_store[add_to_report],
@@ -733,14 +733,22 @@ server <- function(id) {
       }
       list(summary = text, cautions = character(), implication = NULL)
     }
-    add_fuel_table <- function(card, tbl, edited = character(), note = NULL) {
+    # Methods behind surface loadings, explained in the report: Brown's loads
+    # from the time-lag counts, and the fuel model set for model x depth loads
+    loading_methods <- function() {
+      sys <- if (identical(input$fbfm_system, "FBFM13")) "FBFM13" else "FBFM40"
+      c("brown", FUEL_MODEL_METHODS[[sys]])
+    }
+    add_fuel_table <- function(card, tbl, edited = character(), note = NULL,
+                               methods = character()) {
       if (nrow(fuel_scans()) == 0) {
         showNotification("Load scans before adding fuels to the report.", type = "warning")
         return()
       }
       add_to_report(session, report_item(
         "table", card, "Fuels exports", settings = fuel_context(), table = tbl, note = note,
-        analysis = fuel_description(card, edited), group = "Fuels"
+        analysis = fuel_description(card, edited), group = "Fuels",
+        methods = methods
       ))
     }
     value_table <- function(rows, prefix, scale = function(col, v) v) {
@@ -783,7 +791,8 @@ server <- function(id) {
       )
       edited <- tbl$Class[tbl$Count != tbl$`Scan mean count` & nzchar(tbl$Count)]
       add_fuel_table("Time lag fuels", tbl, edited,
-                     note = "Counts are modeled per 40 m of transect; loads use Brown's equations.")
+                     note = "Counts are modeled per 40 m of transect; loads use Brown's equations.",
+                     methods = "brown")
     })
     observeEvent(input$rep_calc, {
       m <- mean_loading()
@@ -801,7 +810,8 @@ server <- function(id) {
         check.names = FALSE, stringsAsFactors = FALSE, row.names = NULL
       )
       add_fuel_table("Mean fuel loading", tbl,
-                     note = "Loads in tons/acre: means of each scan's own surface fuel loadings.")
+                     note = "Loads in tons/acre: means of each scan's own surface fuel loadings.",
+                     methods = loading_methods())
     })
 
     # ---- Submit fuel loadings to the rothRmel tab --------------------------
@@ -852,7 +862,9 @@ server <- function(id) {
           if (landfire) "LANDFIRE fuel models" else "Per-scan loadings",
           fmt_num(sum(mean_fuel_loading(selected)$load_tonsac), 2), point_in_time
         ),
-        non_burnable = FALSE
+        non_burnable = FALSE,
+        # explained in reports holding rothRmel items that use this bed
+        methods = loading_methods()
       )
 
       # canopy values from the canopy card travel with the bed

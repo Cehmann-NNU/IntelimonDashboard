@@ -1007,14 +1007,15 @@ server <- function(id) {
         image = path, group = "Forestry", thumb = file_thumbnail(path)
       ))
     }
-    add_forest_table <- function(tbl, title, analysis = NULL) {
+    add_forest_table <- function(tbl, title, analysis = NULL, methods = character()) {
       if (is.null(tbl) || nrow(tbl) == 0) {
         showNotification("Nothing to add yet: load tree inventories first.", type = "warning")
         return()
       }
       add_to_report(session, report_item(
         "table", title, "Forestry exports", settings = forestry_context(), table = tbl,
-        analysis = analysis, group = "Forestry"
+        analysis = analysis, group = "Forestry",
+        methods = methods
       ))
     }
 
@@ -1056,7 +1057,7 @@ server <- function(id) {
           add_forest_table(tbl, "Stand metrics", list(
             summary = paste(v$occlusion, v$prescription), cautions = character(),
             implication = NULL
-          ))
+          ), methods = "stand_density")
           add_forest_table(occ_df(), "Occlusion correction")
         },
         Species = add_forest_table(species_df(), "Species composition"),

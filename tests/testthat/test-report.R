@@ -248,7 +248,7 @@ describe("front matter", {
       "Summary", "Sample size and design", "All loaded scans", "Results", "Midstory volume",
       "About these data", "References"
     ))
-    expect_equal(vapply(toc, `[[`, numeric(1), "level"), c(1, 1, 2, 1, 2, 1, 2))
+    expect_equal(vapply(toc, `[[`, numeric(1), "level"), c(1, 1, 2, 1, 2, 1, 1))
   })
 
   it("puts a graph and its statistics under one heading with a subheading each", {
@@ -314,5 +314,76 @@ describe("optional text blocks", {
     expect_equal(headings(blocks_of(items, list())), c(
       "Results", "Midstory volume", "Management relevance", "Plain heading"
     ))
+  })
+})
+
+describe("methods and references", {
+  fire <- function() {
+    report$report_item("figure", "Flame length", "rothRmel", plot = "a ggplot",
+                       methods = c("fire_model", "brown"))
+  }
+  stand <- function() {
+    report$report_item("table", "Stand metrics", "Forestry exports",
+                       table = data.frame(a = 1), methods = "stand_density")
+  }
+  texts <- function(blocks) {
+    vapply(blocks, function(x) if (is.null(x$text)) "" else x$text, character(1))
+  }
+  # the text of each About these data section (up to the next heading or
+  # page break), front matter copy first
+  about_sections <- function(b) {
+    t <- texts(b)
+    lapply(which(t == "About these data"), function(i) {
+      stop_at <- which(vapply(b, function(x) x$type %in% c("heading", "label", "page_break"),
+                              logical(1)))
+      t[(i + 1):(min(stop_at[stop_at > i]) - 1)]
+    })
+  }
+  # the paragraphs after the References heading
+  references <- function(b) {
+    t <- texts(b)
+    at <- which(t == "References")
+    t[-seq_len(at)]
+  }
+
+  it("lists only the base text and references when no item uses a method", {
+    b <- report$report_blocks(list(fig()), list())
+    for (sec in about_sections(b)) expect_equal(length(sec), 1)
+    expect_equal(sub(" [(].*", "", references(b)),
+                 c("Murphy, M. C., Loudermilk, E. L., Pokswinski, S., et al.",
+                   "Pokswinski, S., Nelson, K., Maxwell, A., et al."))
+  })
+
+  it("explains each method used in both copies of About these data", {
+    secs <- about_sections(report$report_blocks(list(stand(), fire(), fire()), list()))
+    expect_equal(length(secs), 2)
+    for (t in secs) {
+      # one paragraph per method, in METHODS order
+      expect_equal(sum(t == report$METHODS$fire_model$text), 1)
+      expect_true(match(report$METHODS$fire_model$text, t) <
+                    match(report$METHODS$stand_density$text, t))
+      expect_true(report$METHODS$brown$text %in% t)
+      expect_false(report$METHODS$fbfm40$text %in% t)
+    }
+  })
+
+  it("compiles every reference once, in one section that ends the report", {
+    b <- report$report_blocks(list(stand(), fire(), fire()), list())
+    t <- texts(b)
+    expect_equal(sum(t == "References"), 1)
+    head <- b[[which(t == "References")]]
+    expect_equal(head$level, 1)
+    expect_null(head$toc)
+    refs <- references(b)
+    expect_equal(length(refs), 12)
+    expect_equal(refs, sort(refs, method = "radix"))
+    expect_true(any(startsWith(refs, "Reineke, L. H. (1933)")))
+    expect_false(any(startsWith(refs, "Scott, J. H., & Burgan")))
+    expect_equal(b[[length(b)]]$text, refs[length(refs)])
+  })
+
+  it("cites every reference a method names", {
+    keys <- unlist(lapply(report$METHODS, `[[`, "refs"))
+    expect_true(all(keys %in% names(attr(report, "namespace")$REFERENCE_TEXT)))
   })
 })

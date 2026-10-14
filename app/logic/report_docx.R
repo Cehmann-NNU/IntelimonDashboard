@@ -24,13 +24,45 @@ txt <- function(size, color = REPORT_STYLE$ink, bold = FALSE, italic = FALSE) {
   )
 }
 
-pp <- function(before = 0, after = 6, align = "left", rule = FALSE, indent = 0) {
+pp <- function(before = 0, after = 6, align = "left", rule = FALSE, indent = 0, tabs = NULL) {
   officer$fp_par(
     text.align = align, padding.top = before, padding.bottom = after, padding.left = indent,
     line_spacing = 1.15,
     border.bottom = if (rule) officer$fp_border(color = REPORT_STYLE$rule, width = 1) else
-      officer$fp_border(width = 0)
+      officer$fp_border(width = 0),
+    tabs = tabs
   )
+}
+
+#' Page number placeholder in the Word table of contents, highlighted so it
+#' is easy to find and type over.
+#' @export
+TOC_PAGE_PLACEHOLDER <- "#"
+
+# Table of contents: each heading, a dotted leader and a placeholder for its
+# page number. Word only fills in a table of contents field when it refreshes
+# fields on opening, which Protected View and other editors skip, so the
+# entries are written out and the page numbers are left to fill in. The
+# right tab's dot leader is set by dot_leaders() after the file is saved.
+add_toc <- function(doc, b) {
+  s <- REPORT_STYLE
+  doc <- add_par(doc, officer$ftext("Contents", txt(s$size_h1, s$accent, bold = TRUE)),
+                 fp_p = pp(after = 8))
+  tabs <- officer$fp_tabs(officer$fp_tab(s$page_width - 2 * s$margin, style = "right"))
+  for (e in b$entries) {
+    top <- e$level == 1
+    size <- if (top) s$size_body + 1 else s$size_body
+    page <- txt(size, bold = top)
+    page$shading.color <- "#fff3bf"
+    # no `style`: officer rewrites the paragraph properties for one, dropping the tab stop
+    doc <- officer$body_add_fpar(doc, officer$fpar(
+      officer$ftext(e$text, txt(size, bold = top)),
+      officer$run_tab(),
+      officer$ftext(TOC_PAGE_PLACEHOLDER, page),
+      fp_p = pp(before = if (top) 4 else 0, after = 2, indent = (e$level - 1) * 18, tabs = tabs)
+    ))
+  }
+  doc
 }
 
 add_par <- function(doc, ..., fp_p = pp(), style = "Normal") {
@@ -118,13 +150,7 @@ add_block <- function(doc, b) {
       }
       add_par(doc, officer$ftext(" ", txt(4)), fp_p = pp(after = 10))
     },
-    # Word builds the table itself from the heading styles; render_docx() sets
-    # the document to refresh it (and its page numbers) when opened
-    toc = {
-      doc <- add_par(doc, officer$ftext("Contents", txt(s$size_h1, s$accent, bold = TRUE)),
-                     fp_p = pp(after = 8))
-      officer$body_add_toc(doc, level = 2)
-    },
+    toc = add_toc(doc, b),
     heading = {
       size <- switch(b$level, s$size_h1, s$size_h2, s$size_h3)
       # front-matter headings use Normal so Word's table of contents skips them
@@ -226,22 +252,20 @@ render_docx <- function(blocks, path, date = Sys.Date()) {
     footer_default = footer
   ))
   print(doc, target = path)
-  update_fields_on_open(path)
+  dot_leaders(path)
   invisible(path)
 }
 
-# Set the document to refresh its fields when Word opens it, so the table of
-# contents fills in with page numbers. officer has no setting for this, so the
-# flag is written into word/settings.xml directly.
-update_fields_on_open <- function(path) {
+# Give right tab stops a dotted leader, for the table of contents (the only
+# paragraphs with one). officer always writes w:leader="none", so the leader
+# is changed in word/document.xml directly.
+dot_leaders <- function(path) {
   dir <- tempfile("docx_")
   unzip(path, exdir = dir)
-  settings <- file.path(dir, "word", "settings.xml")
-  xml <- paste(readLines(settings, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-  if (!grepl("w:updateFields", xml, fixed = TRUE)) {
-    xml <- sub("(<w:settings[^>]*>)", "\\1<w:updateFields w:val=\"true\"/>", xml)
-    writeLines(xml, settings, useBytes = TRUE)
-  }
+  document <- file.path(dir, "word", "document.xml")
+  xml <- paste(readLines(document, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  xml <- gsub('w:val="right" w:leader="none"', 'w:val="right" w:leader="dot"', xml, fixed = TRUE)
+  writeLines(xml, document, useBytes = TRUE)
   file.remove(path)
   zip(path, files = list.files(dir, recursive = TRUE, all.files = TRUE, no.. = TRUE), root = dir)
   unlink(dir, recursive = TRUE)

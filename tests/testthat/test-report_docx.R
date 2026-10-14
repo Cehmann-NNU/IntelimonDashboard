@@ -1,6 +1,6 @@
 box::use(
   officer[docx_summary, read_docx],
-  testthat[describe, expect_equal, expect_true, it],
+  testthat[describe, expect_equal, expect_false, expect_true, it],
   utils[unzip],
 )
 
@@ -25,13 +25,16 @@ describe("render_docx", {
     expect_equal(length(unique(s$doc_index[s$content_type == "table cell"])), 3)
   })
 
-  it("asks Word to refresh the table of contents when the file is opened", {
+  it("writes the contents out with dot leaders and page numbers to fill in", {
     path <- tempfile(fileext = ".docx")
     report_docx$render_docx(sample_report_blocks(), path)
     dir <- tempfile()
-    unzip(path, files = "word/settings.xml", exdir = dir)
-    settings <- readLines(file.path(dir, "word", "settings.xml"), warn = FALSE)
-    settings <- paste(settings, collapse = "")
-    expect_true(grepl("<w:updateFields w:val=\"true\"/>", settings, fixed = TRUE))
+    unzip(path, files = "word/document.xml", exdir = dir)
+    xml <- paste(readLines(file.path(dir, "word", "document.xml"), warn = FALSE), collapse = "")
+    expect_true(grepl("w:val=\"right\" w:leader=\"dot\"", xml, fixed = TRUE))
+    expect_false(grepl("TOC \\\\", xml, fixed = TRUE))
+    s <- docx_summary(read_docx(path))
+    entry <- paste0("Sample size and design", report_docx$TOC_PAGE_PLACEHOLDER)
+    expect_true(entry %in% s$text, info = paste(head(s$text, 40), collapse = " | "))
   })
 })

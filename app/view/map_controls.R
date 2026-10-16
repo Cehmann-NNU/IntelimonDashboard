@@ -205,11 +205,9 @@ update_dwnld_scan_points <- function(session,
 #' @export
 update_extent <- function(proxy_map, fit2pts, col_names = list(lat = "Latitude", lng = "Longitude")) {
 
-  fit_settled <- debounce(fit2pts, 300)
-
-  observeEvent(fit_settled(),
+  observeEvent(fit2pts(),
                {
-                 pts <- fit_settled()
+                 pts <- fit2pts()
                  if (nrow(pts) == 0) {
                    return()
                  }

@@ -196,8 +196,9 @@ get_csvs <- function(path) {
   #              expr    min      lq      mean  median     uq    max neval
   #        list.files 1120.7 1201.95 1333.8062 1271.85 1439.5 2455.9  1000
   #         fs$dir_ls  796.9  863.90  958.5321  926.25 1039.6 1533.3
-  data.frame(csv_path = as.character(fs$dir_ls(path, recurse = TRUE, glob = "*.csv")),
-    zip_path = NA_character_,
+  csvs <- as.character(fs$dir_ls(path, recurse = TRUE, glob = "*.csv"))
+  data.frame(csv_path = csvs,
+    zip_path = rep(NA_character_, length(csvs)),
     stringsAsFactors = FALSE
   )
 }

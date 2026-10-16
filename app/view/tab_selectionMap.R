@@ -99,7 +99,7 @@ server <- function(id) {
 
     # Take the filtered plots handed to the data.table, and apply any filters from that table to the mapped
     # plots
-    filtered_plots <- shiny$reactive({
+    filtered_plots_raw <- shiny$reactive({
       sidebar_filtered_dt <- sidebar_filtered_plots()
       tbl_filtered_index <- tbl_dt$input$dt_rows_all
 
@@ -112,6 +112,8 @@ server <- function(id) {
       sidebar_filtered_dt[tbl_filtered_index]
     })
 
+    # Wait for both DT and sidebar_filtered_plots to update before displaying
+    filtered_plots <- shiny$debounce(filtered_plots_raw, 250)
     # --------Create Map ------------------------
     map <- widget_mapLeaflet$server("map",
                                     fit2pts =  filtered_plots,

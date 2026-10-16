@@ -168,14 +168,16 @@ server <- function(id) {
                                         shinyFiles$parseDirPath(dir_metric_roots(),
                                                                 input$ui_btn_dir_metrics_read)})
 
-    nscans_loaded <- shiny$reactiveVal({0})
+    nscans_loaded <- shiny$reactiveVal({
+      0
+    })
     shiny$observeEvent(dir_metrics_read(), {
       shiny$req(dir_metrics_read())
       read_dir <- dir_metrics_read()
 
       shiny$showNotification("Making data available for selection on the Selection Map tab.",
-                             duration = 5,
-                             type = "message"
+        duration = 5,
+        type = "message"
       )
 
       init_desktop_user_data(session)
@@ -208,13 +210,13 @@ server <- function(id) {
       }
 
       bslib$value_box(
-          title = "Scan metrics loaded:",
-          value = nscans,
-          showcase = icon_,
-          theme = "text-white",
-          style = sprintf("background-color: %s !important;", bg_color),
-          shiny$p(txt)
-        )
+        title = "Scan metrics loaded:",
+        value = nscans,
+        showcase = icon_,
+        theme = "text-white",
+        style = sprintf("background-color: %s !important;", bg_color),
+        shiny$p(txt)
+      )
     })
   })
 }

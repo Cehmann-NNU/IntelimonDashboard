@@ -21,8 +21,8 @@ box::use(
   app/view/widget_mapLeaflet,
 )
 
-  today <- Sys.Date()
-  beresheet <- as.Date("2000-01-01")
+today <- Sys.Date()
+beresheet <- as.Date("2000-01-01")
 
 #' @export
 ui <- function(id) {
@@ -47,9 +47,9 @@ ui <- function(id) {
         card_header("Select Scans"),
         card_body(
           shiny$selectInput(inputId = ns("ui_select_agency"),
-                            label = "Agency selection",
-                            choices = NULL,
-                            multiple = TRUE
+            label = "Agency selection",
+            choices = NULL,
+            multiple = TRUE
           ),
           shiny$sliderInput(
             inputId = ns("ui_select_date_range"),
@@ -71,9 +71,6 @@ ui <- function(id) {
           selected = "Location Map",
           height = "100%",
           full_screen = TRUE,
-          #navbar_options = navbar_options(collapsible = TRUE),
-          #theme = bs_theme(),
-          #header = shiny$tags$head(shiny$includeCSS("app/static/styles.css")),
           nav_panel(title = "Location Map", widget_mapLeaflet$ui(ns("map"))),
           nav_panel(title = "Table", wDT$ui(ns("tbl_scan_filter")))
         )
@@ -282,8 +279,8 @@ server <- function(id) {
       if (any(load_from_disk)) {
         all_paths <- session$userData$data_paths()
         disk_paths <- all_paths[selected,
-                                on = .(site, plot, date, scanner_id),
-                                nomatch = 0
+          on = .(site, plot, date, scanner_id),
+          nomatch = 0
         ]
       } else {
         disk_paths <- data.table()
@@ -316,9 +313,9 @@ server <- function(id) {
       session$userData$metrics(
         rbindlist(
           list(
-                 session$userData$metrics(),
-                 api$get_metrics_for_scans(selected[!load_from_disk], progress = prog_obj),
-                 disk$read_metrics(disk_paths)
+            session$userData$metrics(),
+            api$get_metrics_for_scans(selected[!load_from_disk], progress = prog_obj),
+            disk$read_metrics(disk_paths)
           ),
           fill = TRUE
         )
@@ -326,11 +323,11 @@ server <- function(id) {
 
       session$userData$tree_inv <- rbindlist(
         list(
-             session$userData$tree_inv,
-             api$get_treeinv_for_scans(selected[!load_from_disk], progress = prog_obj),
-             disk$read_treeinv(disk_paths)
-          ),
-          fill = TRUE
+          session$userData$tree_inv,
+          api$get_treeinv_for_scans(selected[!load_from_disk], progress = prog_obj),
+          disk$read_treeinv(disk_paths)
+        ),
+        fill = TRUE
       )
 
       session$userData$extra_models(

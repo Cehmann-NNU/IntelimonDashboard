@@ -1,7 +1,7 @@
 box::use(
   archive,
   dt = data.table,
-  datasets[state.abb],
+  datasets[state.abb], # nolint: box_pkg_fun_exists_linter
   fs,
   utils[read.csv2],
 )
@@ -204,11 +204,12 @@ get_csvs <- function(path) {
 
 #' Get a data.table with the path to all csv or zip files in a parent directory and columns for scan id.
 #'
-#' Returns a data.table with 2 columns, csv_path which is the path to a csv file in the parent directory or
+#' Returns a data.table with 6 columns, csv_path which is the path to a csv file in the parent directory or
 #' the relative path to a csv file in an archive and zip_path, which is a path to a zip file containing the
 #' csv or NA. Columns with site, plot, date, scanner_id are appended to allow indexing of paths.
 #'
-#'@inheritParams get_csvs
+#' @inheritParams get_csvs
+#' @return
 #' @export
 get_dir_contents <- function(path) {
   contents <- dt$rbindlist(list(get_zip_contents(path, ext = "zip"), get_csvs(path)))
@@ -232,9 +233,9 @@ get_dir_contents <- function(path) {
 #' @export
 get_scan_parts <- function(scan_str, sep = "_") {
   str_list <- dt$tstrsplit(scan_str, sep,
-                           fixed = TRUE,
-                           keep = 1:4,
-                           names = c("site", "plot", "date", "scanner_id")
+    fixed = TRUE,
+    keep = 1:4,
+    names = c("site", "plot", "date", "scanner_id")
   )
 
   str_list$site <- as.character(str_list$site)
@@ -264,10 +265,10 @@ build_scan_dt <- function(all_paths) {
   scan_dt <- dt$setDT(get_scan_parts(scan_names))
 
   scan_dt[, ":="(
-                 scanner_name = NA_character_,
-                 Longitude = NA_real_,
-                 Latitude = NA_real_,
-                 Agency = as.character("MyPC")
+    scanner_name = NA_character_,
+    Longitude = NA_real_,
+    Latitude = NA_real_,
+    Agency = as.character("MyPC")
   )]
 
   scan_dt

@@ -8,7 +8,6 @@ box::use(
   app/view/map_controls[update_extent],
 )
 
-
 #' @export
 ui <- function(id) {
   ns <- NS(id)

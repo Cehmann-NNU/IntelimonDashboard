@@ -65,12 +65,12 @@ server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE)
         )
       ) |>
         (\(tbl) {
-          if ('Latitude' %in% columns) {
+          if ("Latitude" %in% columns) {
             DT$formatRound(tbl, columns = c("Latitude", "Longitude"), digits = 3)
           } else {
             tbl
           }
-    })()
+        })()
 
     })
 
@@ -79,8 +79,8 @@ server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE)
       session = session
     )
 
-    # ensure that updates use teh same column subset and rownames setting
-    shiny$observeEvent( data_reactive(), {
+    # ensure that updates use the same column subset and rownames setting
+    shiny$observeEvent(data_reactive(), {
       DT$replaceData(proxy, data_reactive()[, ..columns],
                      resetPaging = FALSE, rownames = FALSE, clearSelection = "none")
     }, ignoreInit = TRUE)

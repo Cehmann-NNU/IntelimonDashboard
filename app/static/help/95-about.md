@@ -109,6 +109,9 @@ developments: a comprehensive explanation. Gen. Tech. Rep. RMRS-GTR-371. Fort
 Collins, CO: U.S. Department of Agriculture, Forest Service, Rocky Mountain
 Research Station. 121 p. <https://doi.org/10.2737/RMRS-GTR-371>
 
+Bailey, R. L., & Dell, T. R. (1973). Quantifying diameter distributions with
+the Weibull function. *Forest Science*, 19(2), 97-104.
+
 Brown, J. K. (1974). Handbook for inventorying downed woody material. Gen.
 Tech. Rep. INT-16. Ogden, UT: U.S. Department of Agriculture, Forest Service,
 Intermountain Forest and Range Experiment Station. 24 p.
@@ -119,10 +122,17 @@ Byram, G. M. (1959). Combustion of forest fuels. In K. P. Davis (Ed.),
 Curtis, R. O. (1982). A simple index of stand density for Douglas-fir.
 *Forest Science*, 28(1), 92-94.
 
+Dixon, G. E. (comp.) (2002). Essential FVS: a user's guide to the Forest
+Vegetation Simulator. Internal Report. Fort Collins, CO: U.S. Department of
+Agriculture, Forest Service, Forest Management Service Center. 226 p.
+
 Murphy, M. C., Loudermilk, E. L., Pokswinski, S., et al. (2024). Terrestrial
 3D laser scanning for ecosystem and fire effects monitoring. Gen. Tech. Rep.
 SRS-277. Asheville, NC: U.S. Department of Agriculture, Forest Service,
 Southern Research Station. 19 p. <https://doi.org/10.2737/SRS-GTR-277>
+
+Neyman, J., & Scott, E. L. (1958). Statistical approach to problems of
+cosmology. *Journal of the Royal Statistical Society: Series B*, 20(1), 1-43.
 
 Pokswinski, S., Gallagher, M. R., Skowronski, N. S., et al. (2021). A
 simplified and affordable approach to forest monitoring using single
@@ -137,6 +147,11 @@ of Forest Research*, 99(5), cpag083.
 
 Reineke, L. H. (1933). Perfecting a stand-density index for even-aged
 forests. *Journal of Agricultural Research*, 46(7), 627-638.
+
+Reinhardt, E. D., & Crookston, N. L. (Tech. Eds.) (2003). The Fire and Fuels
+Extension to the Forest Vegetation Simulator. Gen. Tech. Rep. RMRS-GTR-116.
+Ogden, UT: U.S. Department of Agriculture, Forest Service, Rocky Mountain
+Research Station. 209 p.
 
 Rothermel, R. C. (1972). A mathematical model for predicting fire spread in
 wildland fuels. Res. Pap. INT-115. Ogden, UT: U.S. Department of Agriculture,

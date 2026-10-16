@@ -56,6 +56,9 @@ h1,h2,h3,h4,h5,h6,label,p,.form-label,.control-label,.shiny-input-container{ col
 .btn:hover{ background:rgba(255,255,255,.24) !important; }
 .form-check-input{ background-color:var(--imn-panel-2); border-color:var(--imn-border); }
 .form-check-input:checked{ background-color:var(--imn-accent); border-color:var(--imn-accent); }
+/* messages an output shows instead of its content ("No data loaded - ..."):
+   Shiny draws them half-transparent black, unreadable on the dark cards */
+.shiny-output-error-validation{ color:var(--imn-dim); padding:.5rem .25rem; }
 .irs--shiny .irs-bar,.irs--shiny .irs-handle>i:first-child{ background:var(--imn-accent); }
 .irs--shiny .irs-min,.irs--shiny .irs-max,.irs--shiny .irs-single{ color:#0b1120; }
 table,.table,td,th{ color:var(--imn-text); }
@@ -998,6 +1001,29 @@ main > .container-fluid,
 .help-search{ margin-bottom:.75rem; }
 .help-search-empty{ margin-top:.5rem; font-size:.85rem; color:var(--imn-dim); }
 .help-page mark.help-hit{ background:var(--imn-accent2); color:#1b1b1b; padding:0 .1em; border-radius:3px; }
+/* Annotated screenshot: numbered markers placed in % of the picture show a
+   callout on mouse-over or keyboard focus (see app/static/help/README.md). */
+.help-page .help-shot{ position:relative; display:inline-block; max-width:100%; margin:.5rem 0 1rem; }
+.help-page .help-shot img{ display:block; }
+.help-page .help-spot{
+  position:absolute; transform:translate(-50%,-50%); width:24px; height:24px; border-radius:50%;
+  background:var(--imn-accent2); color:#1b1b1b; font-size:12px; font-weight:700; line-height:24px;
+  text-align:center; cursor:help; box-shadow:0 0 0 2px rgba(0,0,0,.55); z-index:1;
+}
+.help-page .help-spot:hover, .help-page .help-spot:focus{
+  z-index:6; outline:none; box-shadow:0 0 0 3px var(--imn-accent);
+}
+.help-page .help-tip{
+  display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  width:250px; padding:.5rem .65rem; border-radius:8px; border:1px solid var(--imn-border);
+  background:#0b1226; color:var(--imn-text); font-size:12.5px; font-weight:400; line-height:1.45;
+  text-align:left; box-shadow:0 6px 18px rgba(0,0,0,.45);
+}
+.help-page .help-spot:hover .help-tip, .help-page .help-spot:focus .help-tip{ display:block; }
+/* callouts for markers near an edge open toward the picture's middle */
+.help-page .help-spot.tip-left .help-tip{ left:auto; right:-6px; transform:none; }
+.help-page .help-spot.tip-right .help-tip{ left:-6px; transform:none; }
+.help-page .help-spot.tip-up .help-tip{ top:auto; bottom:calc(100% + 8px); }
 
 /* ---- Report builder (app/view/tab_report.R) and the cards' "+ Report" button ---- */
 .imn-plot-dl{ display:flex; gap:4px; align-items:center; }
@@ -1072,3 +1098,7 @@ table.imn-report-minitable td{ padding:1px 3px; border-bottom:1px solid #e3e8ec;
   padding:.15rem .45rem !important; border-radius:8px !important; white-space:nowrap;
 }
 .imn-forest-add{ position:absolute; top:6px; right:8px; z-index:5; }
+/* collapsible formula sets on the Help pages */
+.help-page details.help-formulas{ margin:.5rem 0 1rem; }
+.help-page details.help-formulas > summary{ cursor:pointer; color:var(--imn-accent); font-weight:600; }
+.help-page details.help-formulas[open] > summary{ margin-bottom:.5rem; }

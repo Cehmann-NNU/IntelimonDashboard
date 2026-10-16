@@ -94,6 +94,8 @@ rsconnect/
 *.jp*g
 *.tif*
 *.png
+# except the Help page screenshots
+!app/static/help/images/*.png
 # Large media files
 *.mp4
 *.avi

@@ -122,7 +122,7 @@ ui <- function(id) {
             "Surface: Rothermel (1972) + Byram. Crown: Van Wagner (1977) with ",
             "Rothermel (1991) crown spread. Dead loads and fuel-bed depth come ",
             "from each scan; live loads and weather are held constant across ",
-            "scans. Validate against BehavePlus before operational use."
+            "scans. Validate with established fire behavior tools before operational use."
           )
         )
       ),

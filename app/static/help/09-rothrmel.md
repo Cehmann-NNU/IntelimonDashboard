@@ -7,7 +7,7 @@ the Rothermel-based calculations are not validated for planning. The fuels
 behind them are predictions from site-level models, so the results inherit
 those models' uncertainty. Use them to compare potential fire behavior through
 time at the same plots under the same weather, and confirm important decisions
-with field observations and validated fire behavior tools such as BehavePlus.
+with field observations and validated fire behavior tools.
 Refer to the Points2Pano image for QA/QC and raise concerns with a data
 analyst when results seem unreliable.</strong></p>
 
@@ -15,7 +15,7 @@ analyst when results seem unreliable.</strong></p>
 
 rothRmel estimates potential surface and crown fire behavior for every loaded
 scan, using the Rothermel (1972) surface fire spread model and the Van Wagner
-(1977) crown fire model. Because each scan carries its own fuels and canopy,
+(1977) crown fire model. Because each scan carries its own surface fuels and canopy,
 the results show how potential fire behavior changes through time, for
 example before and after a prescribed burn or a thinning. This makes the tab
 a way to report treatment success: whether a treatment lowered spread rate,
@@ -156,14 +156,14 @@ standard fuel models.
 | Group | Metric | What it describes |
 |---|---|---|
 | Surface fire | Rate of spread (ch/hr or m/min) | How fast the surface fire front advances |
-| | Fireline intensity (kW/m) | Heat released per unit length of the fire front (Byram) |
+| | Fireline intensity (kW/m) | Heat released per unit length of the fire front (Byram 1959) |
 | | Flame length (ft or m) | Length of the flames at the front, from fireline intensity |
 | | Reaction intensity (BTU/ft²/min) | Heat released per unit area of the flaming zone |
 | | Heat per unit area (BTU/ft²) | Heat released per unit area as the front passes |
-| Crown fire | Crown-initiation intensity I₀ (kW/m) | Surface fireline intensity needed to ignite the canopy, from canopy base height and foliar moisture (Van Wagner) |
+| Crown fire | Crown-initiation intensity I₀ (kW/m) | Surface fireline intensity needed to ignite the canopy, from canopy base height and foliar moisture (Van Wagner 1977) |
 | | Critical active-crown ROS R₀ (m/min) | Crown spread rate needed for an active crown fire, from canopy bulk density (Van Wagner) |
-| | Torching index (mi/h) | 20-ft wind speed at which surface fire would ignite the canopy (Scott and Reinhardt) |
-| | Crowning index (mi/h) | 20-ft wind speed at which an active crown fire could be sustained (Scott and Reinhardt) |
+| | Torching index (mi/h) | 20-ft wind speed at which surface fire would ignite the canopy (Scott and Reinhardt 2001) |
+| | Crowning index (mi/h) | 20-ft wind speed at which an active crown fire could be sustained (Scott and Reinhardt 2001) |
 | | Crown fire type (0/1/2) | 0 surface fire, 1 passive crown fire (torching), 2 active crown fire |
 
 For the torching and crowning indices, **higher is better**: a stronger wind

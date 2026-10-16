@@ -1,6 +1,6 @@
 box::use(
   leaflet,
-  shiny[observeEvent, req],
+  shiny[observeEvent, req, debounce],
 )
 
 box::use(
@@ -205,9 +205,11 @@ update_dwnld_scan_points <- function(session,
 #' @export
 update_extent <- function(proxy_map, fit2pts, col_names = list(lat = "Latitude", lng = "Longitude")) {
 
-  observeEvent(fit2pts(),
+  fit_settled <- debounce(fit2pts, 300)
+
+  observeEvent(fit_settled(),
                {
-                 pts <- fit2pts()
+                 pts <- fit_settled()
                  if (nrow(pts) == 0) {
                    return()
                  }
@@ -218,7 +220,7 @@ update_extent <- function(proxy_map, fit2pts, col_names = list(lat = "Latitude",
                      lat1 = safe_summary(pts[[col_names$lat]], min),
                      lng2 = safe_summary(pts[[col_names$lng]], max),
                      lat2 = safe_summary(pts[[col_names$lat]], max),
-                     options = list(padding = c(15, 15))
+                     options = list(animate = FALSE, padding = c(15, 15))
                    )
                })
 }

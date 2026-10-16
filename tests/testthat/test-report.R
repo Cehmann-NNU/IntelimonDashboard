@@ -206,6 +206,19 @@ describe("report_blocks", {
     expect_true("warning" %in% types(with))
   })
 
+  it("adds the custom model caveat only when custom model output is included", {
+    warnings <- function(items) {
+      b <- blocks_of(items, meta)
+      unlist(lapply(Filter(function(x) x$type == "warning", b), `[[`, "text"))
+    }
+    expect_null(warnings(list(fig())))
+    expect_equal(warnings(list(fig(source = "Custom models"))), report$CUSTOM_MODEL_CAVEAT)
+    expect_equal(
+      warnings(list(fig(source = "Custom models"), fig(source = "rothRmel"))),
+      c(report$ROTHRMEL_CAVEAT, report$CUSTOM_MODEL_CAVEAT)
+    )
+  })
+
 })
 
 describe("front matter", {
@@ -385,5 +398,23 @@ describe("methods and references", {
   it("cites every reference a method names", {
     keys <- unlist(lapply(report$METHODS, `[[`, "refs"))
     expect_true(all(keys %in% names(attr(report, "namespace")$REFERENCE_TEXT)))
+  })
+})
+
+describe("forestry methods", {
+  it("cites SDI, FVS and the fire and fuels extension when their items are included", {
+    stand <- report$report_item("table", "Stand metrics", "Forestry exports",
+                                table = data.frame(a = 1),
+                                methods = c("occlusion", "stand_density"))
+    fvs <- report$report_item("table", "FVS export", "Forestry exports",
+                              table = data.frame(a = 1), methods = c("fvs", "ffe"))
+    b <- report$report_blocks(list(stand, fvs), list())
+    t <- unlist(lapply(b, `[[`, "text"))
+    for (m in c("occlusion", "stand_density", "fvs", "ffe")) {
+      expect_true(report$METHODS[[m]]$text %in% t, info = m)
+    }
+    for (r in c("Reineke, L. H.", "Curtis, R. O.", "Dixon, G. E.", "Reinhardt, E. D.")) {
+      expect_true(any(startsWith(t, r)), info = r)
+    }
   })
 })

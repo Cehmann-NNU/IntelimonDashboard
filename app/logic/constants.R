@@ -14,6 +14,7 @@ COLNAME2LABEL <- c(
   MDBH       = "Mean DBH (MDBH)",
   StemsPacre = "Stems per acre (StemsPacre)",
   TreesN     = "Number of trees (TreesN)",
+  nonocarea  = "Unoccluded area (nonocarea)",
   MeanTH     = "Mean tree height (MeanTH)",
   MaxTH      = "Maximum tree height (MaxTH)",
   CBH         = "Canopy base height (CBH)",

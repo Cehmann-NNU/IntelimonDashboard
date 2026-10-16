@@ -52,6 +52,16 @@ ROTHRMEL_CAVEAT <- paste(
   "with custom fuel beds generated from TLS."
 )
 
+#' Text of the custom model caveat, added to any report holding custom model
+#' output.
+#' @export
+CUSTOM_MODEL_CAVEAT <- paste(
+  "Custom model values are predictions from site-level models calibrated with field",
+  "data, not direct measurements. They carry model error that is not shown in the",
+  "figures, tables or error bars, and they are not validated outside the conditions",
+  "of the data used to build them."
+)
+
 ABOUT_TEXT <- paste(
   "Data in this report come from the Interagency Ecosystem Lidar Monitoring",
   "Program (IntELiMon). Each plot is recorded with a single terrestrial laser",
@@ -71,6 +81,10 @@ REFERENCE_TEXT <- list(
     "Intermountain Forest and Range Experiment Station. 22 p.",
     "https://doi.org/10.2737/INT-GTR-122"
   ),
+  bailey_dell1973 = paste(
+    "Bailey, R. L., & Dell, T. R. (1973). Quantifying diameter distributions with the",
+    "Weibull function. Forest Science, 19(2), 97-104."
+  ),
   andrews2018 = paste(
     "Andrews, P. L. (2018). The Rothermel surface fire spread model and associated",
     "developments: a comprehensive explanation. Gen. Tech. Rep. RMRS-GTR-371. Fort Collins,",
@@ -86,6 +100,11 @@ REFERENCE_TEXT <- list(
     "Byram, G. M. (1959). Combustion of forest fuels. In K. P. Davis (Ed.), Forest fire:",
     "control and use (pp. 61-89). New York: McGraw-Hill."
   ),
+  dixon2002 = paste(
+    "Dixon, G. E. (comp.) (2002). Essential FVS: a user's guide to the Forest Vegetation",
+    "Simulator. Internal Report. Fort Collins, CO: U.S. Department of Agriculture, Forest",
+    "Service, Forest Management Service Center. 226 p."
+  ),
   curtis1982 = paste(
     "Curtis, R. O. (1982). A simple index of stand density for Douglas-fir. Forest Science,",
     "28(1), 92-94."
@@ -96,6 +115,10 @@ REFERENCE_TEXT <- list(
     "Asheville, NC: U.S. Department of Agriculture, Forest Service, Southern Research",
     "Station. https://doi.org/10.2737/SRS-GTR-277"
   ),
+  neyman_scott1958 = paste(
+    "Neyman, J., & Scott, E. L. (1958). Statistical approach to problems of cosmology.",
+    "Journal of the Royal Statistical Society: Series B, 20(1), 1-43."
+  ),
   pokswinski2026 = paste(
     "Pokswinski, S., Nelson, K., Maxwell, A., et al. (2026). IntELiMon: an automated",
     "framework for standardized terrestrial lidar processing in multi-disciplinary",
@@ -105,6 +128,11 @@ REFERENCE_TEXT <- list(
   reineke1933 = paste(
     "Reineke, L. H. (1933). Perfecting a stand-density index for even-aged forests.",
     "Journal of Agricultural Research, 46(7), 627-638."
+  ),
+  reinhardt_crookston2003 = paste(
+    "Reinhardt, E. D., & Crookston, N. L. (Tech. Eds.) (2003). The Fire and Fuels Extension",
+    "to the Forest Vegetation Simulator. Gen. Tech. Rep. RMRS-GTR-116. Ogden, UT: U.S.",
+    "Department of Agriculture, Forest Service, Rocky Mountain Research Station. 209 p."
   ),
   rothermel1972 = paste(
     "Rothermel, R. C. (1972). A mathematical model for predicting fire spread in wildland",
@@ -175,12 +203,63 @@ METHODS <- list(
     ),
     refs = "scott_burgan2005"
   ),
+  occlusion = list(
+    text = paste(
+      "Per-area forestry values (density, basal area, stand density index and relative",
+      "density) are divided by the unoccluded area (nonocarea) of each scan, the part of",
+      "the plot visible to the scanner, which corrects them for trees hidden behind other",
+      "stems and vegetation (Murphy et al., 2024; Pokswinski et al., 2026)."
+    ),
+    refs = c("murphy2024", "pokswinski2026")
+  ),
   stand_density = list(
     text = paste(
       "Stand density index follows Reineke (1933) and relative density follows",
-      "Curtis (1982)."
+      "Curtis (1982). Stocking is expressed as a share of a maximum stand density index",
+      "of 450, a general value not specific to the species or region."
     ),
     refs = c("reineke1933", "curtis1982")
+  ),
+  species_assignment = list(
+    text = paste(
+      "Tree species are not measured by the scanner. Species were assigned to the detected",
+      "stems from a species mix entered by the user, using the assignment rule recorded",
+      "with each figure or table, so per-species values depend on those choices."
+    ),
+    refs = character()
+  ),
+  size_bias = list(
+    text = paste(
+      "The size bias chart estimates the stems missed in each diameter class from a",
+      "detection probability that falls with stem size. It is indicative only and is not",
+      "applied to the stand metrics."
+    ),
+    refs = character()
+  ),
+  generative = list(
+    text = paste(
+      "Simulated stem maps are not measured. Stem diameters are drawn from a two-parameter",
+      "Weibull distribution fitted to the scanned stems (Bailey and Dell, 1973) at the",
+      "scans' occlusion-corrected density, and stems are placed in a clustered",
+      "Neyman-Scott (Neyman and Scott, 1958), random or regular pattern."
+    ),
+    refs = c("bailey_dell1973", "neyman_scott1958")
+  ),
+  fvs = list(
+    text = paste(
+      "Tree lists, stand records and keyword files were prepared for the Forest Vegetation",
+      "Simulator (FVS; Dixon, 2002) from the detected stems, with each stem's trees per",
+      "acre taken from the unoccluded area. The files have not been tested in a live FVS",
+      "run."
+    ),
+    refs = "dixon2002"
+  ),
+  ffe = list(
+    text = paste(
+      "The FVS keyword file includes the Fire and Fuels Extension (Reinhardt and",
+      "Crookston, 2003)."
+    ),
+    refs = "reinhardt_crookston2003"
   )
 )
 
@@ -529,9 +608,9 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
     out <- c(out[seq_len(design_at - 1)], section, out[-seq_len(design_at)])
   }
 
-  if (any(vapply(items, function(it) identical(it$source, "rothRmel"), logical(1)))) {
-    add(blk("warning", text = ROTHRMEL_CAVEAT))
-  }
+  sources <- vapply(items, function(it) if (is.null(it$source)) "" else it$source, character(1))
+  if ("rothRmel" %in% sources) add(blk("warning", text = ROTHRMEL_CAVEAT))
+  if ("Custom models" %in% sources) add(blk("warning", text = CUSTOM_MODEL_CAVEAT))
   # About these data closes the report as well as opening it, followed by
   # the one list of references
   for (b in about_blocks(toc = TRUE, methods = methods)) add(b)

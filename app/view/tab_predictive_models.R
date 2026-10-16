@@ -75,6 +75,12 @@ ui <- function(id) {
   )
 }
 
+# Shown on the cards when none of the loaded scans has custom model outputs.
+NO_MODELS_MSG <- paste(
+  "No custom models were run on the loaded scans. Custom models exist only for",
+  "sites with a model calibrated from field data; see Help."
+)
+
 #' @export
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
@@ -102,8 +108,24 @@ server <- function(id) {
     btn_errorbars     <- shiny$reactive(input$ui_btn_show_errorbars)
     btn_treaments    <- shiny$reactive(input$ui_btn_show_treatments)
 
+    # One model's values per scan for a card. With scans loaded but no models
+    # run on them, the card says so rather than asking for data to be loaded.
+    model_data <- function(model) {
+      shiny$reactive({
+        models <- session$userData$extra_models()
+        shiny$validate(
+          shiny$need(
+            nrow(session$userData$metrics()) > 0,
+            "No data loaded - press Get Data on the Selection Map tab."
+          ),
+          shiny$need(nrow(models) > 0, NO_MODELS_MSG)
+        )
+        pivot_on_model(models, model())
+      })
+    }
+
     #---------Model A----------------------------
-    dt_a <- shiny$reactive(pivot_on_model(session$userData$extra_models(), input$ui_select_modelA))
+    dt_a <- model_data(shiny$reactive(input$ui_select_modelA))
     card_metrics$server("modelA",
       session,
       data_dt = dt_a,
@@ -116,7 +138,7 @@ server <- function(id) {
     )
 
     #---------Model B----------------------------
-    dt_b <- shiny$reactive(pivot_on_model(session$userData$extra_models(), input$ui_select_modelB))
+    dt_b <- model_data(shiny$reactive(input$ui_select_modelB))
     card_metrics$server("modelB",
       session,
       data_dt = dt_b,
@@ -129,7 +151,7 @@ server <- function(id) {
     )
 
     #---------Model C----------------------------
-    dt_c <- shiny$reactive(pivot_on_model(session$userData$extra_models(), input$ui_select_modelC))
+    dt_c <- model_data(shiny$reactive(input$ui_select_modelC))
     card_metrics$server("modelC",
       session,
       data_dt = dt_c,

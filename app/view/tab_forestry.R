@@ -23,6 +23,7 @@ box::use(
 )
 
 box::use(
+  app/logic/constants[COLNAME2LABEL],
   app/logic/forestry[
     assign_species,
     crown_ratio,
@@ -44,6 +45,9 @@ scan_rows <- function(tbl, key) {
   tbl$site == key$site & tbl$plot == key$plot &
     tbl$date == key$date & tbl$scanner_id == key$scanner_id
 }
+
+# Label of the unoccluded area metric, used wherever the tab names it.
+UNOCC_LABEL <- COLNAME2LABEL[["nonocarea"]]
 
 SPECIES_COLS <- c("#8ff0e2", "#ffd29b", "#a78bfa", "#7ec8ff", "#ff9f6b", "#9ae66e")
 
@@ -83,10 +87,8 @@ ui <- function(id) {
             ),
             uiOutput(ns("area_readout")),
             radioButtons(ns("scaleby"), "Scale per-area values by",
-              choices = list(
-                "nonocarea (corrected)" = "nonoc",
-                "Full plot area" = "full"
-              ),
+              choiceNames = list(paste(UNOCC_LABEL, "(corrected)"), "Full plot area"),
+              choiceValues = list("nonoc", "full"),
               selected = "nonoc", width = "100%"
             ),
             tags$hr(style = "margin:5px 0;"),
@@ -271,7 +273,7 @@ ui <- function(id) {
                 paste(
                   "Detection probability falls with stem size, so the",
                   "smallest classes stay under-counted even after the",
-                  "nonocarea correction. Indicative only - not applied",
+                  "unoccluded area correction. Indicative only - not applied",
                   "to the metrics above."
                 )
               )
@@ -437,7 +439,7 @@ server <- function(id) {
         class = "imn-fread",
         div(tags$span("Maximum area"), tags$b(sprintf("%.1f m\u00B2", full))),
         div(
-          tags$span("nonocarea"),
+          tags$span(UNOCC_LABEL),
           tags$b(if (is.na(no)) "not reported" else sprintf("%.1f m\u00B2", no))
         ),
         div(
@@ -719,7 +721,7 @@ server <- function(id) {
         main = sprintf(
           "Stem map \u2014 scaled by %s",
           if (identical(input$scaleby, "nonoc")) {
-            "nonocarea"
+            "unoccluded area"
           } else {
             "full plot area"
           }
@@ -791,7 +793,7 @@ server <- function(id) {
       mf <- stand_metrics(t, full_a)
       mc <- stand_metrics(t, no)
       pd <- function(a, b) sprintf("%+.1f%%", (b - a)/a * 100)
-      data.frame(
+      out <- data.frame(
         Metric = c(
           "Trees/ac", "Basal area (ft2/ac)", "SDI",
           "QMD (in)", "FVS TreeCount"
@@ -801,7 +803,7 @@ server <- function(id) {
           sprintf("%.0f", mf$sdi), sprintf("%.1f", mf$qmd_in),
           sprintf("%.2f", mf$ef_tpa)
         ),
-        nonocarea = c(
+        unocc = c(
           sprintf("%.0f", mc$tpa), sprintf("%.1f", mc$ba_ac),
           sprintf("%.0f", mc$sdi), sprintf("%.1f", mc$qmd_in),
           sprintf("%.2f", mc$ef_tpa)
@@ -812,6 +814,8 @@ server <- function(id) {
         ),
         check.names = FALSE
       )
+      names(out)[names(out) == "unocc"] <- UNOCC_LABEL
+      out
     })
     output$occ_table <- renderTable(occ_df(), striped = FALSE, spacing = "xs", width = "100%")
 
@@ -827,7 +831,7 @@ server <- function(id) {
 
       occ_txt <- if (is.na(vis)) {
         paste(
-          "nonocarea was not reported for this scan, so per-area values",
+          UNOCC_LABEL, "was not reported for this scan, so per-area values",
           "fall back to the full plot area and may be understated."
         )
       } else {
@@ -974,7 +978,7 @@ server <- function(id) {
       list(
         Scan = if (is.null(cs)) NULL else sprintf("%s plot %s, %s", cs$site, cs$plot, cs$date),
         `Plot radius` = sprintf("%s m", input$radius),
-        `Per-area values` = if (identical(input$scaleby, "nonoc")) "nonocarea" else
+        `Per-area values` = if (identical(input$scaleby, "nonoc")) UNOCC_LABEL else
           "full plot area",
         Prescription = switch(input$method,
           none = "None (inventory only)", below = "Thin from below", above = "Thin from above",
@@ -996,7 +1000,7 @@ server <- function(id) {
       dev.off()
       if (ok) path else NULL
     }
-    add_chart <- function(draw, title, extra = list(), ...) {
+    add_chart <- function(draw, title, extra = list(), methods = character(), ...) {
       path <- chart_file(draw, ...)
       if (is.null(path)) {
         showNotification("Nothing to add yet: load tree inventories first.", type = "warning")
@@ -1004,7 +1008,8 @@ server <- function(id) {
       }
       add_to_report(session, report_item(
         "image", title, "Forestry exports", settings = c(forestry_context(), extra),
-        image = path, group = "Forestry", thumb = file_thumbnail(path)
+        image = path, group = "Forestry", thumb = file_thumbnail(path),
+        methods = methods
       ))
     }
     add_forest_table <- function(tbl, title, analysis = NULL, methods = character()) {
@@ -1021,11 +1026,15 @@ server <- function(id) {
 
     observeEvent(input$rep_stem, {
       if (identical(input$mode, "aoi")) {
-        add_chart(draw_stem_map, "Simulated stem map", list(Mode = "Generative AOI map"))
+        add_chart(draw_stem_map, "Simulated stem map", list(Mode = "Generative AOI map"),
+                  methods = "generative")
       } else {
         add_chart(draw_stem_map, "Stem map",
                   list(`Coloured by` = switch(input$colorby, species = "Species", dbh = "DBH",
                                               cr = "Crown ratio")),
+                  methods = c("occlusion", if (identical(input$colorby, "species")) {
+                    "species_assignment"
+                  }),
                   width = 1400, height = 1400)
       }
     })
@@ -1057,14 +1066,19 @@ server <- function(id) {
           add_forest_table(tbl, "Stand metrics", list(
             summary = paste(v$occlusion, v$prescription), cautions = character(),
             implication = NULL
-          ), methods = "stand_density")
-          add_forest_table(occ_df(), "Occlusion correction")
+          ), methods = c("occlusion", "stand_density"))
+          add_forest_table(occ_df(), "Occlusion correction",
+                           methods = c("occlusion", "stand_density"))
         },
-        Species = add_forest_table(species_df(), "Species composition"),
-        Stocking = add_chart(draw_stocking, "Stocking (density and QMD)"),
-        `Size bias` = add_chart(draw_bias, "Size bias: detected and inferred missing stems"),
-        showNotification("The FVS preview can't be added to the report; download it instead.",
-                         type = "warning")
+        Species = add_forest_table(species_df(), "Species composition",
+                                   methods = c("occlusion", "species_assignment")),
+        Stocking = add_chart(draw_stocking, "Stocking (density and QMD)",
+                             methods = c("occlusion", "stand_density")),
+        `Size bias` = add_chart(draw_bias, "Size bias: detected and inferred missing stems",
+                                methods = c("occlusion", "size_bias")),
+        FVS = add_forest_table(fvs_report_table(), "FVS export",
+                               methods = c("fvs", "species_assignment",
+                                           if (isTRUE(input$ffe)) "ffe"))
       )
     })
 
@@ -1101,6 +1115,27 @@ server <- function(id) {
       )
       list(tree = tr, stand = st, key = ky, sid = sid)
     })
+
+    # The FVS export settings as a report table: what was written and how.
+    fvs_report_table <- function() {
+      f <- fvs_bits()
+      if (is.null(f)) {
+        return(NULL)
+      }
+      yes_no <- function(x) if (isTRUE(x)) "Yes" else "No"
+      data.frame(
+        Setting = c("Stand", "Variant", "Site species", "Site index", "Cycles",
+                    "Cycle length (yr)", "Slope (%)", "Aspect (deg)", "Tree records",
+                    "FFE-FVS (fire & fuels)", "Lidar crown ratio", "Prescription as keyword"),
+        Value = c(f$sid, input$variant, (species_tbl()$code %||% "LP")[1],
+                  as.character(input$site_index), as.character(input$num_cycles),
+                  as.character(input$time_int), as.character(input$slope_pct),
+                  as.character(input$aspect_deg), as.character(nrow(f$tree)),
+                  yes_no(input$ffe), yes_no(input$use_cr),
+                  yes_no(input$thin_key && !identical(input$method, "none"))),
+        check.names = FALSE, stringsAsFactors = FALSE
+      )
+    }
 
     output$fvs_preview <- renderText({
       f <- fvs_bits()

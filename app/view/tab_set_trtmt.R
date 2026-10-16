@@ -100,6 +100,11 @@ ui <- function(id) {
   )
 }
 
+# The scans in the order handed to the scan table. DT reports selected and
+# edited rows by their position in this data, whatever order the table is
+# displayed in, so assignments and edits are applied to this same order.
+table_order <- function(scans) dt$copy(scans)[order(plot, site, -date)]
+
 #' @export
 server <- function(id) {
   shiny$moduleServer(id, function(input, output, session) {
@@ -139,7 +144,9 @@ server <- function(id) {
         rownames = FALSE,
         height = "100%",
         selection = "single",
-        editable = TRUE,
+        # dates are changed by deleting and adding them, so the
+        # remeasurement numbers follow
+        editable = FALSE,
         options = list(
           ordering = TRUE,
           searching = FALSE,
@@ -175,21 +182,18 @@ server <- function(id) {
           type = "warning",
           duration = 30
         )
+        return()
       }
 
-      # get the row for the original sorting (this always seems to be the same as selected_rows)
-      orig_display_row <- input$tbl_selected_scans_rows_all[selected_rows]
-
-      # get the data.table with the original sorting
-      displayed_scans <- dt$copy(session$userData$scan_selection())
-      displayed_scans <- displayed_scans[order(plot, site, -date)]
+      # the selected rows index the table's data, not its sorted display
+      displayed_scans <- table_order(session$userData$scan_selection())
 
       if (nzchar(input$ui_enter_unit)) {
-        displayed_scans[orig_display_row, "Unit" := as.character(input$ui_enter_unit)] # nolint: object_name_linter
+        displayed_scans[selected_rows, "Unit" := as.character(input$ui_enter_unit)] # nolint: object_name_linter
       }
 
       if (nzchar(input$ui_enter_remeas)) {
-        displayed_scans[orig_display_row, "Remeasurement" := as.integer(input$ui_enter_remeas)] # nolint: object_name_linter
+        displayed_scans[selected_rows, "Remeasurement" := as.integer(input$ui_enter_remeas)] # nolint: object_name_linter
       }
 
       session$userData$scan_selection(displayed_scans)
@@ -220,8 +224,7 @@ server <- function(id) {
         )
       )
 
-      # set the default table sorting
-      selected_scans <- selected_scans[order(plot, site, -date)]
+      selected_scans <- table_order(selected_scans)
 
       DT$datatable(
         selected_scans[, ..columns],
@@ -253,7 +256,8 @@ server <- function(id) {
     shiny$observeEvent(input$tbl_selected_scans_cell_edit, {
       changes <- input$tbl_selected_scans_cell_edit
 
-      selected_scans <- session$userData$scan_selection()
+      # edited rows index the table's data, in table_order()
+      selected_scans <- table_order(session$userData$scan_selection())
       displayed_scans <- selected_scans[, ..columns]
 
       displayed_scans <- DT$editData(displayed_scans, changes, rownames = FALSE)

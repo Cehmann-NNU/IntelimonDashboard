@@ -412,14 +412,12 @@ server <- function(id) {
     })
 
     # ---- Canopy fuels card ----
+    # Always the scans' (TLS) canopy, whatever the fuel data source: LANDFIRE
+    # derived switches only the surface fuel bed.
     output$canopy_fuel_ui <- renderUI({
-      landfire <- input$fuel_source == "landfire"
-
       rows <- lapply(names(CANOPY_FUEL_ROWS), function(k) {
         r <- CANOPY_FUEL_ROWS[[k]]
-        # In LANDFIRE mode, CBD comes from LF_CBD; other canopy rows have no
-        # LANDFIRE equivalent -> blank/editable.
-        val <- if (landfire && r$col != "LF_CBD") NA else fuel_mean(r$col)
+        val <- fuel_mean(r$col)
         # canopyCover is a 0-1 ratio -> show as percent
         if (r$col == "canopyCover" && !is.na(val)) val <- val * 100
         fuel_input_row(paste0("cf_", k), r$label, val)
@@ -767,9 +765,8 @@ server <- function(id) {
       add_fuel_table("Surface fuels", tbl, edited_rows(tbl))
     })
     observeEvent(input$rep_canopy, {
-      landfire <- identical(input$fuel_source, "landfire")
       tbl <- value_table(CANOPY_FUEL_ROWS, "cf_", function(col, v) {
-        if (landfire && col != "LF_CBD") NA else if (col == "canopyCover") v * 100 else v
+        if (col == "canopyCover") v * 100 else v
       })
       add_fuel_table("Canopy fuels", tbl, edited_rows(tbl))
     })
@@ -867,13 +864,15 @@ server <- function(id) {
         methods = loading_methods()
       )
 
-      # canopy values from the canopy card travel with the bed
+      # canopy values from the canopy card travel with the bed. CBH and CBD
+      # go only when the user edited them, so each scan otherwise keeps its
+      # own canopy in rothRmel's crown fire metrics.
       cc <- num_input("cf_cc")
-      bed$cbh_m <- num_input("cf_cbh")
+      bed$cbh_m <- canopy_edit("cbh")
       # the canopy card shows LF_CBD in its stored form (kg/m^3 x 100);
       # fire_behavior expects kg/m^3, so scale on the way out
-      cbd_raw <- num_input("cf_cbd")
-      bed$cbd <- if (is.na(cbd_raw)) NA_real_ else cbd_raw/100
+      cbd_raw <- canopy_edit("cbd")
+      bed$cbd <- if (is.null(cbd_raw)) NULL else cbd_raw/100
       bed$canopy_cover_pct <- cc
       bed$stand_height_m <- num_input("cf_maxth")
       bed$aggregation <- sprintf("%d scans, each with its own loadings", nrow(loads))
@@ -977,14 +976,13 @@ server <- function(id) {
 
     # ---- LCP export ----
     # LANDFIRE layers for a buffered box around the selected plots (widened to
-    # any AOI drawn on the map). With the Modeled/User defined fuel source,
-    # the LANDFIRE canopy cover, stand height and base height are corrected
-    # toward the scans of the sidebar's point in time and those scans' lidar
-    # canopy metrics are burned into bands 5-7 (see app/logic/lcp.R); a
-    # canopy card box the user edited shifts the scans' mean onto it. With
-    # LANDFIRE derived, bands 5-7 stay LANDFIRE's. The surface fuel models
-    # (band 4) are always LANDFIRE's; the submitted surface fuels are for
-    # rothRmel only.
+    # any AOI drawn on the map). Whatever the fuel data source, the LANDFIRE
+    # canopy cover, stand height and base height are corrected toward the
+    # scans of the sidebar's point in time and those scans' lidar canopy
+    # metrics are burned into bands 5-7 (see app/logic/lcp.R); a canopy card
+    # box the user edited shifts the scans' mean onto it. The surface fuel
+    # models (band 4) are always LANDFIRE's; the submitted surface fuels are
+    # for rothRmel only.
     # LANDFIRE needs a contact email, collected by the app-wide email prompt.
     # The build runs in a separate R process (mirai) so the LANDFIRE download
     # doesn't block the session; the result is a .zip with the .lcp and .prj,
@@ -1029,7 +1027,6 @@ server <- function(id) {
 
     start_lcp_build <- function(email) {
       name <- paste0("intelimon_", format(Sys.Date(), "%Y%m%d"))
-      modeled <- !identical(input$fuel_source, "landfire")
       # the scans of the sidebar's point in time, one row per plot
       scans <- fuel_scans()
       if (identical(input$fuel_agg, "all")) scans <- mean_plot_metrics(scans)
@@ -1040,12 +1037,12 @@ server <- function(id) {
         zip_path = tempfile(fileext = ".zip"),
         name = name,
         aoi = aoi_polygon(),
-        cbh_m = if (modeled) canopy_edit("cbh"),
-        cover_pct = if (modeled) canopy_edit("cc", 100),
-        height_m = if (modeled) canopy_edit("maxth"),
+        cbh_m = canopy_edit("cbh"),
+        cover_pct = canopy_edit("cc", 100),
+        height_m = canopy_edit("maxth"),
         # IFTDSS rejects file names with a "." besides the extension's
         tif_path = file.path(tempfile("iftdss_"), paste0(name, ".tif")),
-        canopy_source = if (modeled) "scans" else "landfire"
+        canopy_source = "scans"
       )
       showNotification(
         paste(
@@ -1088,12 +1085,9 @@ server <- function(id) {
       zip_path <- lcp_task$result()
       lcp_file(zip_path)
       canopy <- if (is.null(attr(zip_path, "canopy_corrections"))) {
-        "LANDFIRE canopy cover, stand height and canopy base height (LANDFIRE derived)."
+        "LANDFIRE canopy cover, stand height and canopy base height (no scan canopy values)."
       } else {
-        paste(
-          "lidar canopy cover, stand height and canopy base height at the selected plots",
-          "(Modeled/User defined)."
-        )
+        "lidar canopy cover, stand height and canopy base height at the selected plots."
       }
       showModal(modalDialog(
         title = "Fuel rasters ready",

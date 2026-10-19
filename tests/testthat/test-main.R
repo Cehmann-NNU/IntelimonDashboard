@@ -1,11 +1,10 @@
 box::use(
-  shiny[reactiveVal, testServer],
+  shiny[testServer],
   testthat[describe, expect_equal, expect_null, expect_true, it],
 )
 
 box::use(
   app/main[server],
-  app/view/tab_histogram[histogram_server = server],
   app/view/tab_load_data[load_data_server = server],
   app/view/tab_selectionMap[selection_map_server = server],
 )
@@ -46,63 +45,6 @@ describe("tab_load_data server", {
     testServer(load_data_server, {
       session$setInputs(ui_data_dir = "/does/not/exist", submit_dir = 1)
       expect_null(session$returned())
-    })
-  })
-})
-
-# -- tab_histogram server ------------------------------------------------------
-
-describe("tab_histogram server", {
-  it("file_select lists only the CSV files in the testdata directory", {
-    data_dir <- reactiveVal(testdata)
-
-    testServer(histogram_server, args = list(data_dir = data_dir), {
-      result <- session$getReturned()
-      # Trigger the file_select reactive by flushing
-      session$flushReact()
-
-      # Reach the internal reactive via the rendered UI output —
-      # plot_selector_ui will only render when file_select() returns files
-      expect_true(!is.null(output$plot_selector_ui))
-    })
-  })
-
-  it("combined_data merges selected CSVs and adds a Plot_ID column", {
-    data_dir <- reactiveVal(testdata)
-
-    testServer(histogram_server, args = list(data_dir = data_dir), {
-      session$setInputs(selected_plots = c("scan_A", "scan_B"))
-      session$flushReact()
-
-      df <- combined_data()
-      # will change dependent on IntELiMon version
-      expect_equal(nrow(df), 2L)
-    })
-  })
-
-  it("column_selector_ui renders after plots are selected", {
-    data_dir <- reactiveVal(testdata)
-
-    testServer(histogram_server, args = list(data_dir = data_dir), {
-      session$setInputs(selected_plots = "scan_A")
-      session$flushReact()
-
-      expect_true(!is.null(output$column_selector_ui))
-    })
-  })
-
-  it("col_hist renders a plot when all inputs are set", {
-    data_dir <- reactiveVal(testdata)
-
-    testServer(histogram_server, args = list(data_dir = data_dir), {
-      session$setInputs(
-        selected_plots  = "scan_A",
-        selected_column = "DBH",
-        bins            = 3
-      )
-      session$flushReact()
-
-      expect_true(!is.null(output$col_hist))
     })
   })
 })

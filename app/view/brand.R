@@ -9,7 +9,8 @@ box::use(
   shiny[div, img, span, tags],
 )
 
-# Ordered sponsor logos: USGS, FWS, USDA FS, BIA, NPS, SERDP/ESTCP. `cls`
+# Ordered sponsor and partner logos: USGS, FWS, USDA FS, BIA, NPS, SERDP/ESTCP,
+# NMC CAFES and BurnPro3D (UCSD WIFIRE). `cls`
 # picks up a per-logo height tweak in main.scss for marks whose artwork is
 # padded differently from the rest.
 sponsors <- list(
@@ -18,7 +19,10 @@ sponsors <- list(
   list(alt = "USDA Forest Service", cls = "", file = "sponsor_usfs.png"),
   list(alt = "Bureau of Indian Affairs", cls = "bia", file = "sponsor_bia.png"),
   list(alt = "National Park Service", cls = "", file = "sponsor_nps.png"),
-  list(alt = "SERDP / ESTCP", cls = "serdp", file = "sponsor_serdp.png")
+  list(alt = "SERDP / ESTCP", cls = "serdp", file = "sponsor_serdp.png"),
+  list(alt = "New Mexico Consortium Center for Applied Fire and Ecosystem Science",
+       cls = "", file = "sponsor_cafes.png"),
+  list(alt = "BurnPro3D, UC San Diego WIFIRE Program", cls = "", file = "sponsor_burnpro3d.png")
 )
 
 # Navbar brand: logo + two-line wordmark. The mark links to the IntELiMon
@@ -45,7 +49,7 @@ brand_title <- function() {
   )
 }
 
-# Footer sponsor plate: frosted white pane holding the six agency logos.
+# Footer sponsor plate: frosted white pane holding the sponsor and partner logos.
 #' @export
 sponsor_footer <- function() {
   imgs <- lapply(sponsors, function(s) {

@@ -321,8 +321,8 @@ SECTIONS <- list(
 #' Preset headings offered for notes; any other text can be typed instead.
 #' @export
 NOTE_HEADINGS <- c(
-  "Introduction", "Methods", "Data description", "Results", "Discussion", "Conclusions",
-  "Management relevance", "Suggested management actions"
+  "Introduction", "Management objectives", "Methods", "Data description", "Results",
+  "Discussion", "Conclusions", "Management relevance", "Suggested management actions"
 )
 
 #' One report item, as added from a card.

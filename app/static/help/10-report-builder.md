@@ -158,7 +158,7 @@ the second says "These data are described under Figure 1".
    keep their order. If no card is selected, it is added at the bottom of
    the report.
 3. Pick a heading from the list, or type your own and press **Enter**:
-   <div class="help-shot"><img src="static/help/images/report-headings.png" alt="The heading list: Introduction, Methods, Data description, Results, Discussion, Conclusions, Management relevance and Suggested management actions" width="362"></div>
+   <div class="help-shot"><img src="static/help/images/report-headings.png" alt="The heading list: Introduction, Management objectives, Methods, Data description, Results, Discussion, Conclusions, Management relevance and Suggested management actions" width="464"></div>
 4. Write the text. Blank lines start new paragraphs.
 
 The default blocks are marked **Optional**: left empty, they are left out of

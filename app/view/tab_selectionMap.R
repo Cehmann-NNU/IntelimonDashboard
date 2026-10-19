@@ -8,7 +8,7 @@ box::use(
 
 box::use(
   api = app/logic/load_data_api,
-  app/logic/manage_data[build_scan_loc_dt, get_scans4dwnld, set_remeas_by_yr],
+  app/logic/manage_data[build_scan_loc_dt, get_scans4dwnld, set_scan_numbers],
   app/logic/map_fnc[parse_click_id],
   app/view/card_mapLeaflet,
   app/view/map_controls[map_scan_points,
@@ -140,7 +140,8 @@ server <- function(id) {
         selected[, ":="(
           id = click$id,
           Unit = "My Unit",
-          Remeasurement = NA_real_
+          Remeasurement = NA_integer_,
+          ScanGroup = NA_integer_
         )]
         all_clicks <- rbind(all_clicks, selected)
       }
@@ -175,8 +176,9 @@ server <- function(id) {
         return()
       }
 
-      # assign a default remeasurement number based on sequential years of measurment
-      set_remeas_by_yr(session)
+      # number each plot's visits (Remeasurement) and group the scans into time
+      # steps (Scan grouping)
+      set_scan_numbers(session)
 
       # create a progress bar
       dwnld_prog <- shiny$Progress$new(session)

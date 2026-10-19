@@ -18,9 +18,7 @@ parse_treatment_dates <- function(txt) {
   list(ok = parts[valid], bad = parts[!valid])
 }
 
-#' Assign each scan to a time-step group for one metric column, returning the
-#' LONG per-scan rows (not aggregated). This is the shared basis for all three
-#' plot modes.
+#' The scan grouping (time step, numbered from 1) of each scan.
 #'
 #' Scans are clustered into time steps by walking the unique scan dates in
 #' order. A new time step starts at a date when any of:
@@ -31,39 +29,22 @@ parse_treatment_dates <- function(txt) {
 #'      all scans on that date move to the new step together), or
 #'   3. the gap from the previous scan date exceeds 30 days.
 #' Plots appearing only once ("odd plots out") stay lumped with the step that
-#' was open when they were scanned. `transform` is applied to the raw values
-#' (e.g. gap fraction = 1 - canopyCover).
+#' was open when they were scanned.
 #'
-#' Returns a data.table: site_name | plot | combo | label | scan_date | value
-#' | grp. `combo` (site||plot) is the internal key used for repeat-visit
-#' detection and per-plot grouping; `label` ("site / plot") is for legends.
-assign_time_steps <- function(metrics_dt, metric_col, treat_dates,
-                              transform = identity) {
-  df <- data.table(
-    site = as.character(metrics_dt$site),
-    plot      = as.character(metrics_dt$plot),
-    date = metrics_dt$date,
-    value     = transform(
-      suppressWarnings(as.numeric(metrics_dt[[metric_col]]))
-    )
-  )
-  df[, combo := paste(site, plot, sep = "||")]
-  df[, label := paste(site, plot, sep = " / ")]
-  df <- df[!is.na(date) & !is.na(value)]
-  if (nrow(df) == 0) return(df)
-  setorder(df, date)
-
-  tvec <- sort(treat_dates$TreatmentDate)
+#' @param combo Per-scan site/plot key.
+#' @param date Per-scan dates (Date), in any order.
+#' @param treat_dates Treatment dates (Date).
+group_scan_dates <- function(combo, date, treat_dates) {
+  tvec <- sort(treat_dates)
   tvec <- tvec[!is.na(tvec)]
 
-  # Walk unique dates in order, assigning each date to a time-step group
-  dates    <- sort(unique(df$date))
+  dates    <- sort(unique(date))
   date_grp <- integer(length(dates))
   seen     <- character()   # site/plot combos already in the current step
   g        <- 1L
 
   for (k in seq_along(dates)) {
-    combos_today <- unique(df[date == dates[k], combo])
+    combos_today <- unique(combo[date == dates[k]])
 
     if (k > 1) {
       treat_between <- length(tvec) > 0 &&
@@ -81,7 +62,56 @@ assign_time_steps <- function(metrics_dt, metric_col, treat_dates,
     seen <- union(seen, combos_today)
   }
 
-  df[, grp := date_grp[match(date, dates)]]
+  date_grp[match(date, dates)]
+}
+
+#' Default Scan grouping of the scan selection (site, plot, date), from the
+#' three rules in group_scan_dates().
+scan_groups <- function(scans, treat_dates) {
+  if (nrow(scans) == 0) return(integer())
+  group_scan_dates(paste(scans$site, scans$plot, sep = "||"),
+                   as.Date(scans$date), as.Date(treat_dates))
+}
+
+#' Assign each scan to a time-step group for one metric column, returning the
+#' LONG per-scan rows (not aggregated). This is the shared basis for all three
+#' plot modes.
+#'
+#' Time steps come from the Scan grouping set on the Set Treatments tab
+#' (`scan_groups`: the scan selection with site, plot, date and ScanGroup), so
+#' edits made there carry through to every card and the report. Scans without
+#' one fall back to the three rules in group_scan_dates(). `transform` is
+#' applied to the raw values (e.g. gap fraction = 1 - canopyCover).
+#'
+#' Returns a data.table: site_name | plot | combo | label | scan_date | value
+#' | grp. `combo` (site||plot) is the internal key used for repeat-visit
+#' detection and per-plot grouping; `label` ("site / plot") is for legends.
+assign_time_steps <- function(metrics_dt, metric_col, treat_dates,
+                              transform = identity, scan_groups = NULL) {
+  df <- data.table(
+    site = as.character(metrics_dt$site),
+    plot      = as.character(metrics_dt$plot),
+    date = metrics_dt$date,
+    value     = transform(
+      suppressWarnings(as.numeric(metrics_dt[[metric_col]]))
+    )
+  )
+  df[, combo := paste(site, plot, sep = "||")]
+  df[, label := paste(site, plot, sep = " / ")]
+  df <- df[!is.na(date) & !is.na(value)]
+  if (nrow(df) == 0) return(df)
+  setorder(df, date)
+
+  df[, grp := group_scan_dates(combo, date, treat_dates$TreatmentDate)]
+
+  if (!is.null(scan_groups) && "ScanGroup" %in% names(scan_groups)) {
+    key <- function(d) paste(d$site, d$plot, as.character(as.Date(d$date)), sep = "||")
+    set_grp <- suppressWarnings(as.integer(scan_groups$ScanGroup))[
+      match(key(df), key(scan_groups))
+    ]
+    hit <- !is.na(set_grp)
+    df[hit, grp := set_grp[hit]]
+  }
   df[]
 }
 

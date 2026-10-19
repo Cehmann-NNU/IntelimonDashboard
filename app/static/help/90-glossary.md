@@ -403,8 +403,8 @@ flaming fire front." [NWCG]
 divided by the square root of quadratic mean diameter. [Curtis, 1982]
 
 **Remeasurement**: Measuring again; in the app, the visit number of a scan:
-0 for the first scan of a plot, 1 for the first remeasurement and so on.
-[Wiktionary]
+0 for the first scan of a plot, 1 for its next scan and so on, however close
+together the scans are. [Wiktionary]
 
 **Residence time**: "The time, in seconds, required for the flaming front of
 a fire to pass a stationary point at the surface of the fuel." [NWCG]
@@ -481,7 +481,8 @@ change stand structure. [Wiktionary]
 
 **Time step**: In the app, a group of scans from one round of scanning. A new
 time step starts at a treatment date, when a plot is scanned again or after
-30 days without scans.
+30 days without scans. Set by the Scan grouping column on the Set
+Treatments tab, where it can be changed.
 
 **Timelag**: "Time needed under specified conditions for a fuel particle to
 lose about 63 percent of the difference between its initial moisture content

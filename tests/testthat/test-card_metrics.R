@@ -39,6 +39,7 @@ describe("card_metrics server", {
   it("passes the session's treatment dates to the plot builder", {
     testServer(server, args = card_args("timeseries"), {
       session$userData$trtmt_dates <- reactiveVal(treatments)
+      session$userData$scan_selection <- reactiveVal(data.table())
       expect_equal(data_state()$trtmt_dates, treatments)
     })
   })
@@ -47,6 +48,7 @@ describe("card_metrics server", {
     it(paste("draws treatment lines on the", plot_type, "plot"), {
       testServer(server, args = card_args(plot_type), {
         session$userData$trtmt_dates <- reactiveVal(treatments)
+        session$userData$scan_selection <- reactiveVal(data.table())
         expect_true(has_vline(plt_fn()))
         expect_true(has_vline(plt_fn(light = TRUE)))
       })

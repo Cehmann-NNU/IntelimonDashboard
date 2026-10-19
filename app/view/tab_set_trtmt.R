@@ -31,8 +31,9 @@ ui <- function(id) {
           bslib$card_body(
             fill = FALSE,
             shiny$helpText(
-              "Scans measured after treatment dates will have their remeasurement numbers
-                                                      automatically increased."
+              "Scans collected after a treatment date are moved into a new scan grouping.
+              Adding or deleting a date regroups every scan and replaces scan groupings
+              entered by hand."
             ),
             shiny$dateInput(
               ns("ui_selected_date"),
@@ -59,10 +60,10 @@ ui <- function(id) {
           )
         ),
         bslib$card(
-          bslib$card_header(shiny$h4("Set Unit Name or Remeasurement")),
+          bslib$card_header(shiny$h4("Set Unit Name, Remeasurement or Scan Grouping")),
           shiny$helpText(
-            "To assign a unit name or remeasurement number, select the scans in the table to the left,
-            enter the desired values below and hit the Assign button."
+            "To assign a unit name, remeasurement number or scan grouping, select the scans in the
+            table to the left, enter the desired values below and hit the Assign button."
           ),
           shiny$textInput(
             ns("ui_enter_unit"),
@@ -75,6 +76,13 @@ ui <- function(id) {
             ns("ui_enter_remeas"),
             label = "Scan Remeasurement",
             placeholder = "0 (initial scan)",
+            value = "",
+            updateOn = "change"
+          ),
+          shiny$textInput(
+            ns("ui_enter_group"),
+            label = "Scan Grouping",
+            placeholder = "1 (first time step)",
             value = "",
             updateOn = "change"
           ),
@@ -128,7 +136,7 @@ server <- function(id) {
         )
         session$userData$trtmt_dates(trtmt_dates)
 
-        manage_data$set_remeas_by_trtmt(session, input$ui_selected_date)
+        manage_data$set_scan_groups(session)
       }
     })
 
@@ -145,7 +153,7 @@ server <- function(id) {
         height = "100%",
         selection = "single",
         # dates are changed by deleting and adding them, so the
-        # remeasurement numbers follow
+        # scan groupings follow
         editable = FALSE,
         options = list(
           ordering = TRUE,
@@ -170,9 +178,10 @@ server <- function(id) {
 
       trtmt_dates <- trtmt_dates[-row]
       session$userData$trtmt_dates(trtmt_dates)
+      manage_data$set_scan_groups(session)
     })
 
-    #------Assign Unit or Remeasurement----------
+    #------Assign Unit, Remeasurement or Scan Grouping----
     shiny$observeEvent(input$btn_assign, {
       # always initializes as NULL
       selected_rows <- input$tbl_selected_scans_rows_selected
@@ -196,11 +205,17 @@ server <- function(id) {
         displayed_scans[selected_rows, "Remeasurement" := as.integer(input$ui_enter_remeas)] # nolint: object_name_linter
       }
 
+      # the cards and the report group scans into time steps by this column
+      if (nzchar(input$ui_enter_group)) {
+        group <- as.integer(input$ui_enter_group)
+        displayed_scans[selected_rows, "ScanGroup" := group] # nolint: object_name_linter
+      }
+
       session$userData$scan_selection(displayed_scans)
     })
 
     #---Data Table-------------------------------
-    columns <- c("site", "plot", "date", "scanner_id", "Unit", "Remeasurement")
+    columns <- c("site", "plot", "date", "scanner_id", "Unit", "Remeasurement", "ScanGroup")
 
     output$tbl_selected_scans <- DT$renderDT({
       selected_scans <- session$userData$scan_selection()
@@ -228,10 +243,12 @@ server <- function(id) {
 
       DT$datatable(
         selected_scans[, ..columns],
+        colnames = c(columns[-length(columns)], "Scan grouping"),
         filter = "top",
         rownames = FALSE,
         selection = "multiple",
-        # make site, plot, date, scanner_id ReadOnly, but allow unit and remeasurement to be changed
+        # make site, plot, date, scanner_id ReadOnly, but allow unit, remeasurement and scan
+        # grouping to be changed
         editable = list(target = "cell", disable = list(columns = c(0, 1, 2, 3))),
         options = list(
           pageLength = 50,

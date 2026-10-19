@@ -136,7 +136,9 @@ when:
    marks a new round of scanning; or
 3. more than **30 days** pass since the previous scan.
 
-Each time step is labeled with the average date of its scans.
+Each time step is labeled with the average date of its scans. These are
+the **Scan grouping** numbers on the Set Treatments tab; change them there to
+regroup scans, and the graphs and the report follow.
 
 ## Plot types
 

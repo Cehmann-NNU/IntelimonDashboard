@@ -204,7 +204,8 @@ aurora_theme <- function(pal = SCREEN_PAL) {
 # Shared front half of every card: resolve the metric (including the derived
 # ones), check the data is usable, build the per-scan long rows and apply the
 # percent-change transform. The plot and the Statistics table both start here,
-# so they can never disagree about what they are describing.
+# so they can never disagree about what they are describing. `scan_groups` is
+# the scan selection carrying the Scan grouping set on the Set Treatments tab.
 #
 # Returns list(raw, y_label, axis_label, pct). `y_label` names the metric for
 # the card title and CSV column; `axis_label` is what the y axis says, which
@@ -212,7 +213,7 @@ aurora_theme <- function(pal = SCREEN_PAL) {
 # the narrow cards clip a doubled-up label.
 #' @export
 .series_prep <- function(metric, y_label, data_dt, treat_dates,
-                         data_type = "raw") {
+                         data_type = "raw", scan_groups = NULL) {
   pct <- identical(data_type, "percent")
   if (pct) y_label <- paste0(y_label, " (% change)")
 
@@ -231,7 +232,7 @@ aurora_theme <- function(pal = SCREEN_PAL) {
                paste0("Metric '", source_col, "' not found in the data table."))
   )
 
-  raw <- assign_time_steps(data_dt, source_col, treat_dates, transform)
+  raw <- assign_time_steps(data_dt, source_col, treat_dates, transform, scan_groups)
   if (pct) raw <- percent_change_series(raw)
 
   list(raw = raw, y_label = y_label, pct = pct,
@@ -263,7 +264,8 @@ metric_series_plot <- function(data_state, plt_options, light = FALSE) {
   mode <- plt_options$plot_type
 
   pal <- if (isTRUE(light)) EXPORT_PAL else SCREEN_PAL
-  prep <- .series_prep(metric, y_label, data_dt, treat_dates, data_type)
+  prep <- .series_prep(metric, y_label, data_dt, treat_dates, data_type,
+                       data_state$scan_groups)
   raw        <- prep$raw
   y_label    <- prep$y_label
   axis_label <- prep$axis_label
@@ -420,7 +422,8 @@ metric_series_stats <- function(data_state) {
   treat_dates <- data_state$trtmt_dates
   data_type <- data_state$data_type
 
-  prep <- .series_prep(metric, y_label, data_dt, treat_dates, data_type)
+  prep <- .series_prep(metric, y_label, data_dt, treat_dates, data_type,
+                       data_state$scan_groups)
 
   smry <- describe_time_steps(prep$raw)
   shiny$validate(shiny$need(nrow(smry) > 0, "No valid values for this metric in the loaded scans."))

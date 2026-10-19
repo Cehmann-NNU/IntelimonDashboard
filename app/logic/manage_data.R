@@ -1,11 +1,12 @@
 box::use(
   dt = data.table,
-  stats[setNames],
+  stats[ave, setNames],
 )
 
 box::use(
   app/logic/constants[COLNAME2LABEL],
   api = app/logic/load_data_api,
+  app/logic/manage_timesteps[scan_groups],
   app/logic/map_fnc,
 )
 
@@ -63,61 +64,45 @@ build_scan_loc_dt <- function() {
   scan_loc_dt
 }
 
-#' Set the remeasurement value for each scan based on a lazy evaluation of measurement year.
+#' Remeasurement number of each scan: the visit to its plot, counted in date
+#' order from 0. A plot's first scan is 0, its next scan 1 and so on, however
+#' close together the scans are; scans of a plot on the same date share a number.
 #'
-#' Assign each measurement year a number, starting with 0, and label each scan with its corresponding
-#' remeasurement number. For example, if the first scan was in 2023, all scans from that year are given a
-#' remeasurement number of 0. And if the next year with scans is 2024, all scans in that year are assigned a
-#' remeasurement number of 1.
+#' @param scans - data.table with site, plot and date.
+#' @return integer vector, one per scan.
+#' @export
+remeasurement_numbers <- function(scans) {
+  if (nrow(scans) == 0) return(integer())
+  d <- as.numeric(as.Date(scans$date))
+  as.integer(ave(d, scans$site, scans$plot, FUN = function(x) match(x, sort(unique(x))) - 1))
+}
+
+#' Number the scan selection: Remeasurement (visits to each plot, from 0) and
+#' Scan grouping (time steps from the three rules, see scan_groups()).
+#' Replaces any numbers entered by hand. Run when data are fetched.
 #'
 #' @param session - a shiny session object.
 #' @export
-set_remeas_by_yr <- function(session) {
-  selected <- session$userData$scan_selection()
+set_scan_numbers <- function(session) {
+  selected <- dt$copy(session$userData$scan_selection())
+  if (nrow(selected) == 0) return()
 
-  # rank data by year and assign as remeasurement number
-  selected[, Remeasurement := dt$frank(format(date, "%Y"), ties.method = "dense") - 1L]
-
+  selected[, Remeasurement := remeasurement_numbers(selected)]
+  selected[, ScanGroup := scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)]
   session$userData$scan_selection(selected)
 }
 
-#' Set the remeasurement values pre and post treatment date.
+#' Regroup the scan selection after the treatment dates change. Only the Scan
+#' grouping depends on treatment dates; Remeasurement numbers are kept.
 #'
-#' Existing post treatment remeasurement values that are the same as pre treatment remeasurement values are
-#' increased. If remeasurment values have not been assigned, pre treatment values are assigned 0 and post
-#' treatment values are assigned 1.
-#'
-#' Results are applied to session$userData$scan_selection() and nothing is returned.
-#'
-#' @param session - a shiny session object
-#' @param trtmt_date -  a date value
+#' @param session - a shiny session object.
 #' @export
-set_remeas_by_trtmt <- function(session, trtmt_date) {
+set_scan_groups <- function(session) {
   # by updating in place, the reactiveVal doesn't notice it's been updated, so a copy is necessary
   selected <- dt$copy(session$userData$scan_selection())
+  if (nrow(selected) == 0) return()
 
-  if (nrow(selected) == 0) {
-    return()
-  }
-
-  before_t <- selected$date < trtmt_date
-  after_t <- selected$date >= trtmt_date
-
-  before_rnum <- unique(selected[before_t, Remeasurement])
-  after_rnum <- unique(selected[after_t, Remeasurement])
-
-  # if all pre and post treatment scans already have different remeasurement numbers
-  if (!any(after_rnum %in% before_rnum)) {
-    return()
-    # if pre and post treatment scans have overlapping remeasurement numbers (but are not all NA)
-  } else if (any(after_rnum %in% before_rnum) && !is.null(after_rnum)) {
-    selected[after_t, Remeasurement := Remeasurement + 1L]
-    # if the remeasurement column is empty
-  } else if (is.null(after_rnum) && is.null(before_rnum)) {
-    selected[before_t, Remeasurement := 0]
-    selected[after_t, Remeasurement := 1]
-  }
-
+  selected[, ScanGroup := scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)]
   session$userData$scan_selection(selected)
 }
 

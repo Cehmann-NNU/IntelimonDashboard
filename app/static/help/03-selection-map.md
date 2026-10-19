@@ -191,6 +191,7 @@ It also appears when every selected scan has already been downloaded.
 - **Data last for one session.** Reloading the page or closing the browser
   tab clears all selections and downloads.
 - **New selections get default settings.** Each selected plot is placed in a
-  management unit called "My Unit". When you click **Get Data**, its scans
-  are numbered as remeasurements by year (0 for the first year, 1 for the
-  next, and so on). Change both on the **Set Treatments** tab.
+  management unit called "My Unit". When you click **Get Data**, each plot's
+  scans are numbered as remeasurements (0 for its first scan, 1 for its
+  next, and so on) and all scans are sorted into scan groupings (time
+  steps). Change them on the **Set Treatments** tab.

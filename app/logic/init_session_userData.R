@@ -22,7 +22,8 @@ init_session_userdata <- function(session) {
       Latitude = numeric(),
       Agency = character(),
       Unit = character(),
-      Remeasurement = integer()
+      Remeasurement = integer(),
+      ScanGroup = integer()
     )
   )
 

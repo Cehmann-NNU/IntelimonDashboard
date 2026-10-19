@@ -75,7 +75,8 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
         label        = if (is.null(label) || is.na(label)) col else label,
         data_type    = data_type(),
         data_dt      = data_dt(),
-        trtmt_dates  = session$userData$trtmt_dates()
+        trtmt_dates  = session$userData$trtmt_dates(),
+        scan_groups  = session$userData$scan_selection()
       )
     })
 
@@ -106,7 +107,8 @@ server <- function(id, session, data_dt, metric_col, errorbars_on, treatlines_on
     # steps the card draws (see app/logic/report_analysis.R).
     describe_card <- function() {
       st <- data_state()
-      prep <- plt$.series_prep(st$metric, st$label, st$data_dt, st$trtmt_dates, st$data_type)
+      prep <- plt$.series_prep(st$metric, st$label, st$data_dt, st$trtmt_dates, st$data_type,
+                               st$scan_groups)
       describe_series(prep$raw, prep$y_label, prep$pct, st$trtmt_dates$TreatmentDate, st$metric)
     }
 

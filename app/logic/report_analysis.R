@@ -482,12 +482,14 @@ implication_text <- function(metric, label, basis, pct) {
 # Scans keyed as "site|plot|date" for matching metrics to the scan selection.
 scan_key <- function(d) paste(d$site, d$plot, fmt_date(d$date), sep = "|")
 
-#' Time steps of all loaded scans (the grouping the cards use, without a metric).
+#' Time steps of all loaded scans (the grouping the cards use, without a metric):
+#' the Scan grouping on the scan selection `scans`, where set.
 #' @export
-scan_steps <- function(metrics, treat_dates) {
+scan_steps <- function(metrics, treat_dates, scans = NULL) {
   m <- as.data.table(metrics)[, list(site, plot, date = as.Date(date))]
   m$one <- 1
-  assign_time_steps(m, "one", data.table(TreatmentDate = as.Date(treat_dates)))
+  assign_time_steps(m, "one", data.table(TreatmentDate = as.Date(treat_dates)),
+                    scan_groups = scans)
 }
 
 # Unit name the Selection Map gives every scan until one is assigned on the
@@ -529,7 +531,7 @@ scan_context <- function(metrics, scans, treat_dates) {
   if (is.null(metrics) || nrow(metrics) == 0) return(NULL)
   m <- scan_table(metrics, scans)
   tvec <- sort(unique(as.Date(treat_dates)))
-  steps <- scan_steps(m, tvec)
+  steps <- scan_steps(m, tvec, scans)
 
   units <- m[!is.na(unit), list(plots = uniqueN(combo)), by = unit][order(unit)]
   agencies <- if (!is.null(scans) && "Agency" %in% names(scans)) {
@@ -539,7 +541,7 @@ scan_context <- function(metrics, scans, treat_dates) {
   text <- sprintf(
     "This report draws on %s at %s in %s, collected between %s and %s and grouped into %s.",
     plural(nrow(m), "scan"), plural(uniqueN(m$combo), "plot"), plural(uniqueN(m$site), "site"),
-    fmt_date(min(m$date)), fmt_date(max(m$date)), plural(max(steps$grp), "time step")
+    fmt_date(min(m$date)), fmt_date(max(m$date)), plural(uniqueN(steps$grp), "time step")
   )
   if (length(agencies) > 0) {
     text <- paste(text, sprintf("Data were provided by %s.", and_list(agencies)))
@@ -596,7 +598,7 @@ design_checks <- function(metrics, scans, treat_dates) {
   if (is.null(metrics) || nrow(metrics) == 0) return(character())
   m <- scan_table(metrics, scans)
   tvec <- sort(unique(as.Date(treat_dates)))
-  steps <- scan_steps(m, tvec)
+  steps <- scan_steps(m, tvec, scans)
   n_plots <- uniqueN(m$combo)
   out <- character()
 
@@ -609,7 +611,7 @@ design_checks <- function(metrics, scans, treat_dates) {
       m$combo, fmt_date(m$date)
     ))
   }
-  if (max(steps$grp) == 1) {
+  if (uniqueN(steps$grp) == 1) {
     # every scan in one time step: report it as a snapshot rather than
     # listing single-scan plots, small steps and unpaired treatments one by one
     out <- snapshot_notice("this report", nrow(m), n_plots, min(m$date), max(m$date), tvec)
@@ -621,7 +623,7 @@ design_checks <- function(metrics, scans, treat_dates) {
       plural(n_plots, "plot"), if (n_plots == 1) "is" else "are"
     ))
   }
-  if (max(steps$grp) > 1) {
+  if (uniqueN(steps$grp) > 1) {
     once <- m[, list(scans = uniqueN(date)), by = combo][scans == 1]
     if (nrow(once) > 0) {
       out <- c(out, sprintf(
@@ -666,7 +668,7 @@ design_checks <- function(metrics, scans, treat_dates) {
       ))
     }
   }
-  if (max(steps$grp) > 1) {
+  if (uniqueN(steps$grp) > 1) {
     for (t in as.list(tvec)) {
       before <- m[date < t, unique(combo)]
       after <- m[date >= t, unique(combo)]

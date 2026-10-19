@@ -130,6 +130,14 @@ describe("scan_context", {
     expect_match(ctx$text, "2 management units: North \\(2 plots\\) and South \\(1 plot\\)")
   })
 
+  it("uses the Scan grouping set on the Set Treatments tab", {
+    f <- scans_fixture()
+    f$scans$ScanGroup <- c(1L, 1L, 2L, 3L, 3L)
+    ctx <- report_analysis$scan_context(f$metrics, f$scans, as.Date(character()))
+    expect_match(ctx$text, "grouped into 3 time steps")
+    expect_equal(ctx$steps$Scans, c(2, 1, 2))
+  })
+
   it("returns NULL with no scans", {
     expect_null(report_analysis$scan_context(data.frame(), NULL, as.Date(character())))
   })

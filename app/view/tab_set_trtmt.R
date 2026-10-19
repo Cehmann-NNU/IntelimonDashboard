@@ -6,6 +6,7 @@ box::use(
 )
 
 box::use(
+  app/logic/constants[TREATMENT_TYPES],
   app/logic/manage_data,
 )
 
@@ -25,7 +26,7 @@ ui <- function(id) {
         bslib$card(
           full_screen = FALSE,
           fill = FALSE,
-          max_height = "500px",
+          max_height = "620px",
           min_height = "100px",
           bslib$card_header(shiny$h4("Add Treatment Dates")),
           bslib$card_body(
@@ -41,6 +42,15 @@ ui <- function(id) {
               value = Sys.Date(),
               format = "yyyy-mm-dd",
               autoclose = TRUE
+            ),
+            # what was done on that date: kept with the date for the report and
+            # for later analysis; several can be picked for a combined treatment
+            shiny$selectizeInput(
+              ns("ui_trtmt_type"),
+              label = shiny$h6("Treatment"),
+              choices = TREATMENT_TYPES,
+              multiple = TRUE,
+              options = list(placeholder = "Pick one or more (optional)")
             ),
             shiny$actionButton(
               ns("btn_add_trtmt"),
@@ -108,6 +118,12 @@ ui <- function(id) {
   )
 }
 
+# The treatment types picked for a date as one value ("Thinning, Piling and
+# burning"); NA when none was picked.
+treatment_type <- function(types) {
+  if (length(types) == 0) NA_character_ else paste(types, collapse = ", ")
+}
+
 # The scans in the order handed to the scan table. DT reports selected and
 # edited rows by their position in this data, whatever order the table is
 # displayed in, so assignments and edits are applied to this same order.
@@ -131,10 +147,12 @@ server <- function(id) {
         trtmt_dates <- rbind(
           trtmt_dates,
           dt$data.table(
-            TreatmentDate = input$ui_selected_date
+            TreatmentDate = input$ui_selected_date,
+            TreatmentType = treatment_type(input$ui_trtmt_type)
           )
         )
-        session$userData$trtmt_dates(trtmt_dates)
+        session$userData$trtmt_dates(trtmt_dates[order(TreatmentDate)])
+        shiny$updateSelectizeInput(session, "ui_trtmt_type", selected = "")
 
         manage_data$set_scan_groups(session)
       }
@@ -146,7 +164,7 @@ server <- function(id) {
 
       DT$datatable(
         session$userData$trtmt_dates(),
-        colnames = "",
+        colnames = c("Date", "Treatment"),
         caption = "Treatment Dates",
         filter = "none",
         rownames = FALSE,

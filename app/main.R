@@ -45,7 +45,9 @@ ui <- function(id) {
       tab_load_data$ui(ns("Load Data"))
     },
     tab_selectionMap$ui(ns("Selection Map")),
-    tab_set_trtmt$ui(ns("Set Treatments")),
+    # space-free id: Shiny can't send update messages to inputs whose ids have
+    # spaces, and this tab resets its Treatment picker after each Add Date
+    tab_set_trtmt$ui(ns("set_treatments")),
     tab_directOutputs$ui(ns("Standard-outputs")),
     tab_predictive_models$ui(ns("Predictive-models")),
     # These three build input ids dynamically (renderUI) and address them from
@@ -72,7 +74,7 @@ server <- function(id) {
     # -------Tab Servers ------------------------
     tab_load_data$server("Load Data")
     tab_selectionMap$server("Selection Map")
-    tab_set_trtmt$server("Set Treatments")
+    tab_set_trtmt$server("set_treatments")
     tab_directOutputs$server("Standard-outputs")
     tab_predictive_models$server("Predictive-models")
     tab_fuels$server("fuels_exports")

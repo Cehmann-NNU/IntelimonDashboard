@@ -65,3 +65,36 @@ COLNAME2LABEL <- c(
   thohrmod      = "Thousand hour fuel count (count/40 m)",
   thouhrmod     = "Thousand hour fuel count (count/40 m)"
 )
+
+# Treatment types offered on the Set Treatments tab.
+TREATMENT_TYPES <- c(
+  "Prescribed fire", "Thinning", "Piling and burning", "Mastication", "Herbicide", "Grazing",
+  "Planting and seeding", "Disking and plowing"
+)
+
+# What the report calls one and several treatments of each type, for its
+# overview: "Two prescribed fires took place during the reporting period."
+TREATMENT_NOUNS <- list(
+  "Prescribed fire" = c("prescribed fire", "prescribed fires"),
+  "Thinning" = c("thinning", "thinnings"),
+  "Piling and burning" = c("pile burn", "pile burns"),
+  "Mastication" = c("mastication treatment", "mastication treatments"),
+  "Herbicide" = c("herbicide application", "herbicide applications"),
+  "Grazing" = c("grazing treatment", "grazing treatments"),
+  "Planting and seeding" = c("planting or seeding treatment", "planting or seeding treatments"),
+  "Disking and plowing" = c("disking or plowing treatment", "disking or plowing treatments")
+)
+
+# How the report says each treatment was done, completed with " on <date>":
+# "Herbicide was applied on 2025-05-15". Combined treatments are joined with
+# "and": "The stand was thinned and fuels were piled and burned on ...".
+TREATMENT_ACTIONS <- c(
+  "Prescribed fire" = "a prescribed fire was carried out",
+  "Thinning" = "the stand was thinned",
+  "Piling and burning" = "fuels were piled and burned",
+  "Mastication" = "vegetation was masticated",
+  "Herbicide" = "herbicide was applied",
+  "Grazing" = "livestock grazed the area",
+  "Planting and seeding" = "plants were established by planting or seeding",
+  "Disking and plowing" = "the ground was disked or plowed"
+)

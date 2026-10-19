@@ -506,7 +506,12 @@ observations. [Wiktionary] IntELiMon plots have two perpendicular 20 m
 transects through plot center.
 
 **Treatment date**: The date of a treatment such as a prescribed burn or
-thinning, entered on Set Treatments. Scans after it start a new time step.
+thinning, entered on Set Treatments with its treatment type. Scans after it
+start a new time step.
+
+**Treatment type**: What was done on a treatment date, picked on Set
+Treatments: Prescribed fire, Thinning, Piling and burning, Mastication, Herbicide, Grazing, Planting and seeding, and Disking and plowing. The report builder uses it to describe the
+treatments.
 
 ## U
 

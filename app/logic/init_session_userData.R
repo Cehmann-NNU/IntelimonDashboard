@@ -33,10 +33,11 @@ init_session_userdata <- function(session) {
   session$userData$tree_inv <- data.table()
   # IntELiMon identified extra models for scans
   session$userData$extra_models <- reactiveVal(data.table())
-  # User defined treatment dates
+  # User defined treatment dates and what was done on each (Set Treatments)
   session$userData$trtmt_dates <- reactiveVal(
     data.table(
-      TreatmentDate = as.Date(character())
+      TreatmentDate = as.Date(character()),
+      TreatmentType = character()
     )
   )
   # selected fuel information

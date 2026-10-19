@@ -11,6 +11,10 @@
 # with the same REPORT_STYLE, so both formats share one template.
 # ---------------------------------------------------------------------------
 
+box::use(
+  app/logic/report_analysis[plural],
+)
+
 #' Shared template for both output formats. Colours match the light export
 #' palette the figures are drawn with (EXPORT_PAL in app/view/plotting.R).
 #' Sizes are points; page dimensions and margins are inches (US Letter).
@@ -293,11 +297,12 @@ ORIGIN_TEXT <- "This report was generated using the IntELiMon Decision Support T
 #' @export
 DEFAULT_TITLE <- "IntELiMon monitoring report"
 
-#' Caption for the cover photo: "Cover Photo: Agency, Site, plot 1085, 2022-02-15,
+#' Caption for the cover photo: "Cover Photo: Agency, Site, plot 1085, 02/15/2022,
 #' Points2Pano image". Blank parts are left out.
 #' @export
 cover_caption <- function(agency, site, plot, date) {
-  parts <- c(agency, site, if (nonblank(plot)) paste("plot", plot), format(as.Date(date)))
+  parts <- c(agency, site, if (nonblank(plot)) paste("plot", plot),
+             format(as.Date(date), REPORT_DATE))
   parts <- parts[!is.na(parts) & nzchar(parts)]
   paste0("Cover Photo: ", paste(c(parts, "Points2Pano image"), collapse = ", "))
 }
@@ -453,6 +458,39 @@ missing_sections <- function(items) {
 
 blk <- function(type, ...) list(type = type, ...)
 
+#' Date format used throughout the report: MM/DD/YYYY.
+#' @export
+REPORT_DATE <- "%m/%d/%Y"
+
+# Rewrite ISO dates (2025-05-15) as MM/DD/YYYY (05/15/2025) in report text.
+us_dates <- function(x) gsub("\\b(\\d{4})-(\\d{2})-(\\d{2})\\b", "\\2/\\3/\\1", x, perl = TRUE)
+
+# Every date in the report's text and tables in MM/DD/YYYY, including those
+# carried in from the cards (statistics tables, settings lines, comments).
+us_date_block <- function(b) {
+  fields <- c("text", "title", "subtitle", "settings", "note", "label", "lines")
+  for (f in intersect(fields, names(b))) {
+    if (is.character(b[[f]])) b[[f]] <- us_dates(b[[f]])
+    if (is.list(b[[f]])) {
+      b[[f]] <- lapply(b[[f]], function(v) if (is.character(v)) us_dates(v) else v)
+    }
+  }
+  if (is.data.frame(b$data)) {
+    names(b$data) <- us_dates(names(b$data))
+    for (j in seq_along(b$data)) {
+      if (is.character(b$data[[j]])) b$data[[j]] <- us_dates(b$data[[j]])
+      if (inherits(b$data[[j]], "Date")) b$data[[j]] <- format(b$data[[j]], REPORT_DATE)
+    }
+  }
+  if (identical(b$type, "toc")) {
+    b$entries <- lapply(b$entries, function(e) {
+      e$text <- us_dates(e$text)
+      e
+    })
+  }
+  b
+}
+
 nonblank <- function(x) !is.null(x) && length(x) == 1 && !is.na(x) && nzchar(trimws(x))
 
 paragraphs <- function(text) {
@@ -521,8 +559,8 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
           } else {
             n_fig <- n_fig + 1L
             add(blk("image", label = paste0("Figure ", n_fig, "."),
-                    title = sprintf("Locations of the %d plot%s in this report.", n_plots,
-                                    if (n_plots == 1) "" else "s"),
+                    title = sprintf("Locations of the %s in this report.",
+                                    plural(n_plots, "plot")),
                     path = NULL, map = context$points,
                     settings = "Basemap: Esri World Imagery"))
           }
@@ -533,7 +571,12 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
             add(blk("paragraph", text = "No scans were loaded when this report was built."))
           } else {
             add(blk("paragraph", text = scan$text))
+            for (p in scan$treatments) add(blk("paragraph", text = p))
             add_table(scan$plots, "Plots included in this report.")
+            if (!is.null(scan$treatment_table)) {
+              add_table(scan$treatment_table, "Treatments entered on the Set Treatments tab.",
+                        note = "Scans collected on a treatment date count as after it.")
+            }
             add_table(scan$steps, "Time steps: how scans were grouped for analysis.",
                       note = "Scans collected after a treatment date start a new time step.")
           }
@@ -619,8 +662,9 @@ report_blocks <- function(items, meta, context = NULL, cover = NULL) {
   # front matter, then the table of contents listing the body's headings
   toc <- Filter(function(b) b$type == "heading", out)
   toc <- lapply(toc, function(b) list(text = b$text, level = b$level))
-  c(front_blocks(meta, cover, methods),
-    list(blk("toc", entries = toc), blk("page_break")), out)
+  blocks <- c(front_blocks(meta, cover, methods),
+              list(blk("toc", entries = toc), blk("page_break")), out)
+  lapply(blocks, us_date_block)
 }
 
 # "About these data": the standard text and a paragraph for each of
@@ -685,7 +729,7 @@ design_blocks <- function(context, object_notes) {
 #' Footer text shared by both formats (the page number is added by each writer).
 #' @export
 footer_text <- function(date = Sys.Date()) {
-  paste0(REPORT_STYLE$product, " \u00b7 Generated ", format(date, "%Y-%m-%d"))
+  paste0(REPORT_STYLE$product, " \u00b7 Generated ", format(date, REPORT_DATE))
 }
 
 # Front matter, before the table of contents: the title page, then a page

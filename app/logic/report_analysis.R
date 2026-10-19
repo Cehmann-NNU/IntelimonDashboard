@@ -21,6 +21,7 @@ box::use(
 )
 
 box::use(
+  app/logic/constants[TREATMENT_ACTIONS, TREATMENT_NOUNS],
   app/logic/manage_timesteps[assign_time_steps],
 )
 
@@ -259,14 +260,44 @@ fmt_num <- function(x) {
   }, character(1))
 }
 
-fmt_date <- function(d) format(as.Date(d), "%Y-%m-%d")
+# Dates in report text and tables: MM/DD/YYYY (REPORT_DATE in app/logic/report.R)
+fmt_date <- function(d) format(as.Date(d), "%m/%d/%Y")
 
 and_list <- function(x) {
   if (length(x) <= 1) return(paste(x, collapse = ""))
   paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
 }
 
-plural <- function(n, word, words = paste0(word, "s")) paste(n, ifelse(n == 1, word, words))
+# Counts in report text: numbers below ten are spelled out ("three plots");
+# num_start() also spells out a count that starts a sentence ("Twelve plots").
+ONES <- c("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+          "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+          "seventeen", "eighteen", "nineteen")
+TENS <- c("", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
+
+number_word <- function(n) {
+  if (n < 20) return(ONES[n + 1])
+  if (n < 100) return(paste0(TENS[n %/% 10 + 1], if (n %% 10 > 0) paste0("-", ONES[n %% 10 + 1])))
+  format(n, big.mark = ",")
+}
+
+num <- function(n) {
+  vapply(n, function(x) {
+    if (x >= 0 && x < 10 && x == round(x)) ONES[x + 1] else format(x, big.mark = ",")
+  }, character(1))
+}
+
+num_start <- function(n) {
+  vapply(n, function(x) {
+    capitalize(if (x >= 0 && x == round(x)) number_word(x) else format(x, big.mark = ","))
+  }, character(1))
+}
+
+capitalize <- function(x) paste0(toupper(substring(x, 1, 1)), substring(x, 2))
+
+#' A count and its noun for report text: "three plots", "12 scans", "one site".
+#' @export
+plural <- function(n, word, words = paste0(word, "s")) paste(num(n), ifelse(n == 1, word, words))
 
 #' One row per time step: dates, scans, plots, mean and SD of `value`.
 #' @export
@@ -418,16 +449,16 @@ describe_series <- function(long, label, pct = FALSE, treat_dates = as.Date(char
     small <- steps[n < MIN_SCANS]
     if (nrow(small) > 0) {
       cautions <- c(cautions, sprintf(
-        "%s fewer than %d scans (%s), so %s uncertain.",
-        if (nrow(small) == 1) "One time step holds" else paste(nrow(small), "time steps hold"),
-        MIN_SCANS, and_list(sprintf("%s: n = %d", fmt_date(small$mid), small$n)),
+        "%s fewer than %s scans (%s), so %s uncertain.",
+        if (nrow(small) == 1) "One time step holds" else paste(num_start(nrow(small)), "time steps hold"),
+        num(MIN_SCANS), and_list(sprintf("%s: n = %d", fmt_date(small$mid), small$n)),
         if (nrow(small) == 1) "its mean is" else "their means are"
       ))
     }
     if (max(steps$n) >= 2 * min(steps$n)) {
       cautions <- c(cautions, sprintf(
-        "Time steps hold uneven numbers of scans (%d to %d), so some steps carry more weight.",
-        min(steps$n), max(steps$n)
+        "Time steps hold uneven numbers of scans (%s to %s), so some steps carry more weight.",
+        num(min(steps$n)), num(max(steps$n))
       ))
     }
     in_all <- long[, list(steps = uniqueN(grp)), by = combo][steps == k, .N]
@@ -436,7 +467,7 @@ describe_series <- function(long, label, pct = FALSE, treat_dates = as.Date(char
         if (in_all == 0) {
           sprintf("None of the %s was scanned in every time step;", plural(n_plots, "plot"))
         } else {
-          sprintf("Only %d of %s %s scanned in every time step;", in_all,
+          sprintf("Only %s of %s %s scanned in every time step;", num(in_all),
                   plural(n_plots, "plot"), if (in_all == 1) "was" else "were")
         },
         "differences between steps partly reflect which plots were scanned."
@@ -520,17 +551,140 @@ date_range <- function(start, end) {
   ifelse(start == end, fmt_date(start), paste(fmt_date(start), "to", fmt_date(end)))
 }
 
+# Treatment dates and types as a table sorted by date: date | type, one row
+# per date. `types` lines up with `dates`; missing or blank types are NA.
+treatment_table <- function(dates, types = NULL) {
+  dates <- as.Date(dates)
+  if (length(types) != length(dates)) types <- rep(NA_character_, length(dates))
+  types <- as.character(types)
+  types[!is.na(types) & !nzchar(trimws(types))] <- NA_character_
+  tr <- data.table(date = dates, type = types)[!is.na(date)]
+  unique(tr, by = "date")[order(date)]
+}
+
+# A treatment's name in a sentence: "prescribed fire", "thinning and piling
+# and burning"; "a treatment" when no type was given.
+treatment_name <- function(type) {
+  if (is.na(type)) return("a treatment")
+  and_list(tolower(trimws(strsplit(type, ",")[[1]])))
+}
+
+# What was done, as a sentence: "Herbicide was applied on 05/15/2025.",
+# "The stand was thinned and fuels were piled and burned on 05/15/2025."
+treatment_action <- function(type, date) {
+  types <- if (is.na(type)) character() else trimws(strsplit(type, ",")[[1]])
+  known <- types %in% names(TREATMENT_ACTIONS)
+  actions <- c(unname(TREATMENT_ACTIONS[types[known]]), tolower(types[!known]))
+  if (length(actions) == 0) actions <- "a treatment was carried out"
+  sprintf("%s on %s.", capitalize(and_list(actions)), fmt_date(date))
+}
+
+# Days between a treatment and a scan, in digits: "555 days", "1 day".
+days_text <- function(n) {
+  n <- as.integer(n)
+  paste(format(n, big.mark = ","), if (n == 1) "day" else "days")
+}
+
+# One sentence group per treatment: what was done and when, which plots were
+# scanned before and after it and how long before and after, and whether its
+# effects can be assessed.
+treatment_sentences <- function(m, t, type) {
+  n_plots <- uniqueN(m$combo)
+  before <- m[date < t]
+  after <- m[date >= t]
+  paired <- intersect(before$combo, after$combo)
+  head <- treatment_action(type, t)
+  if (nrow(before) == 0 || nrow(after) == 0) {
+    return(paste(head, sprintf(
+      "No plots were scanned %s it, so its effects cannot be assessed from these data.",
+      if (nrow(before) == 0) "before" else "after"
+    )))
+  }
+  n_before <- uniqueN(before$combo)
+  n_after <- uniqueN(after$combo)
+  pre <- sprintf("most recently on %s (%s before)", fmt_date(max(before$date)),
+                 days_text(t - max(before$date)))
+  post <- sprintf("first on %s (%s after)", fmt_date(min(after$date)),
+                  days_text(min(after$date) - t))
+  text <- if (n_plots == 1) {
+    sprintf("The plot was scanned before it, %s, and after it, %s.", pre, post)
+  } else {
+    sprintf(
+      "%s had pre-treatment scans, %s, and %s %s scanned after it, %s.",
+      if (n_before == n_plots) paste("All", num(n_plots), "plots") else
+        paste(num_start(n_before), "of the", num(n_plots), "plots"),
+      pre, num(n_after), if (n_after == 1) "was" else "were", post
+    )
+  }
+  text <- paste(head, text)
+  if (length(paired) == 0) {
+    return(paste(text, "No plot was scanned both before and after it, so its effects",
+                 "can only be compared between different plots."))
+  }
+  units <- sort(unique(na.omit(m[combo %in% paired, unit])))
+  who <- if (length(paired) == n_plots) {
+    if (n_plots == 1) "The plot was" else paste("All", num(n_plots), "plots were")
+  } else {
+    paste(num_start(length(paired)), if (length(paired) == 1) "plot was" else "plots were")
+  }
+  paste(text, sprintf(
+    "%s scanned both before and after it%s, giving a direct before-and-after comparison.",
+    who, if (length(units) > 0) paste0(" (", and_list(units), ")") else ""
+  ))
+}
+
+# What the overview calls one or several treatments of a type ("prescribed
+# fire" / "prescribed fires"); combined and unspecified treatments get their
+# own names.
+treatment_noun <- function(type, n) {
+  forms <- if (is.na(type)) {
+    c("treatment of unspecified type", "treatments of unspecified type")
+  } else if (type %in% names(TREATMENT_NOUNS)) {
+    TREATMENT_NOUNS[[type]]
+  } else if (grepl(",", type)) {
+    c("combined treatment", "combined treatments")
+  } else {
+    paste(tolower(type), c("treatment", "treatments"))
+  }
+  if (n == 1) forms[1] else forms[2]
+}
+
+# The treatment paragraph: how many treatments of each type took place, then
+# one passage per treatment.
+treatment_paragraphs <- function(m, tr) {
+  counts <- tr[, list(n = .N, first = min(date)), by = type][order(first)]
+  nouns <- vapply(seq_len(nrow(counts)), function(i) {
+    paste(num(counts$n[i]), treatment_noun(counts$type[i], counts$n[i]))
+  }, character(1))
+  intro <- if (nrow(counts) == 1) {
+    sprintf("%s %s took place during the reporting period.", num_start(counts$n),
+            treatment_noun(counts$type, counts$n))
+  } else {
+    sprintf("%s treatments took place during the reporting period: %s.", num_start(nrow(tr)),
+            and_list(nouns))
+  }
+  each <- vapply(seq_len(nrow(tr)), function(i) {
+    treatment_sentences(m, tr$date[i], tr$type[i])
+  }, character(1))
+  paste(c(intro, each), collapse = " ")
+}
+
 #' The "Scans, plots and treatments" section.
 #' @param metrics Loaded metrics (site, plot, date, ...).
 #' @param scans The scan selection with Unit and Agency (Set Treatments).
 #' @param treat_dates Treatment dates (Date).
-#' @return list(text, plots, steps) - a paragraph and two data.frames - or
-#'   NULL when no scans are loaded.
+#' @param treat_types What was done on each treatment date (Set Treatments),
+#'   lined up with `treat_dates`: NA when not given, several types joined
+#'   with commas.
+#' @return list(text, treatments, plots, steps, treatment_table) - a paragraph,
+#'   the treatment paragraphs and three data.frames (treatment_table is NULL
+#'   without treatment dates) - or NULL when no scans are loaded.
 #' @export
-scan_context <- function(metrics, scans, treat_dates) {
+scan_context <- function(metrics, scans, treat_dates, treat_types = NULL) {
   if (is.null(metrics) || nrow(metrics) == 0) return(NULL)
   m <- scan_table(metrics, scans)
-  tvec <- sort(unique(as.Date(treat_dates)))
+  tr <- treatment_table(treat_dates, treat_types)
+  tvec <- tr$date
   steps <- scan_steps(m, tvec, scans)
 
   units <- m[!is.na(unit), list(plots = uniqueN(combo)), by = unit][order(unit)]
@@ -552,20 +706,14 @@ scan_context <- function(metrics, scans, treat_dates) {
       and_list(sprintf("%s (%s)", units$unit, plural(units$plots, "plot")))
     ))
   }
-  treat_text <- if (length(tvec) == 0) {
+  treatments <- if (length(tvec) == 0) {
     paste(
       "No treatment dates were entered, so time steps are separated only by repeat visits",
       "and gaps between scans."
     )
   } else {
-    sprintf(
-      "%s entered (%s); scans collected after a treatment date start a new time step.",
-      if (length(tvec) == 1) "One treatment date was" else
-        paste(length(tvec), "treatment dates were"),
-      and_list(fmt_date(tvec))
-    )
+    treatment_paragraphs(m, tr)
   }
-  text <- paste(text, treat_text)
 
   plots <- m[, list(
     Unit = paste(sort(unique(na.omit(unit))), collapse = ", "),
@@ -580,15 +728,32 @@ scan_context <- function(metrics, scans, treat_dates) {
     Scans = st$scans, Plots = st$plots,
     check.names = FALSE, stringsAsFactors = FALSE
   )
+  treat_table <- NULL
   if (length(tvec) > 0) {
+    # "After prescribed fire on 2025-05-15", or "After 2025-05-15" without a type
+    label <- ifelse(is.na(tr$type), fmt_date(tr$date), paste(
+      vapply(tr$type, treatment_name, character(1)), "on", fmt_date(tr$date)
+    ))
     step_table$Treatment <- vapply(seq_len(nrow(st)), function(i) {
-      after <- tvec[tvec <= st$start[i]]
-      if (length(after) > 0) paste("After", fmt_date(max(after))) else
-        paste("Before", fmt_date(min(tvec)))
+      after <- which(tvec <= st$start[i])
+      if (length(after) > 0) paste("After", label[max(after)]) else paste("Before", label[1])
     }, character(1))
+
+    n_before <- function(t) uniqueN(m[date < t, combo])
+    n_after <- function(t) uniqueN(m[date >= t, combo])
+    n_both <- function(t) length(intersect(m[date < t, combo], m[date >= t, combo]))
+    treat_table <- data.frame(
+      Date = fmt_date(tr$date),
+      Treatment = ifelse(is.na(tr$type), "Not given", tr$type),
+      `Plots scanned before` = vapply(as.list(tr$date), n_before, 1L),
+      `Plots scanned after` = vapply(as.list(tr$date), n_after, 1L),
+      `Plots scanned before and after` = vapply(as.list(tr$date), n_both, 1L),
+      check.names = FALSE, stringsAsFactors = FALSE
+    )
   }
 
-  list(text = text, plots = as.data.frame(plots), steps = step_table)
+  list(text = text, treatments = treatments, plots = as.data.frame(plots), steps = step_table,
+       treatment_table = treat_table)
 }
 
 #' The "Sample size and design" checks across all loaded scans.
@@ -628,7 +793,7 @@ design_checks <- function(metrics, scans, treat_dates) {
     if (nrow(once) > 0) {
       out <- c(out, sprintf(
         "%s of %s %s a single scan and cannot show change over time (%s).",
-        nrow(once), plural(n_plots, "plot"), if (nrow(once) == 1) "has" else "have",
+        num_start(nrow(once)), plural(n_plots, "plot"), if (nrow(once) == 1) "has" else "have",
         and_list(once$combo)
       ))
     }
@@ -636,14 +801,15 @@ design_checks <- function(metrics, scans, treat_dates) {
     small <- st[n < MIN_SCANS]
     if (nrow(small) > 0) {
       out <- c(out, sprintf(
-        "%s of %s %s fewer than %d scans (%s); means for these steps are uncertain.",
-        nrow(small), plural(nrow(st), "time step"), if (nrow(small) == 1) "holds" else "hold",
-        MIN_SCANS, and_list(sprintf("%s: n = %d", fmt_date(small$mid), small$n))
+        "%s of %s %s fewer than %s scans (%s); means for these steps are uncertain.",
+        num_start(nrow(small)), plural(nrow(st), "time step"), if (nrow(small) == 1) "holds" else "hold",
+        num(MIN_SCANS), and_list(sprintf("%s: n = %d", fmt_date(small$mid), small$n))
       ))
     }
     if (max(st$n) >= 2 * min(st$n)) {
       out <- c(out, sprintf(
-        "Time steps are unbalanced, holding between %d and %d scans.", min(st$n), max(st$n)
+        "Time steps are unbalanced, holding between %s and %s scans.", num(min(st$n)),
+        num(max(st$n))
       ))
     }
   }
@@ -652,19 +818,19 @@ design_checks <- function(metrics, scans, treat_dates) {
     few <- units[plots < MIN_PLOTS]
     if (nrow(few) > 0) {
       out <- c(out, sprintf(
-        "%s fewer than %d plots (%s), too few for a reliable comparison between units.",
+        "%s fewer than %s plots (%s), too few for a reliable comparison between units.",
         if (nrow(few) == 1) "One management unit has" else
-          paste(nrow(few), "management units have"),
-        MIN_PLOTS, and_list(sprintf("%s: %d", few$unit, few$plots))
+          paste(num_start(nrow(few)), "management units have"),
+        num(MIN_PLOTS), and_list(sprintf("%s: %d", few$unit, few$plots))
       ))
     }
     if (max(units$plots) >= 2 * min(units$plots)) {
       out <- c(out, sprintf(
         paste(
-          "Management units are unequal in size (%d to %d plots), so pooled results lean",
+          "Management units are unequal in size (%s to %s plots), so pooled results lean",
           "toward the larger units."
         ),
-        min(units$plots), max(units$plots)
+        num(min(units$plots)), num(max(units$plots))
       ))
     }
   }
@@ -684,7 +850,7 @@ design_checks <- function(metrics, scans, treat_dates) {
             "%s of %s %s scanned both before and after the treatment on %s; only these give",
             "a direct before-and-after comparison."
           ),
-          paired, plural(n_plots, "plot"), if (paired == 1) "was" else "were", fmt_date(t)
+          num_start(paired), plural(n_plots, "plot"), if (paired == 1) "was" else "were", fmt_date(t)
         ))
       }
     }
@@ -720,7 +886,7 @@ snapshot_notice <- function(subject, n_scans, n_plots, start, end, tvec) {
     ))
   }
   if (n_scans < MIN_SCANS) {
-    text <- paste(text, sprintf("With only %d scans, the mean is uncertain.", n_scans))
+    text <- paste(text, sprintf("With only %s scans, the mean is uncertain.", num(n_scans)))
   }
   text
 }

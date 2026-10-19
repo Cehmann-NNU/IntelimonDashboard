@@ -56,7 +56,8 @@ see what each part does.
 2. **Subtitle**: for example the unit, project or treatment.
 3. **Prepared by**.
 4. **Organization**.
-5. **Date of preparation**: today by default.
+5. **Date of preparation**: today by default. Dates throughout the report
+   are written MM/DD/YYYY, and counts below ten are spelled out.
 6. **Summary**: opens the report. Format and **Build report** are below it.
 7. **+ Text block**: adds an empty text block directly under the selected
    card, or at the bottom of the report when no card is selected.
@@ -170,7 +171,7 @@ printed, even with only a heading.
 
 | Section | What it holds |
 |---|---|
-| Scans, plots and treatments | A paragraph on the scans, plots, sites, dates, agencies, management units and treatment dates, with a table of the plots and a table of the time steps |
+| Scans, plots and treatments | A paragraph on the scans, plots, sites, dates, agencies and management units. Then the treatments entered on the Set Treatments tab: how many of each type took place, what was done and when, how many plots were scanned before and after each treatment and how long before and after, and which plots and units were scanned on both sides of it. Tables list the plots, the treatments (date, type and plot counts) and the time steps, each step named for the treatment it comes before or after |
 | Plot locations | A map of the selected plots on satellite imagery (Esri World Imagery), zoomed to their extent |
 | Sample size and design | Issues across all loaded scans (few plots, single scans, small or unbalanced time steps, unbalanced units), then the issues of each figure and table |
 

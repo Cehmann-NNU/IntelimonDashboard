@@ -231,7 +231,8 @@ server <- function(id) {
       if (item$kind == "note") {
         item$heading <- typed("head_", item, "heading")
         item$text <- typed("text_", item, "text")
-      } else if (item$kind %in% c("figure", "table")) {
+      } else if (item$kind %in% c("figure", "table", "image")) {
+        # every card entry has a comment box, Points2Pano images included
         item$comment <- typed("comment_", item, "comment")
         item$include_analysis <- typed("auto_", item, "include_analysis")
       }
@@ -241,9 +242,10 @@ server <- function(id) {
     context <- shiny$reactive({
       metrics <- session$userData$metrics()
       scans <- session$userData$scan_selection()
-      treat <- session$userData$trtmt_dates()$TreatmentDate
+      treatments <- session$userData$trtmt_dates()
+      treat <- treatments$TreatmentDate
       list(
-        scan = scan_context(metrics, scans, treat),
+        scan = scan_context(metrics, scans, treat, treatments$TreatmentType),
         checks = design_checks(metrics, scans, treat),
         points = plot_points(scans)
       )
@@ -252,7 +254,7 @@ server <- function(id) {
     section_detail <- function(key, its) {
       ctx <- context()
       if (is.null(ctx$scan)) return("No scans are loaded yet.")
-      if (key == "context") return(ctx$scan$text)
+      if (key == "context") return(paste(c(ctx$scan$text, ctx$scan$treatments), collapse = " "))
       if (key == "map") {
         n <- if (is.null(ctx$points)) 0 else nrow(ctx$points)
         return(sprintf(
@@ -416,7 +418,7 @@ server <- function(id) {
         lapply(items(), with_inputs),
         meta = list(
           title = input$title, subtitle = input$subtitle, author = input$author,
-          organization = input$organization, date = format(date, "%B %d, %Y"),
+          organization = input$organization, date = format(date, report$REPORT_DATE),
           summary = input$summary
         ),
         context = context(),

@@ -224,7 +224,7 @@ describe("report_blocks", {
 describe("front matter", {
   meta <- list(title = "", subtitle = "Unit A", author = "Tester", organization = "Org",
                date = "October 13, 2026")
-  cover <- list(caption = "Cover Photo: USFS, GAFSQ, plot 1085, 2022-02-15, Points2Pano image")
+  cover <- list(caption = "Cover Photo: USFS, GAFSQ, plot 1085, 02/15/2022, Points2Pano image")
 
   it("opens with a title page, then the cover photo page, then the contents", {
     b <- report$report_blocks(list(), meta, cover = cover)
@@ -283,7 +283,7 @@ describe("front matter", {
     b <- blocks_of(list(report$section_item("map")), list(), list(points = pts))
     map <- Filter(function(x) x$type == "image", b)[[1]]
     expect_equal(map$label, "Figure 1.")
-    expect_equal(map$title, "Locations of the 2 plots in this report.")
+    expect_equal(map$title, "Locations of the two plots in this report.")
     expect_equal(map$map, pts)
     empty <- blocks_of(list(report$section_item("map")), list(), list(points = NULL))
     expect_false("image" %in% types(empty))
@@ -294,11 +294,11 @@ describe("cover_caption", {
   it("lists agency, site, plot and date, skipping blanks", {
     expect_equal(
       report$cover_caption("USFS", "GAFSQ", "1085", as.Date("2022-02-15")),
-      "Cover Photo: USFS, GAFSQ, plot 1085, 2022-02-15, Points2Pano image"
+      "Cover Photo: USFS, GAFSQ, plot 1085, 02/15/2022, Points2Pano image"
     )
     expect_equal(
       report$cover_caption(NA, "GAFSQ", "1085", as.Date("2022-02-15")),
-      "Cover Photo: GAFSQ, plot 1085, 2022-02-15, Points2Pano image"
+      "Cover Photo: GAFSQ, plot 1085, 02/15/2022, Points2Pano image"
     )
   })
 })
@@ -416,5 +416,19 @@ describe("forestry methods", {
     for (r in c("Reineke, L. H.", "Curtis, R. O.", "Dixon, G. E.", "Reinhardt, E. D.")) {
       expect_true(any(startsWith(t, r)), info = r)
     }
+  })
+})
+
+describe("us_date_block", {
+  impl <- attr(report, "namespace")
+
+  it("writes dates in text and tables as MM/DD/YYYY", {
+    b <- impl$us_date_block(list(type = "paragraph", text = "Scanned on 2025-05-15."))
+    expect_equal(b$text, "Scanned on 05/15/2025.")
+    tab <- data.frame(`Time step` = c("2024-01-01", "2024-06-01"), n = c("4", "4"),
+                      check.names = FALSE)
+    b <- impl$us_date_block(list(type = "table", title = "Steps", data = tab))
+    expect_equal(b$data$`Time step`, c("01/01/2024", "06/01/2024"))
+    expect_equal(b$data$n, c("4", "4"))
   })
 })

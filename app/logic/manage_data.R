@@ -87,8 +87,11 @@ set_scan_numbers <- function(session) {
   selected <- dt$copy(session$userData$scan_selection())
   if (nrow(selected) == 0) return()
 
+  groups <- scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)
+  # nolint start: unused_declared_object_linter.
   selected[, Remeasurement := remeasurement_numbers(selected)]
-  selected[, ScanGroup := scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)]
+  selected[, ScanGroup := groups]
+  # nolint end
   session$userData$scan_selection(selected)
 }
 
@@ -102,7 +105,8 @@ set_scan_groups <- function(session) {
   selected <- dt$copy(session$userData$scan_selection())
   if (nrow(selected) == 0) return()
 
-  selected[, ScanGroup := scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)]
+  groups <- scan_groups(selected, session$userData$trtmt_dates()$TreatmentDate)
+  selected[, ScanGroup := groups] # nolint: unused_declared_object_linter.
   session$userData$scan_selection(selected)
 }
 

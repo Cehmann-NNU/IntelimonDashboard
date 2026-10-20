@@ -1,6 +1,9 @@
 box::use(bslib,
   leaflet,
-  leaflet.extras[addDrawToolbar, drawRectangleOptions, editToolbarOptions],
+  leaflet.extras[
+    addDrawToolbar, drawPolygonOptions, drawRectangleOptions, editToolbarOptions,
+    removeDrawToolbar
+  ],
   shiny[NS, moduleServer, outputOptions],
 )
 
@@ -8,6 +11,35 @@ box::use(
   app/view/map_controls[update_extent],
 )
 
+
+# The map's drawing tools: rectangles and polygons, drawn into the "aoi"
+# group - an area of interest on the Fuels exports tab, a selection of plots
+# on the Selection Map.
+add_draw_tools <- function(map) {
+  addDrawToolbar(
+    map,
+    targetGroup = "aoi",
+    rectangleOptions = drawRectangleOptions(),
+    polygonOptions = drawPolygonOptions(),
+    polylineOptions = FALSE,
+    circleOptions = FALSE,
+    markerOptions = FALSE,
+    circleMarkerOptions = FALSE,
+    editOptions = editToolbarOptions(edit = TRUE, remove = TRUE)
+  )
+}
+
+#' Remove the shapes drawn on a map, keeping its drawing tools.
+#'
+#' Drawn shapes are not registered with leaflet's layer manager, so
+#' clearGroup("aoi") leaves them; the draw toolbar's own clear does remove
+#' them, and the toolbar is put back straight after.
+#' @param proxy - a leafletProxy of a map built by `server()`.
+#' @export
+clear_drawn_shapes <- function(proxy) {
+  removeDrawToolbar(proxy, clearFeatures = TRUE) |>
+    add_draw_tools()
+}
 
 #' @export
 ui <- function(id) {
@@ -60,16 +92,7 @@ server <- function(id, fit2pts, col_names = list(lat = "Latitude", lng = "Longit
           options    = leaflet$layersControlOptions(collapsed = FALSE),
           position   = "topright"
         ) |>
-        addDrawToolbar(
-          targetGroup = "aoi",
-          rectangleOptions = drawRectangleOptions(),
-          polygonOptions = FALSE,
-          polylineOptions = FALSE,
-          circleOptions = FALSE,
-          markerOptions = FALSE,
-          circleMarkerOptions = FALSE,
-          editOptions = editToolbarOptions(edit = TRUE, remove = TRUE)
-        )
+        add_draw_tools()
     })
     proxy_map <- leaflet$leafletProxy("map", session)
 

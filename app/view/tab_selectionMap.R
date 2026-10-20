@@ -1,5 +1,6 @@
 box::use(
   bslib[card_body, card_header, nav_panel],
+  data.table[uniqueN],
   grDevices[hcl.colors],
   gridlayout[grid_card, grid_container, grid_place],
   leaflet,
@@ -9,7 +10,7 @@ box::use(
 box::use(
   api = app/logic/load_data_api,
   app/logic/manage_data[build_scan_loc_dt, get_scans4dwnld, set_scan_numbers],
-  app/logic/map_fnc[parse_click_id],
+  app/logic/map_fnc[in_drawn_shape, parse_click_id],
   app/view/card_mapLeaflet,
   app/view/map_controls[map_scan_points,
                         update_dwnld_scan_points,
@@ -148,6 +149,42 @@ server <- function(id) {
 
       # reassign to reactive variable
       session$userData$scan_selection(all_clicks)
+    })
+
+    #----Select plots inside a drawn shape-------
+    # A rectangle or polygon drawn with the map's tools adds every plot inside
+    # it (all of its scans that pass the filters), as clicking each plot
+    # would. Plots already selected stay selected. The shape is then removed
+    # so the next one can be drawn.
+    shiny$observeEvent(map$input$map_draw_new_feature, {
+      markers <- filtered_plots()
+      all_clicks <- session$userData$scan_selection()
+      inside <- markers[in_drawn_shape(markers, map$input$map_draw_new_feature)]
+      inside[, "id" := paste(site, plot, sep = "-")] # nolint: object_name_linter
+      new <- inside[!id %in% all_clicks$id]
+      card_mapLeaflet$clear_drawn_shapes(proxy_map)
+
+      n_new <- uniqueN(new$id)
+      n_already <- uniqueN(inside$id) - n_new
+      if (nrow(inside) == 0) {
+        shiny$showNotification("No plots inside the drawn shape.", type = "warning", duration = 5)
+        return()
+      }
+      shiny$showNotification(
+        paste0(
+          "Selected ", n_new, " plot", if (n_new == 1) "" else "s", " inside the drawn shape",
+          if (n_already > 0) paste0(" (", n_already, " already selected)") else "", "."
+        ),
+        type = "message", duration = 5
+      )
+      if (n_new == 0) return()
+
+      new[, ":="(
+        Unit = "My Unit",
+        Remeasurement = NA_integer_,
+        ScanGroup = NA_integer_
+      )]
+      session$userData$scan_selection(rbind(all_clicks, new, use.names = TRUE))
     })
 
     update_selected_scan_points(session, proxy_map,

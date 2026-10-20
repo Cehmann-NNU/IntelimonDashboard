@@ -85,6 +85,16 @@ table,.table,td,th{ color:var(--imn-text); }
    link does not reliably merge into it, so these styles are attached through
    the header rather than app/styles/main.scss. Edit styles here. */
 
+/* Vertex handles of the polygon and rectangle drawing tools. Leaflet.draw
+   uses 20px handles whenever the browser reports touch support; 60% smaller
+   (8px) keeps them from hiding the plots being outlined. */
+.leaflet-editing-icon.leaflet-touch-icon {
+  width: 8px !important;
+  height: 8px !important;
+  margin-left: -4px !important;
+  margin-top: -4px !important;
+}
+
 /* Center leaflet labels inside the circles, with a white halo for contrast */
 .plot-label {
   background: transparent !important;

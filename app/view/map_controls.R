@@ -1,6 +1,6 @@
 box::use(
   leaflet,
-  shiny[debounce, observeEvent, req],
+  shiny[observeEvent, req],
 )
 
 box::use(

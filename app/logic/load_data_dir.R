@@ -102,7 +102,7 @@ has_state <- function(test_str) {
 is_scan_id <- function(filename, sep = "_", lgth = 5) {
   parts <- strsplit(filename, sep)
 
-  is_scan <- c()
+  is_scan <- logical(length(parts))
   for (p in seq_along(parts)) {
     part <- parts[[p]]
     is_scan[p] <- length(part) == lgth && is_site(part[1]) && is_plot(part[2]) && is_date(part[3])
@@ -172,8 +172,9 @@ get_zip_contents <- function(path, ext = ".zip") {
 
   zip_contents <- lapply(zip_files[is_scan], function(file) {
     contents <- archive$archive(file)
+    folders <- endsWith(contents$path, "/")
     data.frame(
-      csv_path = contents$path,
+      csv_path = contents$path[!folders],
       zip_path = file,
       stringsAsFactors = FALSE
     )
@@ -233,6 +234,10 @@ get_dir_contents <- function(path) {
 #' @return a named list with site, plot scanner_id and date
 #' @export
 get_scan_parts <- function(scan_str, sep = "_") {
+  if (length(scan_str) == 0) {
+    return(list(site = character(), plot = character(),
+                date = as.Date(character()), scanner_id = integer()))
+  }
   str_list <- dt$tstrsplit(scan_str, sep,
     fixed = TRUE,
     keep = 1:4,
@@ -278,13 +283,13 @@ build_scan_dt <- function(all_paths) {
 #' Generic output reader that filters all_paths by apply which_function and then calls read_multi_scan
 .read_output <- function(all_paths, which_func) {
   if (nrow(all_paths) == 0) {
-    return()
+    output_paths <- all_paths
+  } else {
+    filter_ouptut <- which_func(all_paths$csv_path)
+    output_paths <- unique(all_paths[filter_ouptut], by = c("site", "plot", "date", "scanner_id"))
   }
-  filter_ouptut <- which_func(all_paths$csv_path)
-  output_paths <- unique(all_paths[filter_ouptut], by = c("site", "plot", "date", "scanner_id"))
   read_multi_scan(output_paths)
 }
-
 
 #' @export
 read_treeinv <- function(all_paths) {

@@ -256,7 +256,7 @@ server <- function(id) {
       inside <- markers[in_drawn_shape(markers, map$input$map_draw_new_feature)]
       inside[, "id" := paste(site, plot, sep = "-")] # nolint: object_name_linter
       new <- inside[!id %in% all_clicks$id]
-      card_mapLeaflet$clear_drawn_shapes(proxy_map)
+      widget_mapLeaflet$clear_drawn_shapes(proxy_map)
 
       n_new <- uniqueN(new$id)
       n_already <- uniqueN(inside$id) - n_new

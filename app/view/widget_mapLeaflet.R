@@ -96,8 +96,8 @@ server <- function(id, fit2pts, col_names = list(lat = "Latitude", lng = "Longit
     # return a proxy map
     # inputs are indexed by daisy chaining name spaces:
     #       main calls tab_selectionMap$ui(ns("Selection Map"))
-    #       tab_selectionMap calls card_mapLeaflet$ui(ns('map'))
-    #       card_mapLeaflet calls leaflet$leafletOutput(ns("map"), height = 400)
+    #       tab_selectionMap calls widget_mapLeaflet$ui(ns('map'))
+    #       widget_mapLeaflet calls leaflet$leafletOutput(ns("map"), height = 400)
     # so the id is 'Selection Map-map-map'
     # This is dependent on the parent and grandparent calls, and can be hard to track/easy to break
     # the work around is

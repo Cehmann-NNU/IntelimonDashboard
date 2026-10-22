@@ -44,6 +44,10 @@ h1,h2,h3,h4,h5,h6,label,p,.form-label,.control-label,.shiny-input-container{ col
   border:1px solid var(--imn-border) !important; border-radius:9px !important; }
 .form-control::placeholder{ color:rgba(238,243,255,.4); }
 .selectize-input, .selectize-input.focus{ box-shadow:none !important; }
+/* the text box selectize types into sits inside .selectize-input: no border or
+   fill of its own, or the dropdown shows a third outline around the placeholder */
+.selectize-input input[type=text], .selectize-input input{
+  border:none !important; background:transparent !important; padding:0 !important; }
 .selectize-dropdown{ background:#12203a !important; color:var(--imn-text) !important;
   border:1px solid var(--imn-border) !important; }
 .selectize-dropdown .active{ background:rgba(143,240,226,.18) !important; color:var(--imn-text) !important; }

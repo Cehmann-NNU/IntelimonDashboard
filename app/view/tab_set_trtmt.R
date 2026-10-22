@@ -57,15 +57,20 @@ ui <- function(id) {
               ns("btn_add_trtmt"),
               "Add Date"
             ),
+            # the dates added so far, with the delete control for the selected one
+            # directly beneath them
+            shiny$h6("Treatment dates", style = "margin-top: 8px;"),
+            DT$DTOutput(
+              ns("tbl_trtmt_dates"),
+              fill = FALSE
+            ),
             shiny$div(
-              style = "text-align:right; margin-top: 5px;", # "display:flex; justify-content:flex-end;", #
+              style = "text-align:right; margin-top: 4px;",
               shiny$actionLink(
                 ns("btn_delete_trtmt"),
-                label = NULL, # "Delete selected",
+                label = NULL,
                 icon = shiny$icon("trash"),
-              ),
-              DT$DTOutput(
-                ns("tbl_trtmt_dates")
+                title = "Delete the selected treatment date"
               )
             )
           )
@@ -155,10 +160,8 @@ server <- function(id) {
       DT$datatable(
         session$userData$trtmt_dates(),
         colnames = c("Date", "Treatment"),
-        caption = "Treatment Dates",
         filter = "none",
         rownames = FALSE,
-        height = "100%",
         selection = "single",
         # dates are changed by deleting and adding them, so the
         # scan groupings follow

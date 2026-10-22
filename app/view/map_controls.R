@@ -125,8 +125,13 @@ map_scan_points <- function(proxy_map,
       options = leaflet$pathOptions(clickable = clickble),
       lng = pts[[col_names$lng]],
       lat = pts[[col_names$lat]],
-      color = color,
-      radius = 2
+      # black ring (stroke) around an opaque fill so markers stand out on any basemap
+      color = "black",
+      weight = 1,
+      opacity = 1,
+      fillColor = color,
+      fillOpacity = 1,
+      radius = 4
     ) |>
     leaflet$addLegend(
       layerId = paste0(grp, "_legend"),

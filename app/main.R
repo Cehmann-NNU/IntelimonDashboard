@@ -42,11 +42,9 @@ ui <- function(id) {
     header = tags$head(includeCSS("app/static/styles.css")),
     footer = sponsor_footer(),
     if (!file.exists("../data_loc.yaml")) {
-      tab_load_data$ui(ns("Load Data"))
+      tab_load_data$ui(ns("Load-Data"))
     },
-    tab_selectionMap$ui(ns("Selection Map")),
-    # space-free id: Shiny can't send update messages to inputs whose ids have
-    # spaces, and this tab resets its Treatment picker after each Add Date
+    tab_selectionMap$ui(ns("Selection-Map")),
     tab_set_trtmt$ui(ns("set_treatments")),
     tab_directOutputs$ui(ns("Standard-outputs")),
     tab_predictive_models$ui(ns("Predictive-models")),
@@ -72,8 +70,8 @@ server <- function(id) {
     email_prompt$server("email_prompt")
 
     # -------Tab Servers ------------------------
-    tab_load_data$server("Load Data")
-    tab_selectionMap$server("Selection Map")
+    tab_load_data$server("Load-Data")
+    tab_selectionMap$server("Selection-Map")
     tab_set_trtmt$server("set_treatments")
     tab_directOutputs$server("Standard-outputs")
     tab_predictive_models$server("Predictive-models")

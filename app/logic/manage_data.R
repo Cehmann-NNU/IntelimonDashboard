@@ -192,3 +192,33 @@ pivot_on_model <- function(models_dt, model = NULL) {
     fun.aggregate = mean   # collapses accidental duplicates
   )
 }
+
+#' Identify if data must be downloaded through the web api or uploaded from the local disk.
+#'
+#' This is a simplistic check for missing location, or a novel agency name that is not named in the api.
+#'
+#' @param data - data.table from session$userData$scan_selection
+#' @return boolean list
+#' @export
+is_data_on_disk <- function(data) {
+  api_agencies <- api$get_agencies()$value
+  has_api_agency <- data$Agency %in% api_agencies
+
+  no_lat <- is.na(data$Latitude)
+
+  !has_api_agency | no_lat
+}
+
+#' Exclude na from summary functions like min/max, while protecting against -Inf.
+#'
+#' A min or a max of NA returns -Inf. This function returns NA if all values are NA, but otherwise ignores NA.
+#'
+#' @param x - input data. Any data accepted by the fnc parameter
+#' @param fnc - an R function to be applied to X. Must accept parameter na.rm. Min or max expected.
+#' @export
+safe_summary <- function(x, fnc) {
+  if (all(is.na(x))) {
+    return(NA_real_)
+  }
+  fnc(x, na.rm = TRUE)
+}

@@ -128,8 +128,8 @@ server <- function(id) {
     # if the root drive list has changed, re-initialize the shinyDirChooser
     shiny$observe({
       new_root <- roots()
-      register_shinyDirChooser("ui_btn_dir_ptx", new_root, default_rt = NULL)
-      register_shinyDirChooser("ui_btn_dir_metrics_write", new_root, default_rt = NULL)
+      register_shinyDirChooser("ui_btn_dir_ptx", new_root, default_rt = "Home")
+      register_shinyDirChooser("ui_btn_dir_metrics_write", new_root, default_rt = "Home")
     })
 
     dir_ptx <- shiny$reactive({

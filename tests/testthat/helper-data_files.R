@@ -29,7 +29,7 @@ test_scans <- c(
   "NJTST_0218_20240304_2", "NJTST_0218_20240408_2"
 )
 
-test_sites <- c("AZTS8", "GATST", "NJTST")
+test_sites <- c("AZTS8", "GATST", "NJTST", "AZCNF", "GACHF", "NJPIP")
 
 n_test_scans <- length(test_scans)
 n_test_sites <- length(test_sites)
@@ -41,7 +41,7 @@ n_no_data_csvs <- 1L
 n_csvs <- 3L
 n_subdir <- 6L
 n_tif <- 3L
-n_jpg <- 0L
+n_jpg <- 1L
 n_contents <- n_csvs + n_tif + n_jpg
 
 #' Path of the committed download, still zipped.

@@ -289,5 +289,4 @@ them.
   can share a time step if they were collected close together. Enter them on
   **Set Treatments** before you evaluate the results.
 - **No models for a site?** Models are built only where field data were
-  collected with the scans. Contact the IntELiMon team about calibrating
-  models for your site.
+  collected with the scans.

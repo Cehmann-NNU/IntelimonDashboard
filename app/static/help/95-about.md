@@ -87,13 +87,9 @@ released under the CC0-1.0 license.
 - National Park Service
 - SERDP / ESTCP
 
-## Development team
-
-_Names and organizations go here._
-
 ## Version
 
-_Version number and release date go here._
+beta0.1.0
 
 ## References
 
@@ -220,7 +216,3 @@ Watson, D. J. (1947). Comparative physiological studies on the growth of
 field crops: I. Variation in net assimilation rate and leaf area between
 species and varieties, and within and between years. *Annals of Botany*,
 11(1), 41-76.
-
-## Contact
-
-_Contact details go here._

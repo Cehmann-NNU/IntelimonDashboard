@@ -38,7 +38,7 @@ see what each part does.
 <span class="help-spot tip-left" tabindex="0" style="left:53%;top:60.4%">13<span class="help-tip"><b>Derived from.</b> Where each dead fuel load comes from: Auto, the time lag count, or the fuel model scaled to the fuel bed depth.</span></span>
 <span class="help-spot tip-left tip-up" tabindex="0" style="left:55%;top:85.6%">14<span class="help-tip"><b>Notes.</b> How many scans are averaged and where values had to fall back to another source.</span></span>
 <span class="help-spot tip-left tip-up" tabindex="0" style="left:55%;top:96%">15<span class="help-tip"><b>Submit fuels to rothRmel.</b> Sends each scan's loadings and the canopy values to the rothRmel tab.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:68.5%;top:46.2%">16<span class="help-tip"><b>Drawing tools.</b> Draw a rectangle to widen the area the fuel raster covers; edit or delete it below.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:68.5%;top:46.2%">16<span class="help-tip"><b>Drawing tools.</b> Draw a polygon or rectangle to widen the area the fuel raster covers; edit or delete it below.</span></span>
 <span class="help-spot tip-left" tabindex="0" style="left:97%;top:30.3%">17<span class="help-tip"><b>Fuel raster export.</b> Builds the LANDFIRE landscape (LCP and GeoTIFF) around the plots.</span></span>
 <span class="help-spot tip-left" tabindex="0" style="left:97%;top:37.5%">18<span class="help-tip"><b>Download FastFuels / FCCS.</b> Not available yet: these buttons don't do anything.</span></span>
 </div>
@@ -60,7 +60,7 @@ see what each part does.
 13. **Derived from**: the source of each dead fuel load.
 14. **Notes** on averages and fallbacks.
 15. **Submit fuels to rothRmel**.
-16. **Drawing tools** for the raster area.
+16. **Drawing tools** (polygon and rectangle) for the raster area.
 17. **Fuel raster export**.
 18. **Download FastFuels / FCCS**: not available yet.
 
@@ -204,15 +204,18 @@ fuel model, canopy cover, stand height, canopy base height and canopy bulk
 density, from LANDFIRE (LF2024 fuels and canopy, LF2020 topography).
 
 <div class="help-shot"><img src="static/help/images/fuels-aoi-map.png" alt="The map with a drawn area of interest rectangle, the drawing tools and the export buttons" width="280">
-<span class="help-spot tip-right" tabindex="0" style="left:16%;top:26.5%">1<span class="help-tip"><b>Draw a rectangle.</b> Click, then drag on the map.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:16%;top:39%">2<span class="help-tip"><b>Edit</b> or <b>delete</b> the rectangle.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:16%;top:26.5%">1<span class="help-tip"><b>Draw a shape.</b> The rectangle tool: click, then drag on the map. The polygon tool sits above it: click each corner, then the first corner again to close.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:16%;top:39%">2<span class="help-tip"><b>Edit</b> or <b>delete</b> the shape.</span></span>
 <span class="help-spot tip-right" tabindex="0" style="left:34%;top:54%">3<span class="help-tip">The <b>area of interest</b>. The landscape covers it as well as the plots.</span></span>
 <span class="help-spot tip-left" tabindex="0" style="left:80%;top:4%">4<span class="help-tip"><b>Fuel raster export</b> builds the landscape.</span></span>
 </div>
 
 1. **Optional:** draw an area of interest. Click the square tool on the map
-   and drag a rectangle. A message confirms its size. The landscape always
-   covers the selected plots plus 2 km around them; the rectangle widens it.
+   and drag a rectangle, or click the pentagon tool and click each corner of
+   a polygon, then the first corner again to close it. A message confirms
+   its size. The landscape always covers the selected plots plus 2 km around
+   them; the shape widens it to the shape's full extent, and the canopy
+   corrections are worked out over the area inside the shape.
 2. Click **Fuel raster export**.
 3. Enter a contact email the first time. LANDFIRE requires one for every
    request:

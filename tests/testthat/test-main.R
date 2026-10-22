@@ -1,6 +1,6 @@
 box::use(
   shiny[testServer],
-  testthat[describe, expect_equal, expect_null, expect_true, it],
+  testthat[describe, expect_true, it],
 )
 
 box::use(
@@ -19,32 +19,6 @@ describe("main server", {
   it("initialises without error", {
     testServer(server, {
       expect_true(TRUE)
-    })
-  })
-})
-
-# -- tab_load_data server ------------------------------------------------------
-
-describe("tab_load_data server", {
-  it("returns NULL as the initial data_dir when no yaml is configured", {
-    testServer(load_data_server, {
-      # data_dir is a reactiveVal returned by the module; at startup with no
-      # data_loc.yaml present it should be NULL
-      expect_null(session$returned())
-    })
-  })
-
-  it("updates data_dir when a valid directory path is submitted", {
-    testServer(load_data_server, {
-      session$setInputs(ui_data_dir = testdata, submit_dir = 1)
-      expect_equal(session$returned(), testdata)
-    })
-  })
-
-  it("does not update data_dir when a non-existent path is submitted", {
-    testServer(load_data_server, {
-      session$setInputs(ui_data_dir = "/does/not/exist", submit_dir = 1)
-      expect_null(session$returned())
     })
   })
 })

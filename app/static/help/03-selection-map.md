@@ -38,17 +38,18 @@ For local installations, scans may also be loaded from a folder using the
 Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
-<div class="help-shot"><img src="static/help/images/selection-map-overview.png" alt="The Selection Map tab: the Select Scans panel on the left, and the map of all plots on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:21%;top:14.5%">1<span class="help-tip"><b>Agency selection.</b> Pick one or more agencies to show only their plots. Leave it empty to show every agency.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:21%;top:27%">2<span class="help-tip"><b>Select date range.</b> Drag either handle to show only scans collected between the two dates.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:21%;top:34.5%">3<span class="help-tip"><b>Clear All Plots.</b> Removes every plot from the selection so you can start choosing again.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:21%;top:39.5%">4<span class="help-tip"><b>Get Data.</b> Downloads the selected scans into your session. The other tabs use these data.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:28.5%;top:15.5%">5<span class="help-tip"><b>Zoom in and out.</b> You can also zoom with the mouse wheel and pan by dragging the map.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:28.5%;top:30%">6<span class="help-tip"><b>Draw rectangle/polygon.</b> Used to select multiple points.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:87%;top:14.5%">7<span class="help-tip"><b>Satellite or Base Map.</b> Switch between satellite imagery and a plain gray map. Markers are easier to see on the Base Map.</span></span>
-<span class="help-spot tip-up" tabindex="0" style="left:48%;top:66%">8<span class="help-tip"><b>Legend.</b> The color of each agency's plots. Selected plots are gold; downloaded plots are blue.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:66%;top:54%">9<span class="help-tip"><b>Plots.</b> Each dot is a plot. Zoom in and click a dot to select it; click it again to unselect it.</span></span>
-<span class="help-spot tip-right tip-up" tabindex="0" style="left:24.5%;top:95%">10<span class="help-tip"><b>Expand.</b> Shows the map full screen, partly hidden behind the legend in this corner. Press <b>Close</b> at the top right to return.</span></span>
+<div class="help-shot"><img src="static/help/images/selection-map-overview.png" alt="The Selection Map tab: the Select Scans panel on the left, and the IntELiMon Plots card with its Location Map and Table views on the right" width="632">
+<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:10.9%">1<span class="help-tip"><b>Agency selection.</b> Pick one or more agencies to show only their plots. Leave it empty to show every agency. Scans loaded from your own computer are listed as <b>MyPC</b>.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:21.5%">2<span class="help-tip"><b>Select date range.</b> Drag either handle to show only scans collected between the two dates.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:28%">3<span class="help-tip"><b>Clear All Plots.</b> Removes every plot from the selection so you can start choosing again.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:32.6%">4<span class="help-tip"><b>Get Data.</b> Downloads the selected scans into your session. The other tabs use these data.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:33.5%;top:13%">5<span class="help-tip"><b>Zoom in and out.</b> You can also zoom with the mouse wheel and pan by dragging the map.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:33.5%;top:23%">6<span class="help-tip"><b>Draw a polygon or rectangle.</b> Every plot inside the shape is selected at once.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:12.1%">7<span class="help-tip"><b>Satellite or Base Map.</b> Switch between satellite imagery and a plain gray map. Markers are easier to see on the Base Map.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:82.6%;top:3.6%">8<span class="help-tip"><b>Location Map / Table.</b> Switch between the map and a table of the same scans. Scans without coordinates, such as local scans not yet placed on the map, are only in the table.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:62.5%;top:72%">9<span class="help-tip"><b>Legend.</b> The color of each agency's plots. Selected plots are gold; downloaded plots are blue.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:82.3%;top:62.8%">10<span class="help-tip"><b>Plots.</b> Each dot is a plot. Zoom in and click a dot to select it; click it again to unselect it.</span></span>
+<span class="help-spot tip-right tip-up" tabindex="0" style="left:28.2%;top:97.3%">11<span class="help-tip"><b>Expand.</b> Shows the card full screen, partly hidden behind the legend in this corner. Press <b>Close</b> at the top right to return.</span></span>
 </div>
 
 1. **Agency selection**: shows only the chosen agencies' plots.
@@ -56,12 +57,14 @@ see what each part does.
 3. **Clear All Plots**: empties the selection.
 4. **Get Data**: downloads the selected scans.
 5. **Zoom buttons**: zoom in and out (the mouse wheel works too).
-6. **Draw rectangle/polygon**: used to select multiple points.
+6. **Draw polygon / rectangle**: select every plot inside a shape.
 7. **Satellite / Base Map**: switches the background map.
-8. **Legend**: agency colors, plus gold for selected and blue for
+8. **Location Map / Table**: switches between the map and a table of the
+   scans.
+9. **Legend**: agency colors, plus gold for selected and blue for
    downloaded plots.
-9. **Plots**: click to select or unselect.
-10. **Expand**: shows the map full screen.
+10. **Plots**: click to select or unselect.
+11. **Expand**: shows the card full screen.
 
 ## Step by step
 
@@ -109,8 +112,8 @@ plots scanned from June 2023 onward remain.
   by dragging the map.
 - Once you zoom in far enough, each plot shows its **plot number**. The
   numbers appear when no more than 80 plots are in view.
-- Use the **Expand** button in the lower left corner of the map to work on a
-  full-screen map.
+- Use the **Expand** button in the lower left corner of the map card to work
+  on a full-screen map.
 - Switch to **Base Map** if the markers are hard to see on the satellite
   imagery.
 - For a larger view, click the gray circle in the lower left corner of the
@@ -134,6 +137,64 @@ plots scanned from June 2023 onward remain.
 
 The dots are small. If a click doesn't select a plot, zoom in further and
 click the center of the dot.
+
+#### Select scans from the table
+
+Click **Table** at the top right of the map card to list the same scans as
+rows: site, plot, date, agency, latitude, longitude and scanner. The agency
+and date filters apply to the table too, and the column filters at the top
+of the table narrow both the table and the map.
+
+<div class="help-shot"><img src="static/help/images/selection-map-table-mypc.png" alt="The Table view filtered to the MyPC agency: ten local scans with empty Latitude and Longitude, three of them selected" width="632">
+<span class="help-spot tip-right" tabindex="0" style="left:19%;top:10.9%">1<span class="help-tip"><b>Agency selection</b> set to <b>MyPC</b>: only the scans loaded from this computer are listed.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:6.3%">2<span class="help-tip">The <b>Table</b> view.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:68%;top:61.7%">3<span class="help-tip">Empty <b>Latitude</b> and <b>Longitude</b>: these scans have no location, so they are only in the table.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:66.5%;top:45%">4<span class="help-tip"><b>Selected scans</b> are highlighted.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:44.6%;top:9%">5<span class="help-tip"><b>Clear selection</b> unselects every row in the table.</span></span>
+</div>
+
+1. Click the rows you want. Selected rows are highlighted; click a row again
+   to unselect it.
+2. The selection is shared with the map: rows you select turn gold on the
+   map, and plots you click on the map are selected in the table.
+3. Click **Get Data** as usual.
+
+The table is the way to select scans that have no coordinates, such as
+scans loaded from your own computer on the **Load My Data** tab (local
+installations only) before their locations are added. Pick **MyPC** in
+**Agency selection** to list just those scans.
+
+#### Select many plots at once by drawing a shape
+
+<div class="help-shot"><img src="static/help/images/selection-map-draw-polygon.png" alt="A polygon being drawn around plots 0020, 0009, 0010 and 0019, with the Finish, Delete last point and Cancel buttons beside the polygon tool" width="490">
+<span class="help-spot tip-right" tabindex="0" style="left:4.5%;top:28.5%">1<span class="help-tip"><b>Polygon tool.</b> Click it, then click the map at each corner of the shape.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:4.5%;top:37%">2<span class="help-tip"><b>Rectangle tool.</b> Click it, then drag across the plots.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:49%;top:28.9%">3<span class="help-tip"><b>Finish</b> closes the polygon; <b>Delete last point</b> takes back a corner; <b>Cancel</b> stops drawing.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:45.9%;top:48.5%">4<span class="help-tip">Click the <b>first point</b> again to close the shape.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:59.2%;top:70.5%">5<span class="help-tip">Every plot inside the shape will be selected.</span></span>
+</div>
+
+1. Zoom so the plots you want are in view.
+2. Pick a tool on the left of the map:
+   - **Polygon** (the pentagon): click the map at each corner of the shape.
+     Click the first corner again, or click **Finish**, to close it.
+     **Delete last point** takes back a corner; **Cancel** stops drawing.
+     Edges can't cross each other.
+   - **Rectangle** (the square): click, then drag across the plots.
+3. When the shape is closed, every plot inside it turns **gold**, with all
+   of its scans inside the date range, as if you had clicked each one. A
+   message says how many plots were added.
+
+<div class="help-shot"><img src="static/help/images/selection-map-draw-selected.png" alt="After drawing the polygon: plots 0020, 0009, 0010 and 0019 are gold and a message reads Selected 4 plots inside the drawn shape" width="498">
+<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:39.8%">1<span class="help-tip">The four plots inside the shape are now <b>selected</b> (gold).</span></span>
+<span class="help-spot tip-right tip-up" tabindex="0" style="left:27%;top:95.5%">2<span class="help-tip">A message counts the plots added.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20.5%;top:62.5%">3<span class="help-tip"><b>Selected</b> in the legend.</span></span>
+</div>
+
+The shape disappears once its plots are selected, so you can draw another
+one to add more. A shape only adds plots: plots already selected stay
+selected, and the message counts them separately. To take a plot out, click
+it. Only plots that pass the agency and date filters are selected.
 
 ### Step 5: Get the data
 
@@ -172,7 +233,7 @@ It also appears when every selected scan has already been downloaded.
 
 | Symbol | Meaning |
 |---|---|
-| Dot in an agency color | A plot that matches the filters; click to select it |
+| Dot in an agency color | A plot that matches the filters; click it, or draw a shape around it, to select it |
 | Gold dot | A selected plot |
 | Blue dot | A selected plot whose scans are downloaded |
 | Number beside a dot | The plot number, shown when zoomed in |

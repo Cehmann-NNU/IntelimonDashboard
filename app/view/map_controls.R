@@ -4,6 +4,7 @@ box::use(
 )
 
 box::use(
+  app/logic/manage_data[safe_summary],
   app/logic/map_fnc[get_metric_loc, get_plots_in_view],
 )
 
@@ -19,7 +20,7 @@ box::use(
 #' @export
 update_point_labels <- function(input,
                                 proxy_map,
-                                pts,
+                                pts_reactive,
                                 map_id = "map",
                                 col_names = list(lat = "Latitude", lng = "Longitude", label = "plots")) {
   zoom_name <- paste0(map_id, "_zoom")
@@ -29,6 +30,7 @@ update_point_labels <- function(input,
     {
       input[[zoom_name]]
       input[[bounds_name]]
+      pts_reactive()
     },
     {
       req(input[[zoom_name]])
@@ -44,6 +46,7 @@ update_point_labels <- function(input,
         return()
       }
 
+      pts <- pts_reactive()
       # Filter to minimum labels
       # if zoomed in, filter plots to current extent.
       plt_mark <- get_plots_in_view(pts, input[[bounds_name]])
@@ -65,9 +68,11 @@ update_point_labels <- function(input,
           label = plt_mark[[col_names$label]],
           group = "plot-labels",
           labelOptions = leaflet$labelOptions(
+            offset = c(8, -2),
             noHide = TRUE,
             textOnly = TRUE,
-            className = "plot-label"
+            className = "plot-label",
+            style = list("font-weight" = "bold")
           )
         )
     }
@@ -151,7 +156,7 @@ map_scan_points <- function(proxy_map,
 update_selected_scan_points <- function(session,
                                         proxy_map,
                                         col_names = list(lat = "Latitude", lng = "Longitude"),
-                                        lyrid = ~paste(site, plot, sep = "-")) {
+                                        lyrid = ~paste(site, plot, "selected", sep = "-")) {
   observeEvent(session$userData$scan_selection(), {
     mark <- session$userData$scan_selection()
     req(mark)
@@ -171,7 +176,7 @@ update_selected_scan_points <- function(session,
 update_dwnld_scan_points <- function(session,
                                      proxy_map,
                                      col_names = list(lat = "Latitude", lng = "Longitude"),
-                                     lyrid = ~paste(site, plot, sep = "-")) {
+                                     lyrid = ~paste(site, plot, "dwnld", sep = "-")) {
   observeEvent(
     {
       # if only metrics is monitored, then new selected scans cause all metrics to be overwritten
@@ -219,11 +224,13 @@ update_extent <- function(proxy_map, fit2pts, col_names = list(lat = "Latitude",
 
                  proxy_map |>
                    leaflet$fitBounds(
-                     lng1 = min(pts[[col_names$lng]]), lat1 = min(pts[[col_names$lat]]),
-                     lng2 = max(pts[[col_names$lng]]), lat2 = max(pts[[col_names$lat]]),
-                     # a single plot gives a zero-size extent, which would zoom
-                     # past the deepest level the basemap imagery has
+                     lng1 = safe_summary(pts[[col_names$lng]], min),
+                     lat1 = safe_summary(pts[[col_names$lat]], min),
+                     lng2 = safe_summary(pts[[col_names$lng]], max),
+                     lat2 = safe_summary(pts[[col_names$lat]], max),
                      options = list(padding = c(15, 15), maxZoom = MAX_FIT_ZOOM)
+                     # past the deepest level the basemap imagery has
+                     # a single plot gives a zero-size extent, which would zoom
                    )
                })
 }

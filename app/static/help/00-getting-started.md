@@ -38,8 +38,10 @@ point clouds.
 
 ## Typical workflow
 
-1. **Load Data** _(local installations only)_. Loading of IntELiMon output
-   files from a local folder.
+1. **Load My Data** _(local installations only)_. Loading of IntELiMon output
+   files from a folder on your own computer, so data never leave it (for
+   example, for tribal data sovereignty). Running IntELiMon locally on raw
+   point clouds will be added here.
 2. **Selection Map.** Plot selection and download of scan data (online
    version pulls data from the IntELiMon API, local versions install data
    from the API and provided local directory).
@@ -74,10 +76,6 @@ point clouds.
   navigating away clears them, so downloads and exports should be completed
   beforehand.
 - The help pages are searchable from the box above the topic list.
-
-## Contact
-
-_Contact details go here._
 
 ## References
 

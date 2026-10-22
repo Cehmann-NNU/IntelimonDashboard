@@ -72,6 +72,7 @@ jobs:
             libfribidi-dev
             libfreetype6-dev
             libpng-dev
+            libarchive-dev
           )
           sudo apt-get install --yes --no-install-recommends -o Dir::Cache::Archives="$APT_ARCHIVES" "${packages[@]}"
 

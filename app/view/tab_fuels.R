@@ -42,9 +42,9 @@ box::use(
   app/logic/lcp_canopy[describe_canopy_correction, describe_crown_check],
   app/logic/manage_data[pivot_on_model],
   app/logic/report[FUEL_MODEL_METHODS, report_item],
-  app/view/card_mapLeaflet,
   app/view/map_controls[update_dwnld_scan_points, update_point_labels],
   app/view/report_store[add_to_report],
+  app/view/widget_mapLeaflet,
 )
 
 #' @export
@@ -143,7 +143,7 @@ ui <- function(id) {
                   style = "display:flex; gap:10px; height:100%;",
                   div(
                     style = "flex:1; min-width:0; min-height:200px; height:100%;",
-                    card_mapLeaflet$ui(ns("aoi_map"))
+                    widget_mapLeaflet$ui(ns("aoi_map"))
                   ),
                   div(
                     style = "width:150px; flex:none; display:flex;
@@ -917,9 +917,9 @@ server <- function(id) {
     # ---- AOI draw map ----
     aoi_polygon <- reactiveVal(NULL)
 
-    map <- card_mapLeaflet$server("aoi_map",
-                                  fit2pts =  session$userData$scan_selection,
-                                  col_names = list(lat = "Latitude", lng = "Longitude"))
+    map <- widget_mapLeaflet$server("aoi_map",
+                                    fit2pts =  session$userData$scan_selection,
+                                    col_names = list(lat = "Latitude", lng = "Longitude"))
     proxy_map <- map$proxy
 
     # Center the AOI map on the selected plots when metrics load
@@ -932,7 +932,7 @@ server <- function(id) {
     update_dwnld_scan_points(session, proxy_map, col_names = list(lat = "Latitude", lng = "Longitude"))
     update_point_labels(map$input,
                         proxy_map,
-                        session$userData$scan_selection(),
+                        session$userData$scan_selection,
                         # this is the ID used by the leaflet (app/view/card_mapLeaflet)
                         map_id = "map",
                         col_names = list(lat = "Latitude", lng = "Longitude", label = "plot"))

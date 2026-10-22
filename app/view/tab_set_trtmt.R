@@ -8,6 +8,7 @@ box::use(
 box::use(
   app/logic/constants[TREATMENT_TYPES],
   app/logic/manage_data,
+  wDT = app/view/widget_datatable,
 )
 
 #' @export
@@ -102,18 +103,7 @@ ui <- function(id) {
           )
         )
       ),
-      shiny$div(
-        style = "text-align:right;",
-        shiny$actionLink(
-          ns("btn_clear_selection"),
-          label = "Clear selection",
-          icon = shiny$icon("xmark")
-        )
-      ),
-      DT$DTOutput(
-        ns("tbl_selected_scans"),
-        height = "100%"
-      )
+      wDT$ui(ns("tbl_selected_scans"))
     )
   )
 }
@@ -202,7 +192,7 @@ server <- function(id) {
     #------Assign Unit, Remeasurement or Scan Grouping----
     shiny$observeEvent(input$btn_assign, {
       # always initializes as NULL
-      selected_rows <- input$tbl_selected_scans_rows_selected
+      selected_rows <- tbl_dt$input$dt_rows_selected
       if (is.null(selected_rows)) {
         shiny$showNotification(
           "No scans selected. Click on the desired rows in the the table to the left",
@@ -212,8 +202,7 @@ server <- function(id) {
         return()
       }
 
-      # the selected rows index the table's data, not its sorted display
-      displayed_scans <- table_order(session$userData$scan_selection())
+      displayed_scans <- selected_scans()
 
       if (nzchar(input$ui_enter_unit)) {
         displayed_scans[selected_rows, "Unit" := as.character(input$ui_enter_unit)] # nolint: object_name_linter
@@ -234,62 +223,21 @@ server <- function(id) {
 
     #---Data Table-------------------------------
     columns <- c("site", "plot", "date", "scanner_id", "Unit", "Remeasurement", "ScanGroup")
-
-    output$tbl_selected_scans <- DT$renderDT({
-      selected_scans <- session$userData$scan_selection()
-      dwnlded_scans <- session$userData$metrics()
-
-      nscans <- nrow(selected_scans)
-      ndwnld <- nrow(dwnlded_scans)
-      metrics_msg <- "Selected scans have not been downloaded! Return to Selection Map tab."
-      shiny$validate(
-        shiny$need(
-          nscans > 0,
-          "No scans selected. Return to Selection Map tab."
-        ),
-        shiny$need(
-          !is.null(dwnlded_scans),
-          metrics_msg
-        ),
-        shiny$need(
-          ndwnld == nscans,
-          paste(metrics_msg, "\nScans downloaded: ", ndwnld, "\nScans selected: ", nscans)
-        )
-      )
-
-      selected_scans <- table_order(selected_scans)
-
-      DT$datatable(
-        selected_scans[, ..columns],
-        colnames = c(columns[-length(columns)], "Scan grouping"),
-        filter = "top",
-        rownames = FALSE,
-        selection = "multiple",
-        # make site, plot, date, scanner_id ReadOnly, but allow unit, remeasurement and scan
-        # grouping to be changed
-        editable = list(target = "cell", disable = list(columns = c(0, 1, 2, 3))),
-        options = list(
-          pageLength = 50,
-          ordering = TRUE,
-          paging = FALSE,
-          # sort by date, then site w/in each date, then plot w/in each site
-          order = list(list(2, "asc"), list(0, "asc"), list(1, "asc"))
-        )
-      )
+    selected_scans <- shiny$reactive({
+      session$userData$scan_selection()[order(plot, site, -date)]
     })
 
-    proxy <- DT$dataTableProxy(
-      "tbl_selected_scans",
-      session = session
+    tbl_dt <- wDT$server("tbl_selected_scans",
+      selected_scans,
+      columns,
+      sort_order = list(list(2, "asc"), list(0, "asc"), list(1, "asc")),
+      # make site, plot, date, scanner_id ReadOnly, but allow unit and remeasurement to be changed
+      edit_options = list(target = "cell", disable = list(columns = c(0, 1, 2, 3)))
     )
 
-    shiny$observeEvent(input$btn_clear_selection, {
-      DT$selectRows(proxy, NULL)
-    })
-
     # allow the user to change table values
-    shiny$observeEvent(input$tbl_selected_scans_cell_edit, {
-      changes <- input$tbl_selected_scans_cell_edit
+    shiny$observeEvent(tbl_dt$input$dt_cell_edit, {
+      changes <- tbl_dt$input$dt_cell_edit
 
       # edited rows index the table's data, in table_order()
       selected_scans <- table_order(session$userData$scan_selection())

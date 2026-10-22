@@ -104,6 +104,37 @@ get_plots_in_view <- function(scans, bounds) {
   unique(in_view, by = c("site", "plot"))
 }
 
+#' Which scans lie inside a shape drawn on a leaflet map.
+#'
+#' `feature` is the GeoJSON feature leaflet.extras sends when a rectangle or
+#' polygon is drawn (input$<map>_draw_new_feature). Its outer ring is tested
+#' against the scans' Longitude/Latitude with the even-odd (ray casting) rule,
+#' in plain longitude/latitude - the same straight edges the map draws for
+#' shapes the size of a plot selection.
+#'
+#' @param scans - a data.table with Longitude and Latitude columns.
+#' @param feature - a GeoJSON feature list with a Polygon geometry.
+#' @return a logical vector, one per scan; all FALSE for anything but a polygon.
+#' @export
+in_drawn_shape <- function(scans, feature) {
+  inside <- rep(FALSE, nrow(scans))
+  geom <- feature$geometry
+  if (is.null(geom) || !identical(geom$type, "Polygon") || nrow(scans) == 0) return(inside)
+  ring <- geom$coordinates[[1]]
+  vx <- vapply(ring, function(p) as.numeric(p[[1]]), numeric(1))
+  vy <- vapply(ring, function(p) as.numeric(p[[2]]), numeric(1))
+  px <- scans$Longitude
+  py <- scans$Latitude
+  j <- length(vx)
+  for (i in seq_along(vx)) {
+    crosses <- (vy[i] > py) != (vy[j] > py) &
+      px < (vx[j] - vx[i]) * (py - vy[i]) / (vy[j] - vy[i]) + vx[i]
+    inside <- xor(inside, !is.na(crosses) & crosses)
+    j <- i
+  }
+  inside
+}
+
 #' Parse the clickID. When a marker is clicked on, parse it's id.
 #'
 #' Assumes a maximum of 2 parts to parse in ID.

@@ -34,7 +34,19 @@ ui <- function(id) {
 server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE) {
   shiny$moduleServer(id, function(input, output, session) {
 
+    # TRUE once there are rows to show. The table is drawn from isolated data
+    # and then updated in place by replaceData() below, but replaceData() can't
+    # fill a table that was never drawn (the "No scans to display." message
+    # shown when a tab is opened before any data exist). Redrawing whenever
+    # this flips covers that; a reactiveVal only invalidates when its value
+    # changes, so ordinary edits still go through replaceData().
+    has_rows <- shiny$reactiveVal(FALSE)
+    shiny$observe({
+      has_rows(isTRUE(nrow(data_reactive()) > 0))
+    })
+
     output$dt <- DT$renderDT({
+      has_rows()
       data <- shiny$isolate(data_reactive())
       ndata <- nrow(data)
       shiny$validate(

@@ -179,19 +179,23 @@ update_dwnld_scan_points <- function(session,
                                      lyrid = ~paste(site, plot, "dwnld", sep = "-")) {
   observeEvent(
     {
-      # if only metrics is monitored, then new selected scans cause all metrics to be overwritten
       session$userData$metrics()
-      session$userData$scan_selection()
+      session$userData$all_scans()
     },
     {
       metrics <- session$userData$metrics()
-      scans <- session$userData$scan_selection()
 
+      # nothing downloaded (or all downloads removed): clear the blue markers
       if (is.null(metrics) || nrow(metrics) == 0) {
+        proxy_map |>
+          leaflet$clearGroup("Downloaded") |>
+          leaflet$removeControl("Downloaded_legend")
         return()
       }
 
-      loc <- get_metric_loc(metrics, scans)
+      # locations come from every known scan, not the selection, so downloaded
+      # scans stay on the map when they are deselected or the selection is cleared
+      loc <- get_metric_loc(metrics, session$userData$all_scans())
 
       # can be changed by `filtered_plots()` or by `input$map_marker_click`
       map_scan_points(proxy_map, loc, col_names, color = "blue", grp = "Downloaded",

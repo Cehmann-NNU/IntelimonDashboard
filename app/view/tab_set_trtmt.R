@@ -108,6 +108,16 @@ ui <- function(id) {
           )
         )
       ),
+      shiny$div(
+        # removes the selected scans from the session, with their downloaded data
+        style = "text-align:right;",
+        shiny$actionLink(
+          ns("btn_remove_scans"),
+          label = "Remove selected scans",
+          icon = shiny$icon("trash"),
+          title = "Remove the selected scans and their downloaded data from this session"
+        )
+      ),
       wDT$ui(ns("tbl_selected_scans"))
     )
   )
@@ -222,6 +232,53 @@ server <- function(id) {
       }
 
       session$userData$scan_selection(displayed_scans)
+    })
+
+    #------Remove scans and their downloaded data----
+    # The way to take downloaded scans out of the session one by one (issue
+    # #24): deselecting them on the Selection Map keeps them loaded.
+    shiny$observeEvent(input$btn_remove_scans, {
+      rows <- tbl_dt$input$dt_rows_selected
+      if (length(rows) == 0) {
+        shiny$showNotification(
+          "No scans selected. Click the rows of the scans to remove in the table.",
+          type = "warning"
+        )
+        return()
+      }
+      keys <- selected_scans()[rows, manage_data$SCAN_KEY, with = FALSE]
+      n_dl <- nrow(keys[manage_data$downloaded_keys(session$userData$metrics()),
+                        on = manage_data$SCAN_KEY, nomatch = 0])
+      n <- nrow(keys)
+      shiny$showModal(shiny$modalDialog(
+        title = "Remove selected scans?",
+        paste0(
+          "This removes ", n, " scan", if (n == 1) "" else "s", " from this session",
+          if (n_dl > 0) paste0(", including the downloaded data of ", n_dl) else "",
+          ". Figures already added to the report are kept. To use ",
+          if (n == 1) "it" else "them", " again, select ", if (n == 1) "it" else "them",
+          " on the Selection Map and click Get Data."
+        ),
+        footer = shiny$tagList(
+          shiny$modalButton("Cancel"),
+          shiny$actionButton(session$ns("btn_remove_scans_ok"), "Remove", class = "btn-danger")
+        ),
+        easyClose = TRUE
+      ))
+      remove_pending(keys)
+    })
+
+    remove_pending <- shiny$reactiveVal(NULL)
+    shiny$observeEvent(input$btn_remove_scans_ok, {
+      shiny$removeModal()
+      keys <- remove_pending()
+      shiny$req(keys)
+      n <- manage_data$remove_scans(session, keys)
+      remove_pending(NULL)
+      shiny$showNotification(
+        paste0("Removed ", n, " scan", if (n == 1) "" else "s", "."),
+        type = "message", duration = 5
+      )
     })
 
     #---Data Table-------------------------------

@@ -110,6 +110,77 @@ set_scan_groups <- function(session) {
   session$userData$scan_selection(selected)
 }
 
+#' Columns that identify one scan in the selection and in every downloaded table.
+#' @export
+SCAN_KEY <- c("site", "plot", "date", "scanner_id")
+
+#' The scans already downloaded (the scan key of the metrics), one row each.
+#' @param metrics - session$userData$metrics(), possibly NULL or empty.
+#' @export
+downloaded_keys <- function(metrics) {
+  if (is.null(metrics) || nrow(metrics) == 0 || !all(SCAN_KEY %in% names(metrics))) {
+    return(dt$data.table(site = character(), plot = character(), date = as.Date(character()),
+                         scanner_id = integer()))
+  }
+  unique(dt$as.data.table(metrics)[, SCAN_KEY, with = FALSE])
+}
+
+#' Keep downloaded scans in a new selection.
+#'
+#' Downloaded scans stay selected until they are removed on purpose (Clear All
+#' Downloads, or Remove selected scans on Set Treatments), so the selection -
+#' which carries each scan's unit, remeasurement and scan grouping - always
+#' covers the downloaded data. Any downloaded scan of `old_sel` missing from
+#' `new_sel` is put back.
+#'
+#' @param new_sel - data.table, the selection about to be set.
+#' @param old_sel - data.table, the current selection.
+#' @param metrics - session$userData$metrics().
+#' @return list(selection, kept): the selection to set, and the scans put back
+#'   (a data.table with the columns of `old_sel`).
+#' @export
+keep_downloaded <- function(new_sel, old_sel, metrics) {
+  dl <- downloaded_keys(metrics)
+  if (nrow(dl) == 0 || is.null(old_sel) || nrow(old_sel) == 0) {
+    return(list(selection = new_sel, kept = old_sel[0]))
+  }
+  kept <- old_sel[dl, on = SCAN_KEY, nomatch = 0]
+  if (nrow(new_sel) > 0) kept <- kept[!new_sel, on = SCAN_KEY]
+  if (nrow(kept) == 0) return(list(selection = new_sel, kept = kept))
+  list(selection = rbind(new_sel, kept, use.names = TRUE, fill = TRUE), kept = kept)
+}
+
+#' Rows of `tbl` whose scan is not in `keys`. Tables without the scan key are
+#' returned unchanged.
+#' @export
+drop_scans <- function(tbl, keys) {
+  if (is.null(tbl) || nrow(tbl) == 0 || nrow(keys) == 0 || !all(SCAN_KEY %in% names(tbl))) {
+    return(tbl)
+  }
+  dt$as.data.table(tbl)[!keys, on = SCAN_KEY]
+}
+
+#' Remove scans and their downloaded data from the session: the metrics, tree
+#' inventory and model outputs, and the scans themselves from the selection.
+#'
+#' @param session - a shiny session object.
+#' @param keys - data.table with the SCAN_KEY columns of the scans to remove.
+#' @return the number of scans removed from the selection.
+#' @export
+remove_scans <- function(session, keys) {
+  keys <- unique(dt$as.data.table(keys)[, SCAN_KEY, with = FALSE])
+  selection <- session$userData$scan_selection()
+  n <- nrow(selection) - nrow(drop_scans(selection, keys))
+
+  # tree_inv is not reactive: update it before metrics(), whose change makes
+  # the tabs re-read it
+  session$userData$tree_inv <- drop_scans(session$userData$tree_inv, keys)
+  session$userData$extra_models(drop_scans(session$userData$extra_models(), keys))
+  session$userData$metrics(drop_scans(session$userData$metrics(), keys))
+  session$userData$scan_selection(drop_scans(selection, keys))
+  n
+}
+
 #' Get a list of new scans that have not been downloaded yet.
 #'
 #' This function compares the list of downloaded metrics to the list of selected scans and returns any scans

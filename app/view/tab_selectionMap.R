@@ -11,7 +11,10 @@ box::use(
 box::use(
   api = app/logic/load_data_api,
   disk = app/logic/load_data_dir,
-  app/logic/manage_data[get_scans4dwnld, is_data_on_disk, set_scan_numbers],
+  app/logic/manage_data[
+    downloaded_keys, get_scans4dwnld, is_data_on_disk, keep_downloaded, remove_scans,
+    set_scan_numbers
+  ],
   app/logic/map_fnc[in_drawn_shape, parse_click_id],
   app/view/map_controls[map_scan_points,
                         update_dwnld_scan_points,
@@ -62,6 +65,8 @@ ui <- function(id) {
           ),
           shiny$actionButton(ns("btn_clear"), "\u2715  Clear All Plots", width = "100%"),
           shiny$actionButton(ns("btn_get_data"), "\u2913  Get Data", width = "100%"),
+          shiny$actionButton(ns("btn_clear_downloads"), "\u2715  Clear All Downloads",
+                             width = "100%"),
         )
       ),
       grid_place(
@@ -138,6 +143,43 @@ server <- function(id) {
       )
     })
 
+    #--Setting the selection------------------------------
+    # Every change to the selection goes through here. Downloaded scans stay
+    # selected (and their unit, remeasurement and scan grouping with them)
+    # until they are removed with Clear All Downloads or on Set Treatments, so
+    # the selection always covers the downloaded data (issue #24). `visible`
+    # is the set of scans the user could see and deselect; when a downloaded
+    # one among them is put back, a message says how to remove it.
+    set_selection <- function(new, visible = NULL) {
+      old <- session$userData$scan_selection()
+      res <- keep_downloaded(new, old, session$userData$metrics())
+      kept <- res$kept
+      if (!is.null(visible) && nrow(kept) > 0) {
+        kept <- kept[visible, on = selection_key, nomatch = 0]
+      }
+      if (!is.null(visible) && nrow(kept) > 0) {
+        n <- nrow(kept)
+        shiny$showNotification(
+          paste0(
+            n, " downloaded scan", if (n == 1) " stays" else "s stay", " loaded. Remove ",
+            if (n == 1) "it" else "them", " on the Set Treatments tab, or with Clear All Downloads."
+          ),
+          type = "warning", duration = 8
+        )
+      }
+      same <- nrow(old) == nrow(res$selection) &&
+        isTRUE(tryCatch(fsetequal(old, res$selection), error = function(e) FALSE))
+      if (!same) {
+        session$userData$scan_selection(res$selection)
+      } else if (!is.null(visible) && nrow(kept) > 0) {
+        # the selection didn't change, so nothing else re-highlights the table
+        # rows the user just clicked off
+        highlight_selection()
+      }
+      invisible(res)
+    }
+    selection_key <- c("site", "plot", "date", "scanner_id")
+
     shiny$observeEvent(filtered_plots(), {
       markers <- filtered_plots()
       # remove selected plots that do not fit the updated filter
@@ -147,7 +189,8 @@ server <- function(id) {
         nomatch = 0, .SD,
         .SDcols = names(all_clicks)
       ]
-      session$userData$scan_selection(all_clicks)
+      # downloaded scans stay selected even when the filters hide them
+      set_selection(all_clicks)
 
       map_scan_points(proxy_map,
         markers,
@@ -178,7 +221,6 @@ server <- function(id) {
                          edit_options = FALSE)
 
     #----Select plots----------------------------
-    selection_key <- c("site", "plot", "date", "scanner_id")
     # add to selected plots from ---TABLE---
     shiny$observeEvent(tbl_dt$input$dt_rows_selected, {
       # always initializes as NULL
@@ -210,9 +252,7 @@ server <- function(id) {
         updated_selection <- rbind(updated_selection, added_selection, fill = TRUE)
       }
 
-      if (!fsetequal(current_selection, updated_selection)) {
-        session$userData$scan_selection(updated_selection)
-      }
+      set_selection(updated_selection, visible = all_scans)
     })
 
     # add to selected plots from ---MAP---
@@ -241,8 +281,8 @@ server <- function(id) {
         all_clicks <- rbind(all_clicks, selected)
       }
 
-      # reassign to reactive variable
-      session$userData$scan_selection(all_clicks)
+      # reassign to reactive variable; a downloaded plot clicked off stays loaded
+      set_selection(all_clicks, visible = markers[site == site_list$site & plot == site_list$plot])
     })
 
     #----Select plots inside a drawn shape-------
@@ -278,11 +318,15 @@ server <- function(id) {
         Remeasurement = NA_integer_,
         ScanGroup = NA_integer_
       )]
-      session$userData$scan_selection(rbind(all_clicks, new, use.names = TRUE))
+      set_selection(rbind(all_clicks, new, use.names = TRUE))
     })
 
-    # UPDATE from selection
-    shiny$observeEvent(session$userData$scan_selection(), {
+    # UPDATE from selection - and when the filters change the table's rows, so
+    # the highlighted rows follow the scans rather than their old positions, and
+    # when the table is first drawn (it is only drawn once the Table view opens,
+    # so earlier highlights never reached it)
+    table_drawn <- shiny$reactive(!is.null(tbl_dt$input$dt_rows_all))
+    highlight_selection <- function() {
       all_scans <- sidebar_filtered_plots()
       selection <- session$userData$scan_selection()
 
@@ -294,6 +338,12 @@ server <- function(id) {
       ]
 
       selectRows(tbl_dt$proxy, selected_rows)
+    }
+    highlight_triggers <- shiny$reactive(
+      list(session$userData$scan_selection(), sidebar_filtered_plots(), table_drawn())
+    )
+    shiny$observeEvent(highlight_triggers(), {
+      highlight_selection()
     })
 
     update_selected_scan_points(session, proxy_map,
@@ -305,8 +355,58 @@ server <- function(id) {
 
     shiny$observeEvent(input$btn_clear, {
       current <- session$userData$scan_selection()
-      session$userData$scan_selection(current[0])
-      shiny$showNotification("Cleared selected plots.", type = "message", duration = 5)
+      res <- set_selection(current[0])
+      n_kept <- nrow(res$kept)
+      shiny$showNotification(
+        paste0(
+          "Cleared selected plots.",
+          if (n_kept > 0) {
+            paste0(
+              " ", n_kept, " downloaded scan", if (n_kept == 1) " stays" else "s stay",
+              " loaded; use Clear All Downloads to remove ", if (n_kept == 1) "it." else "them."
+            )
+          } else {
+            ""
+          }
+        ),
+        type = "message", duration = 8
+      )
+    })
+
+    #----Clear all downloads---------------------
+    # Removes every downloaded scan's data (metrics, tree inventory, models)
+    # and those scans from the selection, after a confirmation.
+    shiny$observeEvent(input$btn_clear_downloads, {
+      n <- nrow(downloaded_keys(session$userData$metrics()))
+      if (n == 0) {
+        shiny$showNotification("No scans have been downloaded.", type = "message", duration = 5)
+        return()
+      }
+      shiny$showModal(shiny$modalDialog(
+        title = "Clear all downloads?",
+        paste0(
+          "This removes the data of all ", n, " downloaded scan", if (n == 1) "" else "s",
+          " from this session, along with their unit names, remeasurement numbers and scan ",
+          "groupings. Figures already added to the report are kept. To use the scans again, ",
+          "select them and click Get Data."
+        ),
+        footer = shiny$tagList(
+          shiny$modalButton("Cancel"),
+          shiny$actionButton(session$ns("btn_clear_downloads_ok"), "Clear all downloads",
+                             class = "btn-danger")
+        ),
+        easyClose = TRUE
+      ))
+    })
+
+    shiny$observeEvent(input$btn_clear_downloads_ok, {
+      shiny$removeModal()
+      keys <- downloaded_keys(session$userData$metrics())
+      remove_scans(session, keys)
+      shiny$showNotification(
+        paste0("Cleared ", nrow(keys), " downloaded scan", if (nrow(keys) == 1) "" else "s", "."),
+        type = "message", duration = 5
+      )
     })
 
     shiny$observeEvent(input$btn_get_data, {

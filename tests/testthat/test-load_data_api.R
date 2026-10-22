@@ -56,3 +56,13 @@ test_that("build_points2pano_url_sdsc() hides the site list and map", {
     )
   )
 })
+
+test_that("api_request() raises a clear error when the server can't be reached", {
+  # nothing listens on the discard port, so the connection is refused at once
+  e <- tryCatch(
+    api$api_request("/agencies", request_base_url = "http://127.0.0.1:9"),
+    error = function(e) e
+  )
+  expect_true(api$is_api_unreachable(e))
+  expect_true(startsWith(conditionMessage(e), api$API_UNREACHABLE_MSG))
+})

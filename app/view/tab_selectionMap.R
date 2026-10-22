@@ -450,32 +450,53 @@ server <- function(id) {
         detail = ""
       )
 
-      # download data from the API and save to this session
-      session$userData$metrics(
-        rbindlist(
-          list(
-            session$userData$metrics(),
-            api$get_metrics_for_scans(selected[!load_from_disk], progress = prog_obj),
-            disk$read_metrics(disk_paths)
+      # Download everything first and save it to the session only if every
+      # request succeeded, so a server that stops responding part-way leaves
+      # no half-downloaded scans behind.
+      new_data <- tryCatch(
+        list(
+          metrics = rbindlist(
+            list(
+              api$get_metrics_for_scans(selected[!load_from_disk], progress = prog_obj),
+              disk$read_metrics(disk_paths)
+            ),
+            fill = TRUE
           ),
-          fill = TRUE
-        )
+          tree_inv = rbindlist(
+            list(
+              api$get_treeinv_for_scans(selected[!load_from_disk], progress = prog_obj),
+              disk$read_treeinv(disk_paths)
+            ),
+            fill = TRUE
+          ),
+          extra_models = api$get_extra_models_for_scans(selected[!load_from_disk],
+                                                        progress = prog_obj)
+        ),
+        error = function(e) {
+          shiny$showNotification(
+            paste(
+              if (api$is_api_unreachable(e)) {
+                api$API_UNREACHABLE_MSG
+              } else {
+                paste("The download failed:", conditionMessage(e))
+              },
+              "No new scans were downloaded; click Get Data to try again."
+            ),
+            type = "error", duration = NULL
+          )
+          NULL
+        }
       )
+      if (is.null(new_data)) return()
 
       session$userData$tree_inv <- rbindlist(
-        list(
-          session$userData$tree_inv,
-          api$get_treeinv_for_scans(selected[!load_from_disk], progress = prog_obj),
-          disk$read_treeinv(disk_paths)
-        ),
-        fill = TRUE
+        list(session$userData$tree_inv, new_data$tree_inv), fill = TRUE
       )
-
       session$userData$extra_models(
-        rbind(
-          session$userData$extra_models(),
-          api$get_extra_models_for_scans(selected[!load_from_disk], progress = prog_obj)
-        )
+        rbind(session$userData$extra_models(), new_data$extra_models)
+      )
+      session$userData$metrics(
+        rbindlist(list(session$userData$metrics(), new_data$metrics), fill = TRUE)
       )
     })
 

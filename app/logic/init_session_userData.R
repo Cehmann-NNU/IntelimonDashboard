@@ -1,12 +1,42 @@
 box::use(
   data.table[data.table],
-  shiny[reactiveVal],
+  shiny[reactiveVal, showNotification],
 )
 
 box::use(
+  app/logic/load_data_api[API_UNREACHABLE_MSG, is_api_unreachable],
   app/logic/manage_data[build_scan_loc_dt],
   app/logic/report[default_report_items],
 )
+# The scans in an empty session, with the columns build_scan_loc_dt() returns.
+empty_scan_table <- function() {
+  data.table(
+    site = character(), plot = character(), date = as.Date(character()),
+    scanner_id = integer(), scanner_name = character(), Longitude = numeric(),
+    Latitude = numeric(), Agency = character()
+  )
+}
+
+# build_scan_loc_dt(), or an empty table and a message that stays on screen
+# when the IntELiMon server can't be reached or returns something unusable.
+load_all_scans <- function(session) {
+  tryCatch(
+    build_scan_loc_dt(),
+    error = function(e) {
+      msg <- if (is_api_unreachable(e)) {
+        API_UNREACHABLE_MSG
+      } else {
+        paste("The plot list could not be loaded from the IntELiMon server:", conditionMessage(e))
+      }
+      showNotification(
+        paste(msg, "No plots are shown on the Selection Map; reload the page to try again."),
+        type = "error", duration = NULL, session = session
+      )
+      empty_scan_table()
+    }
+  )
+}
+
 #' Initialize a set of userData that is attached to each session. This data can be accessed by any part of
 #' the shiny project. All variables can be accessed by session$userData$<name>. A number of the values are
 #' shiny$reactiveVal()'s, so they can be updated and the updates will propagate throughout all shiny modules.
@@ -14,8 +44,11 @@ box::use(
 #' @export
 init_session_userdata <- function(session) {
   # --------Shared User Data-------------------
+  # Every scan available for selection, from the IntELiMon API. If the server
+  # can't be reached, the session still starts (with no plots on the map)
+  # and says so, rather than hanging or ending.
   session$userData$all_scans <- reactiveVal(
-    build_scan_loc_dt()
+    load_all_scans(session)
   )
   # User selected scans for anaylysis
   session$userData$scan_selection <- reactiveVal(

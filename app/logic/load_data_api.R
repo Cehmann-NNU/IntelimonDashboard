@@ -43,6 +43,23 @@ get_api_base_url <- function(apikey = "API_PATH_KEY") {
 
 #--Generic API functions-------------------------------------------------------------------------
 
+#' Seconds to wait for one API request before giving up. The server usually
+#' answers in a few seconds, but has taken over 10; without a limit a stalled
+#' server leaves the app waiting with no message.
+#' @export
+API_TIMEOUT_S <- 60
+
+#' Message shown when the IntELiMon server can't be reached.
+#' @export
+API_UNREACHABLE_MSG <- paste(
+  "The IntELiMon server did not respond. It may be down or very slow right now;",
+  "please try again in a few minutes."
+)
+
+#' Is `e` the error api_request() raises when the server can't be reached?
+#' @export
+is_api_unreachable <- function(e) inherits(e, "intelimon_api_unreachable")
+
 #' Perform a REST API request.
 #'
 #' This function assembles the request to a specific resource and returns a response object using the httr2
@@ -63,6 +80,7 @@ api_request <- function(resource_url,
     httr2$req_headers(Accept = "application/json") |>
     httr2$req_method(request_method) |>
     httr2$req_url_path_append(resource_url) |>
+    httr2$req_timeout(API_TIMEOUT_S) |>
     (\(req_obj) {
       if (!is.null(request_body)) {
         httr2$req_body_json(req_obj, request_body)
@@ -73,9 +91,18 @@ api_request <- function(resource_url,
 
   tryCatch(
     resp <- req |> httr2$req_perform(),
-    # if the response is an error, return the error
     error = \(e) {
       resp <- httr2$last_response()
+      # no response at all: timed out or couldn't connect. Raise one clear,
+      # catchable error rather than handing NULL to the caller
+      if (is.null(resp)) {
+        stop(structure(
+          class = c("intelimon_api_unreachable", "error", "condition"),
+          list(message = paste(API_UNREACHABLE_MSG, conditionMessage(e)), call = NULL)
+        ))
+      }
+      # an HTTP error response (4xx/5xx): return it, as before
+      resp
     }
   )
 }

@@ -2,6 +2,7 @@ box::use(
   bslib[bs_theme, navbar_options, page_navbar],
   dt = data.table,
   shiny[NS, includeCSS, moduleServer, tags],
+  yaml[read_yaml],
 )
 
 box::use(
@@ -19,6 +20,8 @@ box::use(
   view/tab_selectionMap,
   view/tab_set_trtmt,
 )
+
+APP_VERSION <- read_yaml("version.yaml")$version
 
 # App UI: the navbar of workflow tabs
 #' @export

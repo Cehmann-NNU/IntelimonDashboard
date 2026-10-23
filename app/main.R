@@ -21,7 +21,7 @@ box::use(
   view/tab_set_trtmt,
 )
 
-APP_VERSION <- read_yaml("version.yaml")$version
+APP_VERSION <- read_yaml("version.yaml")$version # nolint: unused_declared_object_linter
 
 # App UI: the navbar of workflow tabs
 #' @export

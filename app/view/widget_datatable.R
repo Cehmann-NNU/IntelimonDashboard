@@ -28,10 +28,13 @@ ui <- function(id) {
 #' @param columns - list of column names to display in the data.table
 #' @param sort_order - list defining the sorting of the columns based on index.
 #'        exp: list(list(2, "asc"), list(0, "asc"), list(1, "asc")))
+#' @param col_labels - optional display names for `columns`, in the same order; the column names are
+#'        shown when NULL.
 #' @return - list with names proxy, containing a proxy of the widget, and input, that contains the input for
 #'         the server with the approriate name space.
 #' @export
-server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE) {
+server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE,
+                   col_labels = NULL) {
   shiny$moduleServer(id, function(input, output, session) {
 
     # TRUE once there are rows to show. The table is drawn from isolated data
@@ -58,6 +61,7 @@ server <- function(id, data_reactive, columns, sort_order, edit_options = FALSE)
 
       DT$datatable(
         data[, ..columns],
+        colnames = if (is.null(col_labels)) columns else col_labels,
         filter = "top",
         rownames = FALSE,
         selection = "multiple",

@@ -1124,7 +1124,22 @@ table.imn-report-minitable td{ padding:1px 3px; border-bottom:1px solid #e3e8ec;
   color:var(--imn-accent) !important; font-size:11px !important; font-weight:600;
   padding:.15rem .45rem !important; border-radius:8px !important; white-space:nowrap;
 }
-.imn-forest-add{ position:absolute; top:6px; right:8px; z-index:5; }
+/* Points2Pano cards: report button over the lower right of the scan */
+.imn-pano-add{ position:absolute; right:8px; bottom:8px; z-index:5; }
+/* the scan label shortens with "..." in a narrow card, keeping the arrows on it */
+.card-header .pano-info{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.card-header:has(.pano-info) > div{ min-width:0; }
+.card-header:has(.pano-info) .btn{ flex:0 0 auto; }
+
+/* Forestry right card: report and download controls in their own row above
+   the tabs, and the chart tabs filling the card's height */
+.imn-forest-add{ padding:6px 8px 0; }
+.imn-forest-right{ display:flex; flex-direction:column; }
+.imn-forest-right > .tabbable{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+.imn-forest-right .tab-content{ flex:1 1 auto; min-height:0; }
+.imn-forest-right .tab-pane.active{ height:100%; }
+.imn-fchart{ height:100%; display:flex; flex-direction:column; padding:4px 10px 6px; }
+.imn-fchart .shiny-plot-output{ flex:1 1 auto; min-height:150px; }
 /* collapsible formula sets on the Help pages */
 .help-page details.help-formulas{ margin:.5rem 0 1rem; }
 .help-page details.help-formulas > summary{ cursor:pointer; color:var(--imn-accent); font-weight:600; }

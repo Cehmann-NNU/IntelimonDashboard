@@ -99,6 +99,7 @@ describe("tab_forestry server", {
   it("builds the stand, prescription and FVS export for a loaded scan", {
     testServer(server, {
       session$userData$metrics <- reactiveVal(api_metrics())
+      session$userData$scan_selection <- reactiveVal(data.table())
       session$userData$tree_inv <- api_trees()
       session$setInputs(
         mode = "plot", radius = 15, scaleby = "nonoc", sprule = "random",
@@ -139,6 +140,7 @@ describe("tab_forestry server", {
   it("simulates an AOI stem map from the pooled inventory", {
     testServer(server, {
       session$userData$metrics <- reactiveVal(api_metrics())
+      session$userData$scan_selection <- reactiveVal(data.table())
       session$userData$tree_inv <- api_trees()
       session$setInputs(
         mode = "aoi", gsource = "all", radius = 15, aoi_w = 100, aoi_h = 100,
@@ -154,6 +156,7 @@ describe("tab_forestry server", {
   it("starts empty and picks up data once Get Data has run", {
     testServer(server, {
       session$userData$metrics <- reactiveVal(data.table())
+      session$userData$scan_selection <- reactiveVal(data.table())
       session$userData$tree_inv <- data.table()
       session$setInputs(mode = "plot", radius = 15, scaleby = "nonoc", method = "none")
       expect_equal(nrow(scan_keys()), 0)

@@ -17,8 +17,9 @@ box::use(
   data.table[copy, data.table, fwrite, rbindlist],
   grDevices[dev.off, png],
   graphics[arrows, barplot, box, legend, lines, mtext, par, plot, points],
-  gridlayout[grid_card, grid_container],
+  gridlayout[grid_card, grid_container, grid_place],
   shiny[...],
+  svglite[svglite],
   utils[capture.output, head],
 )
 
@@ -37,6 +38,7 @@ box::use(
   ],
   app/logic/fvs[build_keyfile, build_standinit, build_treeinit, thin_keyword],
   app/logic/report[report_item],
+  app/view/card_points2pano,
   app/view/report_store[add_to_report, file_thumbnail],
 )
 
@@ -57,8 +59,11 @@ ui <- function(id) {
   nav_panel(
     title = "Forestry exports",
     grid_container(
-      layout = c("IntELiMonDSS stemArea rightCol"),
-      row_sizes = c("1fr"),
+      layout = c(
+        "IntELiMonDSS stemArea rightCol",
+        "IntELiMonDSS stemArea pano"
+      ),
+      row_sizes = c("1fr", "1fr"),
       col_sizes = c("300px", "1.1fr", "0.9fr"),
       gap_size = "9px",
 
@@ -243,13 +248,37 @@ ui <- function(id) {
       ),
 
       # ---------------- right column ----------------
+      # top: metrics, species, stocking, size bias and FVS tabs; expandable,
+      # with report and download controls for the tab showing
       grid_card(
         area = "rightCol",
+        full_screen = TRUE,
         card_body(
+          class = "imn-forest-right",
           style = "padding:0; position:relative;",
           div(
-            class = "imn-forest-add",
-            report_button(ns("rep_right"), "Add report data: the tab showing on this card")
+            class = "imn-forest-add d-flex align-items-center justify-content-end gap-1",
+            report_button(ns("rep_right"), "Add report data: the tab showing on this card"),
+            div(
+              class = "dropdown",
+              tags$button(
+                class = "btn btn-sm dropdown-toggle imn-card-add", type = "button",
+                `data-bs-toggle` = "dropdown", `aria-expanded` = "false",
+                title = "Download the tab showing on this card",
+                HTML("&#x2913;"), " Download"
+              ),
+              tags$ul(
+                class = "dropdown-menu dropdown-menu-end",
+                tags$li(downloadLink(ns("dl_right_csv"), "CSV data", class = "dropdown-item")),
+                # images only for the chart tabs
+                conditionalPanel(
+                  condition = sprintf("['Stocking', 'Size bias'].includes(input['%s'])",
+                                      ns("rtabs")),
+                  tags$li(downloadLink(ns("dl_right_svg"), "SVG image", class = "dropdown-item")),
+                  tags$li(downloadLink(ns("dl_right_png"), "PNG image", class = "dropdown-item"))
+                )
+              )
+            )
           ),
           tabsetPanel(
             id = ns("rtabs"), type = "pills",
@@ -264,10 +293,10 @@ ui <- function(id) {
             ),
             tabPanel("Species", div(class = "imn-fscroll", tableOutput(ns("species_table")))),
             tabPanel("Stocking", div(
-              class = "imn-fscroll", plotOutput(ns("stocking"), height = "260px")
+              class = "imn-fchart", plotOutput(ns("stocking"), height = "100%")
             )),
             tabPanel("Size bias", div(
-              class = "imn-fscroll", plotOutput(ns("bias"), height = "260px"),
+              class = "imn-fchart", plotOutput(ns("bias"), height = "100%"),
               tags$p(
                 class = "imn-fnote",
                 paste(
@@ -281,6 +310,12 @@ ui <- function(id) {
             tabPanel("FVS", div(class = "imn-fscroll", verbatimTextOutput(ns("fvs_preview"))))
           )
         )
+      ),
+
+      # bottom: Points2Pano view of the selected plots
+      grid_place(
+        area = "pano",
+        card_points2pano$ui(ns("panoViewer"))
       )
     )
   )
@@ -292,8 +327,9 @@ FOREST_SCREEN <- list(
   line = "#ffffffaa", mid = "#ffffff77", box = "#ffffff44", ring = "#8ff0e299",
   dots = "#8ff0e2bb"
 )
+# Downloads and the report get a white background; on screen it stays transparent.
 FOREST_PAPER <- list(
-  fg = "#1a1a1a", axis = "#343a40", main = "#000000", faint = "#00000055",
+  bg = "white", fg = "#1a1a1a", axis = "#343a40", main = "#000000", faint = "#00000055",
   line = "#000000aa", mid = "#00000077", box = "#00000044", ring = "#0b7285cc",
   dots = "#0b7285bb"
 )
@@ -663,7 +699,7 @@ server <- function(id) {
           "No stems to simulate - load tree inventories on the Selection Map tab."
         ))
         op <- par(
-          bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+          bg = pal$bg %||% NA, mar = c(4, 4, 2, 1), fg = pal$fg,
           col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
         )
         on.exit(par(op), add = TRUE)
@@ -710,7 +746,7 @@ server <- function(id) {
       }
 
       op <- par(
-        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        bg = pal$bg %||% NA, mar = c(4, 4, 2, 1), fg = pal$fg,
         col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
       )
       on.exit(par(op), add = TRUE)
@@ -910,7 +946,7 @@ server <- function(id) {
       validate(need(!is.null(b), "No stems loaded."))
       a <- mets_after()
       op <- par(
-        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        bg = pal$bg %||% NA, mar = c(4, 4, 2, 1), fg = pal$fg,
         col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
       )
       on.exit(par(op), add = TRUE)
@@ -940,7 +976,8 @@ server <- function(id) {
         col = c(pal$line, pal$mid, pal$faint, "#0a0f1f", "#0a0f1f")
       )
     }
-    output$stocking <- renderPlot(draw_stocking(FOREST_SCREEN), bg = "transparent", res = 110)
+    # res 90: the chart tabs share half the right column with Points2Pano
+    output$stocking <- renderPlot(draw_stocking(FOREST_SCREEN), bg = "transparent", res = 90)
 
     draw_bias <- function(pal) {
       t <- stems_marked()
@@ -951,23 +988,26 @@ server <- function(id) {
       sh <- detection_shortfall(suppressWarnings(as.numeric(t$DBH)), vf)
       validate(need(nrow(sh) > 0, "No diameters available."))
       op <- par(
-        bg = NA, mar = c(4, 4, 2, 1), fg = pal$fg,
+        bg = pal$bg %||% NA, mar = c(4, 4, 2, 1), fg = pal$fg,
         col.axis = pal$axis, col.lab = pal$axis, col.main = pal$main
       )
       on.exit(par(op), add = TRUE)
       m <- rbind(sh$detected, sh$missing)
+      # headroom above the tallest bar keeps the legend clear of the bars
       barplot(m,
         names.arg = sh$cls, col = c("#8ff0e2", "#ff6b7d88"),
         border = NA, xlab = "DBH class (in)", ylab = "Stems",
-        main = "Detected vs inferred missing"
+        main = "Detected vs inferred missing",
+        ylim = c(0, max(colSums(m), 1) * 1.6), cex.main = 1
       )
-      legend("topright",
-        bty = "n", text.col = pal$axis,
-        fill = c("#8ff0e2", "#ff6b7d88"), border = NA,
+      # one row across the top, in the headroom above the bars
+      legend("top",
+        bty = "n", text.col = pal$axis, horiz = TRUE, cex = 0.85,
+        pch = 15, pt.cex = 1.6, col = c("#8ff0e2", "#ff6b7d88"),
         legend = c("detected", "inferred missing")
       )
     }
-    output$bias <- renderPlot(draw_bias(FOREST_SCREEN), bg = "transparent", res = 110)
+    output$bias <- renderPlot(draw_bias(FOREST_SCREEN), bg = "transparent", res = 90)
 
     # ---- Add to report ----------------------------------------------------
     # The stem map and the right-hand card's open tab go into the report as
@@ -1039,28 +1079,121 @@ server <- function(id) {
       }
     })
 
+    # Stand metrics as shown on the Metrics tab (NULL before inventories load).
+    metrics_table <- function() {
+      b <- mets_before()
+      a <- mets_after()
+      if (is.null(b)) return(NULL)
+      row <- function(m) {
+        c(sprintf("%.0f", m$tpa), sprintf("%.1f", m$ba_ac), sprintf("%.1f", m$qmd_in),
+          sprintf("%.0f", m$sdi), sprintf("%.1f", m$rd),
+          if (is.na(m$cr_mean)) "\u2014" else sprintf("%.0f", m$cr_mean * 100))
+      }
+      tbl <- data.frame(
+        Metric = c("Density (trees/ac)", "Basal area (ft2/ac)", "QMD (in)",
+                   "SDI (Reineke)", "Relative density (Curtis)", "Mean crown ratio (%)"),
+        Inventory = row(b), check.names = FALSE, stringsAsFactors = FALSE
+      )
+      if (!identical(input$method, "none")) {
+        tbl$`After prescription` <- if (is.null(a)) "\u2014" else row(a)
+      }
+      tbl
+    }
+
+    # The data behind the tab showing on the right card, for its CSV download.
+    right_tab_data <- function(tab) {
+      switch(tab,
+        Metrics = metrics_table(),
+        Species = species_df(),
+        Stocking = {
+          b <- mets_before()
+          a <- mets_after()
+          if (is.null(b)) return(NULL)
+          stands <- if (!is.null(a) && any(stems_marked()$rm)) list(b, a) else list(b)
+          data.frame(
+            Stand = c("Inventory", "After prescription")[seq_along(stands)],
+            `Trees per acre` = vapply(stands, function(m) m$tpa, 1),
+            `QMD (in)` = vapply(stands, function(m) m$qmd_in, 1),
+            `SDI (Reineke)` = vapply(stands, function(m) m$sdi, 1),
+            check.names = FALSE
+          )
+        },
+        `Size bias` = {
+          t <- stems_marked()
+          if (nrow(t) == 0) return(NULL)
+          no <- nonoc_area()
+          full_a <- plot_area_m2(input$radius)
+          vf <- if (is.na(no) || no <= 0) 1 else no / full_a
+          sh <- detection_shortfall(suppressWarnings(as.numeric(t$DBH)), vf)
+          data.frame(`DBH class (in)` = sh$cls, Detected = sh$detected,
+                     `Inferred missing` = sh$missing, check.names = FALSE)
+        },
+        FVS = fvs_report_table()
+      )
+    }
+
+    # Download name: tab and scan, e.g. "forestry_size_bias_CASDU_0003_2025-01-24".
+    right_file <- function(ext) {
+      cs <- current_scan()
+      scan <- if (is.null(cs)) "" else paste0("_", cs$site, "_", cs$plot, "_", cs$date)
+      paste0("forestry_", gsub(" ", "_", tolower(input$rtabs)), scan, ".", ext)
+    }
+
+    output$dl_right_csv <- downloadHandler(
+      filename = function() right_file("csv"),
+      content = function(file) {
+        tbl <- right_tab_data(input$rtabs)
+        if (is.null(tbl)) tbl <- data.frame(note = "No data loaded")
+        fwrite(tbl, file)
+      }
+    )
+    right_chart_file <- function(file, device) {
+      draw <- switch(input$rtabs, Stocking = draw_stocking, `Size bias` = draw_bias)
+      device(file)
+      on.exit(dev.off())
+      draw(FOREST_PAPER)
+    }
+    output$dl_right_svg <- downloadHandler(
+      filename = function() right_file("svg"),
+      content = function(file) {
+        right_chart_file(file, function(f) svglite(f, width = 9, height = 5.5, bg = "white"))
+      }
+    )
+    output$dl_right_png <- downloadHandler(
+      filename = function() right_file("png"),
+      content = function(file) {
+        right_chart_file(file, function(f) {
+          png(f, width = 9, height = 5.5, units = "in", res = 200, bg = "white")
+        })
+      }
+    )
+    # the links sit in a collapsed dropdown, which Shiny treats as hidden;
+    # keep them live so the download URLs reach the page
+    for (dl in c("dl_right_csv", "dl_right_svg", "dl_right_png")) {
+      outputOptions(output, dl, suspendWhenHidden = FALSE)
+    }
+
+    # Points2Pano viewer under the right card, linked to the scan shown: the
+    # viewer follows the scan picked in the left panel, and stepping the
+    # viewer to a scan with a tree inventory shows that scan here too
+    pano <- card_points2pano$server("panoViewer", session, follow = current_scan)
+    observeEvent(pano$current(), {
+      p <- pano$current()
+      sk <- scan_keys()
+      if (is.null(p) || nrow(sk) == 0) return()
+      at <- match(card_points2pano$scan_id(p$site, p$plot, p$date, p$scanner_id),
+                  card_points2pano$scan_id(sk$site, sk$plot, sk$date, sk$scanner_id))
+      if (!is.na(at) && at != scan_idx()) scan_idx(at)
+    }, ignoreInit = TRUE)
+
     observeEvent(input$rep_right, {
       switch(input$rtabs,
         Metrics = {
-          b <- mets_before()
-          a <- mets_after()
-          if (is.null(b)) {
+          tbl <- metrics_table()
+          if (is.null(tbl)) {
             showNotification("Nothing to add yet: load tree inventories first.",
                              type = "warning")
             return()
-          }
-          row <- function(m) {
-            c(sprintf("%.0f", m$tpa), sprintf("%.1f", m$ba_ac), sprintf("%.1f", m$qmd_in),
-              sprintf("%.0f", m$sdi), sprintf("%.1f", m$rd),
-              if (is.na(m$cr_mean)) "\u2014" else sprintf("%.0f", m$cr_mean * 100))
-          }
-          tbl <- data.frame(
-            Metric = c("Density (trees/ac)", "Basal area (ft2/ac)", "QMD (in)",
-                       "SDI (Reineke)", "Relative density (Curtis)", "Mean crown ratio (%)"),
-            Inventory = row(b), check.names = FALSE, stringsAsFactors = FALSE
-          )
-          if (!identical(input$method, "none")) {
-            tbl$`After prescription` <- if (is.null(a)) "\u2014" else row(a)
           }
           v <- verdict_text()
           add_forest_table(tbl, "Stand metrics", list(

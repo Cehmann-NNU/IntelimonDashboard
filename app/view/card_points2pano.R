@@ -27,28 +27,50 @@ ui <- function(id) {
                   class = "pano-info",
                   shiny$textOutput(ns("pano_label"), inline = TRUE)
                 ),
-                shiny$actionButton(ns("btn_pano_next"), "\u25B6", class = "btn-sm"),
-                # adds a photo of the plot showing to the report
-                shiny$actionButton(ns("add_report"), "+ Report data",
-                                   class = "btn-sm imn-add-report imn-card-add",
-                                   title = "Add report data: a photo of the plot showing"))
+                shiny$actionButton(ns("btn_pano_next"), "\u25B6", class = "btn-sm"))
     ),
     bslib$card_body(
       padding = 0,
-      shiny$uiOutput(ns("pano_frame"), style = "height: 100%;")
+      style = "position: relative;",
+      shiny$uiOutput(ns("pano_frame"), style = "height: 100%;"),
+      # adds a photo of the plot showing to the report; over the lower right of
+      # the scan, opposite the card's expand button, so a narrow header can't
+      # push it off the card
+      shiny$div(
+        class = "imn-pano-add",
+        shiny$actionButton(ns("add_report"), "+ Report data",
+                           class = "btn-sm imn-add-report imn-card-add",
+                           title = "Add report data: a photo of the plot showing")
+      )
     )
   )
 }
 
+# One scan as "site|plot|YYYY-MM-DD|scanner", whatever type its date has
+# (Date, "2025-01-24" or "20250124"), for matching scans between tabs.
 #' @export
-server <- function(id, session) {
+scan_id <- function(site, plot, date, scanner_id) {
+  d <- if (inherits(date, "Date")) {
+    date
+  } else {
+    as.Date(as.character(date), tryFormats = c("%Y-%m-%d", "%Y%m%d"), optional = TRUE)
+  }
+  paste(site, plot, format(d, "%Y-%m-%d"), scanner_id, sep = "|")
+}
+
+#' @param follow - optional reactive returning one scan (site, plot, date, scanner_id). When
+#'        it changes, the viewer moves to that scan.
+#' @return a list with `current`: a reactive of the scan showing (one row), or NULL.
+#' @export
+server <- function(id, session, follow = NULL) {
   shiny$moduleServer(id, function(input, output, session) {
     pano_idx <- shiny$reactiveVal(1)
 
     # Populated scans available to the viewer (in scan_calls order)
     pano_scans <- shiny$reactive({
       sc <- session$userData$scan_selection()
-      sc[nzchar(date)]
+      if (is.null(sc) || !"date" %in% names(sc)) return(sc[0])
+      sc[nzchar(sc$date)]
     })
 
 
@@ -56,6 +78,18 @@ server <- function(id, session) {
     shiny$observeEvent(session$userData$scan_selection(), {
       pano_idx(1)
     })
+
+    # move to the scan another module is showing (e.g. the Forestry scan)
+    if (!is.null(follow)) {
+      shiny$observeEvent(list(follow(), pano_scans()), {
+        f <- follow()
+        df <- pano_scans()
+        if (is.null(f) || nrow(df) == 0) return()
+        at <- match(scan_id(f$site, f$plot, f$date, f$scanner_id),
+                    scan_id(df$site, df$plot, df$date, df$scanner_id))
+        if (!is.na(at) && at != pano_idx()) pano_idx(at)
+      })
+    }
 
     shiny$observeEvent(input$btn_pano_prev, {
       n <- nrow(pano_scans())
@@ -112,7 +146,7 @@ server <- function(id, session) {
         return(shiny$div(
           style = "display:flex; align-items:center; justify-content:center;
                    height:100%; color:#888; text-align:center; padding:20px;",
-          "No scans loaded - select plots on the Selection Map tab and press Get Scans."
+          "No scans loaded - select plots on the Selection Map tab and press Get Data."
         ))
       }
 
@@ -133,5 +167,10 @@ server <- function(id, session) {
         )
       )
     })
+
+    list(current = shiny$reactive({
+      df <- pano_scans()
+      if (nrow(df) == 0) NULL else df[min(pano_idx(), nrow(df))]
+    }))
   })
 }

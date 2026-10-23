@@ -254,7 +254,13 @@ server <- function(id) {
         title = "Remove selected scans?",
         paste0(
           "This removes ", n, " scan", if (n == 1) "" else "s", " from this session",
-          if (n_dl > 0) paste0(", including the downloaded data of ", n_dl) else "",
+          if (n_dl == n) {
+            paste0(", with ", if (n == 1) "its" else "their", " downloaded data")
+          } else if (n_dl > 0) {
+            paste0(", with the downloaded data of the ", n_dl, " already downloaded")
+          } else {
+            ""
+          },
           ". Figures already added to the report are kept. To use ",
           if (n == 1) "it" else "them", " again, select ", if (n == 1) "it" else "them",
           " on the Selection Map and click Get Data."
@@ -292,7 +298,8 @@ server <- function(id) {
       columns,
       sort_order = list(list(2, "asc"), list(0, "asc"), list(1, "asc")),
       # make site, plot, date, scanner_id ReadOnly, but allow unit and remeasurement to be changed
-      edit_options = list(target = "cell", disable = list(columns = c(0, 1, 2, 3)))
+      edit_options = list(target = "cell", disable = list(columns = c(0, 1, 2, 3))),
+      col_labels = c(columns[-length(columns)], "Scan grouping")
     )
 
     # allow the user to change table values

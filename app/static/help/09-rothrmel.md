@@ -40,21 +40,22 @@ Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
 <div class="help-shot"><img src="static/help/images/rothrmel-overview.png" alt="The rothRmel tab: fire behavior inputs on the left, three fire behavior graphs and the Points2Pano viewer on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:7.8%">1<span class="help-tip"><b>Surface fuel source.</b> Each scan's own fuels (Scan level fuels) or the loadings submitted from Fuels exports (Fuel tool values).</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20.6%;top:19%">2<span class="help-tip"><b>Fuel source note.</b> Where the surface fuels come from, or what was submitted.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:25.4%">3<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:32.6%">4<span class="help-tip"><b>Data type.</b> Values in the metric's own units, or percent change from each plot's first scan.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:39.8%">5<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:46.8%">6<span class="help-tip"><b>Error bars.</b> SD, SE or Off.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:55.5%">7<span class="help-tip"><b>Card 1 metric.</b> The fire behavior metric for the upper left graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:62.7%">8<span class="help-tip"><b>Card 2 metric.</b> The metric for the upper right graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:69.9%">9<span class="help-tip"><b>Card 3 metric.</b> The metric for the lower left graph.</span></span>
-<span class="help-spot tip-right tip-up" tabindex="0" style="left:18.75%;top:79.2%">10<span class="help-tip"><b>Wind &amp; slope.</b> The first of the weather and fuel moisture inputs. Scroll the panel for the rest.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:31.25%;top:6.4%">11<span class="help-tip"><b>Card 1 graph.</b> Here, surface rate of spread.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:66.25%;top:6.4%">12<span class="help-tip"><b>Card 2 graph.</b> Here, surface fireline intensity.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:35%;top:53.2%">13<span class="help-tip"><b>Card 3 graph.</b> Here, the torching index.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:51%;top:20.6%">14<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:52.2%">15<span class="help-tip"><b>Points2Pano viewer.</b> The panorama of a selected scan, with its site, plot, date and scanner. Step through the scans with ◀ and ▶; in a narrow window they can be hidden, so expand the card.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:9.9%">1<span class="help-tip"><b>Surface fuel source.</b> Each scan's own fuels (Scan level fuels) or the loadings submitted from Fuels exports (Fuel tool values).</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:21.6%;top:17.9%">2<span class="help-tip"><b>Fuel source note.</b> Where the surface fuels come from, or what was submitted.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:28%">3<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:35.4%">4<span class="help-tip"><b>Data type.</b> Values in the metric's own units, or percent change from each plot's first scan.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:42.5%">5<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:21.3%;top:49.1%">6<span class="help-tip"><b>Error bars.</b> SD, SE or Off.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:58.3%">7<span class="help-tip"><b>Card 1 metric.</b> The fire behavior metric for the upper left graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:65.7%">8<span class="help-tip"><b>Card 2 metric.</b> The metric for the upper right graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:73%">9<span class="help-tip"><b>Card 3 metric.</b> The metric for the lower left graph.</span></span>
+<span class="help-spot tip-right tip-up" tabindex="0" style="left:18.75%;top:79.4%">10<span class="help-tip"><b>Wind &amp; slope.</b> The first of the weather and fuel moisture inputs. Scroll the panel for the rest.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:31.25%;top:5.7%">11<span class="help-tip"><b>Card 1 graph.</b> Here, surface rate of spread.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:66.25%;top:5.7%">12<span class="help-tip"><b>Card 2 graph.</b> Here, surface fireline intensity.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:35%;top:50.1%">13<span class="help-tip"><b>Card 3 graph.</b> Here, the torching index.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:54.1%;top:21%">14<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:49.7%">15<span class="help-tip"><b>Points2Pano viewer.</b> The panorama of a selected scan, with its site, plot, date and scanner. Step through the scans with ◀ and ▶; in a narrow card the label is shortened with "…".</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:86.8%;top:87.4%">16<span class="help-tip"><b>+ Report data.</b> In the lower right of the panorama: adds a photo of the plot showing to the report.</span></span>
 </div>
 
 1. **Surface fuel source**: scan level fuels or fuel tool values.
@@ -70,6 +71,7 @@ see what each part does.
 11. to 13. The **Card 1, 2 and 3 graphs**.
 14. **Treatment line** at a treatment date.
 15. **Points2Pano viewer**.
+16. **+ Report data** for the panorama.
 
 ## Step by step
 
@@ -312,10 +314,10 @@ matches low, dense canopy.
 
 - The label at the top shows the site, plot, scan date and scanner.
 - Use **◀** and **▶** to step through the selected scans.
-- **+ Report data** adds an image of the default view of the plot to the
-  report.
-- In a narrow window, part of the card's top bar can be cut off. Use the
-  card's **Expand** button to see all of its buttons.
+- **+ Report data**, in the lower right corner of the panorama, adds an image
+  of the default view of the plot to the report.
+- In a narrow card the scan label is shortened with "…". Use the card's
+  **Expand** button, in the lower left corner, to see it in full.
 
 ## In the report
 

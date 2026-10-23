@@ -45,18 +45,19 @@ Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
 <div class="help-shot"><img src="static/help/images/custom-models-overview.png" alt="The Custom models tab: plot settings and model lists on the left, three model graphs and the Points2Pano viewer on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:7.8%">1<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:15%">2<span class="help-tip"><b>Data type.</b> Predicted values, or percent change from each plot's first scan.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:22%">3<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:29.1%">4<span class="help-tip"><b>Error bars.</b> SD (spread among plots), SE (precision of the mean) or Off. They don't include model error.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:35.5%">5<span class="help-tip"><b>Window A available models.</b> The model for the upper left graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:42.7%">6<span class="help-tip"><b>Window B available models.</b> The model for the upper right graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:49.9%">7<span class="help-tip"><b>Window C available models.</b> The model for the lower left graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:36.25%;top:6.4%">8<span class="help-tip"><b>Window A graph.</b> Its title names what the model predicts, with units.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:71.9%;top:6.4%">9<span class="help-tip"><b>Window B graph.</b></span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:26.5%;top:53.2%">10<span class="help-tip"><b>Window C graph.</b></span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:54%;top:25.8%">11<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:52.2%">12<span class="help-tip"><b>Points2Pano viewer.</b> The panorama of a selected scan, with its site, plot, date and scanner. Step through the scans with ◀ and ▶; in a narrow window they can be hidden, so expand the card.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:9.9%">1<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:17.3%">2<span class="help-tip"><b>Data type.</b> Predicted values, or percent change from each plot's first scan.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:24.4%">3<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:21.3%;top:31.2%">4<span class="help-tip"><b>Error bars.</b> SD (spread among plots), SE (precision of the mean) or Off. They don't include model error.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:38.1%">5<span class="help-tip"><b>Window A available models.</b> The model for the upper left graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:45.3%">6<span class="help-tip"><b>Window B available models.</b> The model for the upper right graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:52.6%">7<span class="help-tip"><b>Window C available models.</b> The model for the lower left graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:36.25%;top:5.7%">8<span class="help-tip"><b>Window A graph.</b> Its title names what the model predicts, with units.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:71.9%;top:5.7%">9<span class="help-tip"><b>Window B graph.</b></span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:26.5%;top:50.1%">10<span class="help-tip"><b>Window C graph.</b></span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:54%;top:25.3%">11<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:49.7%">12<span class="help-tip"><b>Points2Pano viewer.</b> The panorama of a selected scan, with its site, plot, date and scanner. Step through the scans with ◀ and ▶; in a narrow card the label is shortened with "…".</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:86.8%;top:87.4%">13<span class="help-tip"><b>+ Report data.</b> In the lower right of the panorama: adds a photo of the plot showing to the report.</span></span>
 </div>
 
 1. **Plot type**: how the graphs draw the data.
@@ -69,6 +70,7 @@ see what each part does.
 8. to 10. The **Window A, B and C graphs**.
 11. **Treatment line** at a treatment date.
 12. **Points2Pano viewer**.
+13. **+ Report data** for the panorama.
 
 ## Step by step
 
@@ -257,10 +259,10 @@ what the plot looks like.
 
 - The label at the top shows the site, plot, scan date and scanner.
 - Use **◀** and **▶** to step through the selected scans.
-- **+ Report data** adds an image of the default view of the plot to the
-  report.
-- In a narrow window, part of the card's top bar can be cut off. Use the
-  card's **Expand** button to see all of its buttons.
+- **+ Report data**, in the lower right corner of the panorama, adds an image
+  of the default view of the plot to the report.
+- In a narrow card the scan label is shortened with "…". Use the card's
+  **Expand** button, in the lower left corner, to see it in full.
 
 ## In the report
 
@@ -289,4 +291,6 @@ them.
   can share a time step if they were collected close together. Enter them on
   **Set Treatments** before you evaluate the results.
 - **No models for a site?** Models are built only where field data were
-  collected with the scans.
+  collected with the scans. Contact the IntELiMon team
+  (<spokswinski@newmexicoconsortium.org>) about calibrating models for your
+  site.

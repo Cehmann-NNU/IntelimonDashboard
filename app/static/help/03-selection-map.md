@@ -38,33 +38,35 @@ For local installations, scans may also be loaded from a folder using the
 Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
-<div class="help-shot"><img src="static/help/images/selection-map-overview.png" alt="The Selection Map tab: the Select Scans panel on the left, and the IntELiMon Plots card with its Location Map and Table views on the right" width="632">
-<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:10.9%">1<span class="help-tip"><b>Agency selection.</b> Pick one or more agencies to show only their plots. Leave it empty to show every agency. Scans loaded from your own computer are listed as <b>MyPC</b>.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:21.5%">2<span class="help-tip"><b>Select date range.</b> Drag either handle to show only scans collected between the two dates.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:28%">3<span class="help-tip"><b>Clear All Plots.</b> Removes every plot from the selection so you can start choosing again.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:25.3%;top:32.6%">4<span class="help-tip"><b>Get Data.</b> Downloads the selected scans into your session. The other tabs use these data.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:33.5%;top:13%">5<span class="help-tip"><b>Zoom in and out.</b> You can also zoom with the mouse wheel and pan by dragging the map.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:33.5%;top:23%">6<span class="help-tip"><b>Draw a polygon or rectangle.</b> Every plot inside the shape is selected at once.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:12.1%">7<span class="help-tip"><b>Satellite or Base Map.</b> Switch between satellite imagery and a plain gray map. Markers are easier to see on the Base Map.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:82.6%;top:3.6%">8<span class="help-tip"><b>Location Map / Table.</b> Switch between the map and a table of the same scans. Scans without coordinates, such as local scans not yet placed on the map, are only in the table.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:62.5%;top:72%">9<span class="help-tip"><b>Legend.</b> The color of each agency's plots. Selected plots are gold; downloaded plots are blue.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:82.3%;top:62.8%">10<span class="help-tip"><b>Plots.</b> Each dot is a plot. Zoom in and click a dot to select it; click it again to unselect it.</span></span>
-<span class="help-spot tip-right tip-up" tabindex="0" style="left:28.2%;top:97.3%">11<span class="help-tip"><b>Expand.</b> Shows the card full screen, partly hidden behind the legend in this corner. Press <b>Close</b> at the top right to return.</span></span>
+<div class="help-shot"><img src="static/help/images/selection-map-overview.png" alt="The Selection Map tab: the Select Scans panel with Clear All Plots, Get Data and Clear All Downloads on the left, and the IntELiMon Plots card with its Location Map and Table views on the right" width="678">
+<span class="help-spot tip-right" tabindex="0" style="left:25.2%;top:11%">1<span class="help-tip"><b>Agency selection.</b> Pick one or more agencies to show only their plots. Leave it empty to show every agency. Scans loaded from your own computer are listed as <b>MyPC</b>.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.2%;top:15.6%">2<span class="help-tip"><b>Select date range.</b> Drag either handle to show only scans collected between the two dates.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.2%;top:28.3%">3<span class="help-tip"><b>Clear All Plots.</b> Clears the plots you selected but haven't downloaded. Downloaded scans stay loaded.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.2%;top:32.9%">4<span class="help-tip"><b>Get Data.</b> Downloads the selected scans into your session. The other tabs use these data.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:25.2%;top:37.4%">5<span class="help-tip"><b>Clear All Downloads.</b> Removes all downloaded scans and their data from the session, after asking you to confirm.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:34.6%;top:14%">6<span class="help-tip"><b>Zoom in and out.</b> You can also zoom with the mouse wheel and pan by dragging the map.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:34.6%;top:22.3%">7<span class="help-tip"><b>Draw a polygon or rectangle.</b> Every plot inside the shape is selected at once.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:88%;top:13.2%">8<span class="help-tip"><b>Satellite or Base Map.</b> Switch between satellite imagery and a plain gray map. Markers are easier to see on the Base Map.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:81.2%;top:4.3%">9<span class="help-tip"><b>Location Map / Table.</b> Switch between the map and a table of the same scans. Scans without coordinates, such as local scans not yet placed on the map, are only in the table.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:62.7%;top:75%">10<span class="help-tip"><b>Legend.</b> The color of each agency's plots. Selected plots are gold; downloaded plots are blue.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:79.6%;top:64%">11<span class="help-tip"><b>Plots.</b> Each dot is a plot. Zoom in and click a dot to select it; click it again to unselect it.</span></span>
+<span class="help-spot tip-right tip-up" tabindex="0" style="left:30%;top:97.5%">12<span class="help-tip"><b>Expand.</b> Shows the card full screen, partly hidden behind the legend in this corner. Press <b>Close</b> at the top right to return.</span></span>
 </div>
 
 1. **Agency selection**: shows only the chosen agencies' plots.
 2. **Select date range**: shows only scans between the two dates.
-3. **Clear All Plots**: empties the selection.
+3. **Clear All Plots**: clears the plots not yet downloaded.
 4. **Get Data**: downloads the selected scans.
-5. **Zoom buttons**: zoom in and out (the mouse wheel works too).
-6. **Draw polygon / rectangle**: select every plot inside a shape.
-7. **Satellite / Base Map**: switches the background map.
-8. **Location Map / Table**: switches between the map and a table of the
+5. **Clear All Downloads**: removes all downloaded scans and their data.
+6. **Zoom buttons**: zoom in and out (the mouse wheel works too).
+7. **Draw polygon / rectangle**: select every plot inside a shape.
+8. **Satellite / Base Map**: switches the background map.
+9. **Location Map / Table**: switches between the map and a table of the
    scans.
-9. **Legend**: agency colors, plus gold for selected and blue for
-   downloaded plots.
-10. **Plots**: click to select or unselect.
-11. **Expand**: shows the card full screen.
+10. **Legend**: agency colors, plus gold for selected and blue for
+    downloaded plots.
+11. **Plots**: click to select or unselect.
+12. **Expand**: shows the card full screen.
 
 ## Step by step
 
@@ -133,7 +135,8 @@ plots scanned from June 2023 onward remain.
 2. Click more plots to add them. They can be anywhere on the map across
    sites and agencies.
 3. To unselect a plot, click its dot again to revert it to its original
-   color.
+   color. A plot whose scans are already downloaded stays selected; see
+   Step 6.
 
 The dots are small. If a click doesn't select a plot, zoom in further and
 click the center of the dot.
@@ -221,8 +224,26 @@ data you already have.
 
 ### Step 6: Change or clear the selection
 
-- Click a gold or blue plot to take it out of the selection.
-- Click **Clear All Plots** to empty the selection and start again.
+Plots you have selected but not yet downloaded (gold) can be changed
+freely:
+
+- Click a gold plot, or its row in the **Table**, to take it out of the
+  selection.
+- Click **Clear All Plots** to clear all of them and start again.
+
+Downloaded scans (blue) stay loaded until you remove them on purpose, so
+the other tabs never lose data they are showing. Clicking a downloaded plot,
+filtering it out, or using **Clear All Plots** leaves it loaded, and a
+message says so. To remove downloaded scans:
+
+- **Some scans:** select them in the table on the **Set Treatments** tab and
+  click **Remove selected scans**.
+- **All scans:** click **Clear All Downloads** below **Get Data**. A window
+  asks you to confirm; it removes the data of every downloaded scan, with
+  their unit names, remeasurement numbers and scan groupings, and clears the
+  blue markers. Figures already added to the report are kept.
+
+To use removed scans again, select them and click **Get Data**.
 
 <div class="help-shot"><img src="static/help/images/selection-map-no-scans.png" alt="Warning: No scans selected. Click on a desired plot and set date range." width="293"></div>
 
@@ -235,7 +256,7 @@ It also appears when every selected scan has already been downloaded.
 |---|---|
 | Dot in an agency color | A plot that matches the filters; click it, or draw a shape around it, to select it |
 | Gold dot | A selected plot |
-| Blue dot | A selected plot whose scans are downloaded |
+| Blue dot | A plot whose scans are downloaded; it stays loaded until removed |
 | Number beside a dot | The plot number, shown when zoomed in |
 
 ## Things to know
@@ -246,9 +267,14 @@ It also appears when every selected scan has already been downloaded.
 - **Changing the agencies or dates updates the selection.** Selected scans
   that no longer match are dropped, and the map zooms to fit the plots that
   match. Set the filters first, then select plots.
-- **Downloaded data stay loaded.** Clearing the selection or changing the
-  filters doesn't delete scans that are already downloaded, and the graph
-  tabs keep showing them. To start completely fresh, reload the page.
+- **Downloaded data stay loaded.** Clearing the selection, unselecting a
+  downloaded plot or changing the filters doesn't remove scans that are
+  already downloaded, and the graph tabs keep showing them. Remove them with
+  **Clear All Downloads**, or a few at a time on the Set Treatments tab.
+- **If the IntELiMon server doesn't respond,** the tab opens with no plots
+  and a red message, or **Get Data** says no scans were downloaded. Wait a
+  few minutes, then reload the page or click **Get Data** again. A download
+  that fails partway leaves nothing half-loaded.
 - **Data last for one session.** Reloading the page or closing the browser
   tab clears all selections and downloads.
 - **New selections get default settings.** Each selected plot is placed in a

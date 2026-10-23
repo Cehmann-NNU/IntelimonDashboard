@@ -1,7 +1,5 @@
 # Getting started
 
-> Draft: parts of this page have not been written yet.
-
 The IntELiMon Decision Support Tool provides access to data from the
 **Interagency Ecosystem Lidar Monitoring Program (IntELiMon)**. Its purpose is
 to translate the complex structural data produced by terrestrial laser
@@ -76,6 +74,10 @@ point clouds.
   navigating away clears them, so downloads and exports should be completed
   beforehand.
 - The help pages are searchable from the box above the topic list.
+
+## Contact
+
+Questions, problems and suggestions: <spokswinski@newmexicoconsortium.org>
 
 ## References
 

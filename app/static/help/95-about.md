@@ -1,7 +1,5 @@
 # About
 
-> Draft: parts of this page have not been written yet.
-
 ## IntELiMon
 
 The Interagency Ecosystem Lidar Monitoring Program (IntELiMon) is a framework
@@ -216,3 +214,7 @@ Watson, D. J. (1947). Comparative physiological studies on the growth of
 field crops: I. Variation in net assimilation rate and leaf area between
 species and varieties, and within and between years. *Annals of Botany*,
 11(1), 41-76.
+
+## Contact
+
+Questions, problems and suggestions: <spokswinski@newmexicoconsortium.org>

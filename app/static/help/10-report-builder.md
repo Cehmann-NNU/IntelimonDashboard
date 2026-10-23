@@ -106,7 +106,7 @@ Each tab adds a different kind of item:
 | Tab | What + Report data adds |
 |---|---|
 | Standard outputs, Custom models, rothRmel | The graph as shown, or its statistics table in Statistics view, with the plot type, data type and other settings |
-| Points2Pano viewer (on the graph tabs) | An image of the default view of the plot showing |
+| Points2Pano viewer (on the graph tabs and Forestry exports; the button is in the lower right of the panorama) | An image of the default view of the plot showing |
 | Fuels exports | The Surface fuels, Canopy fuels, Time lag fuels or Mean fuel loading card as a table |
 | Forestry exports | The stem map, and the Metrics, Species, Stocking, Size bias or FVS tab |
 

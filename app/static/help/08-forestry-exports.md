@@ -33,30 +33,34 @@ can then be edited for scale and pattern and used to generate FVS inputs.
 Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
-<div class="help-shot"><img src="static/help/images/forestry-overview.png" alt="The Forestry exports tab: settings on the left, the stem map in the middle and the stand metrics on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:7.8%">1<span class="help-tip"><b>Mode.</b> Plot inventory (one scan) or Generative AOI map (a simulated area).</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:10%;top:14.4%">2<span class="help-tip"><b>Scan.</b> The scan shown. Use ◀ and ▶ to step through the scans with tree inventories.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:29%">3<span class="help-tip"><b>Plot radius.</b> The radius of the plot used for the full plot area (15 m by default).</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:12.5%;top:37.7%">4<span class="help-tip"><b>Plot area.</b> The full area, the unoccluded area (nonocarea) visible to the scanner, and the share visible.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:44.3%">5<span class="help-tip"><b>Scale per-area values by.</b> The visible area (corrected, recommended) or the full plot area.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:54%">6<span class="help-tip"><b>Species mix.</b> FVS species codes and their share of the stems, adding up to 100%.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:74.2%">7<span class="help-tip"><b>+ Add species.</b> Adds a row, up to six species.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:78.6%">8<span class="help-tip"><b>Assignment rule.</b> How species are given to stems: at random, by size or in patches.</span></span>
-<span class="help-spot tip-right tip-up" tabindex="0" style="left:22.5%;top:87.6%">9<span class="help-tip"><b>Prescription.</b> A thinning to try. Scroll down for its settings and the FVS options.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:41.9%;top:5.8%">10<span class="help-tip"><b>Color by.</b> Color the stems by species, diameter or crown ratio.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:50.6%;top:9.3%">11<span class="help-tip"><b>Stem count.</b> Stems detected and stems marked for removal.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:60.6%;top:9.3%">12<span class="help-tip"><b>+ Report data.</b> Adds the stem map, as shown, to the report.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:52.5%;top:47.4%">13<span class="help-tip"><b>Stem map.</b> Each dot is a stem, sized by diameter. The + is the scanner.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:60%;top:36%">14<span class="help-tip"><b>Plot rings.</b> The dashed ring is the plot radius; the solid ring has the same area as the part visible to the scanner.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:75%;top:7.2%">15<span class="help-tip"><b>Tabs.</b> Metrics, Species, Stocking, Size bias and FVS.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:20.6%">16<span class="help-tip"><b>Stand metrics.</b> Per acre, after the prescription when there is one.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:33%">17<span class="help-tip"><b>Occlusion correction.</b> The metrics with the full plot area and with the visible area.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:49.5%">18<span class="help-tip"><b>Summary.</b> How much of the plot was visible, and how stocked the stand is after the prescription.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:7.2%">19<span class="help-tip"><b>+ Report data.</b> Adds the open tab to the report.</span></span>
+<div class="help-shot"><img src="static/help/images/forestry-overview.png" alt="The Forestry exports tab: settings on the left, the stem map in the middle, the tabbed stand card at the top right and the Points2Pano viewer at the bottom right" width="800">
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:9.9%">1<span class="help-tip"><b>Mode.</b> Plot inventory (one scan) or Generative AOI map (a simulated area).</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:3%;top:17.7%">2<span class="help-tip"><b>Scan.</b> The scan shown. Use ◀ and ▶ to step through the scans with tree inventories; the Points2Pano viewer follows.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:30.7%">3<span class="help-tip"><b>Plot radius.</b> The radius of the plot used for the full plot area (15 m by default).</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:3%;top:37.5%">4<span class="help-tip"><b>Plot area.</b> The full area, the unoccluded area (nonocarea) visible to the scanner, and the share visible.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:46.7%">5<span class="help-tip"><b>Scale per-area values by.</b> The visible area (corrected, recommended) or the full plot area.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:59.6%">6<span class="help-tip"><b>Species mix.</b> FVS species codes and their share of the stems, adding up to 100%.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:77.9%">7<span class="help-tip"><b>+ Add species.</b> Adds a row, up to six species.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:85.3%">8<span class="help-tip"><b>Assignment rule.</b> How species are given to stems: at random, by size or in patches.</span></span>
+<span class="help-spot tip-right tip-up" tabindex="0" style="left:22.5%;top:91.4%">9<span class="help-tip"><b>Prescription.</b> A thinning to try. Scroll down for its settings and the FVS options.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:44.4%;top:5.5%">10<span class="help-tip"><b>Color by.</b> Color the stems by species, diameter or crown ratio.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:47.9%;top:3.8%">11<span class="help-tip"><b>Stem count.</b> Stems detected and stems marked for removal.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:65%;top:3.8%">12<span class="help-tip"><b>+ Report data.</b> Adds the stem map, as shown, to the report.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:52.5%;top:48.4%">13<span class="help-tip"><b>Stem map.</b> Each dot is a stem, sized by diameter. The + is the scanner.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:60.3%;top:36%">14<span class="help-tip"><b>Plot rings.</b> The dashed ring is the plot radius; the solid ring has the same area as the part visible to the scanner.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:90.5%;top:7.8%">15<span class="help-tip"><b>Tabs.</b> Metrics, Species, Stocking, Size bias and FVS.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:80.8%;top:3.6%">16<span class="help-tip"><b>+ Report data.</b> Adds the open tab to the report.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:3.6%">17<span class="help-tip"><b>Download.</b> The open tab as CSV data; Stocking and Size bias also as SVG or PNG images.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:19%">18<span class="help-tip"><b>Stand metrics.</b> Per acre, after the prescription when there is one.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:36.8%">19<span class="help-tip"><b>Occlusion correction.</b> The metrics with the full plot area and with the visible area. Scroll the tab for the summary of how much of the plot was visible and how stocked the stand is.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:67.9%;top:42%">20<span class="help-tip"><b>Expand.</b> Shows the tabbed card full screen; the charts grow to fill it. Press <b>Close</b> to return.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:49.7%">21<span class="help-tip"><b>Scan label.</b> The site, plot, date and scanner of the panorama. It follows the scan chosen in the left panel, and stepping it with ◀ and ▶ changes the stem map and metrics to that scan too.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:81%;top:67%">22<span class="help-tip"><b>Points2Pano viewer.</b> A 360° panorama made from the scan. Use the viewer's own controls to look around.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:89%;top:90%">23<span class="help-tip"><b>+ Report data.</b> In the lower right of the panorama: adds a photo of the plot showing to the report.</span></span>
 </div>
 
 1. **Mode**: plot inventory or generative map.
-2. **Scan**: step through the scans with ◀ and ▶.
+2. **Scan**: step through the scans with ◀ and ▶ (the panorama follows).
 3. **Plot radius**. Editable, but occlusion does not scale in proportion.
 4. **Plot area**: full, visible and the share visible.
 5. **Scale per-area values by**: visible or full area.
@@ -72,11 +76,16 @@ see what each part does.
 13. **Stem map**.
 14. **Plot rings**. Dashed for the plot extent, solid to represent the area
     not occluded.
-15. **Tabs** of the right-hand card for different forestry metrics.
-16. **Stand metrics**. Dynamic, based on the prescription.
-17. **Occlusion correction** table. Occlusion uncertainty reporting.
-18. **Summary**.
-19. **+ Report data** for the open tab.
+15. **Tabs** of the top right card for different forestry metrics.
+16. **+ Report data** for the open tab.
+17. **Download** the open tab (CSV, and SVG or PNG for the charts).
+18. **Stand metrics**. Dynamic, based on the prescription.
+19. **Occlusion correction** table. Occlusion uncertainty reporting; scroll
+    for the summary.
+20. **Expand** the top right card to full screen.
+21. **Scan label** of the panorama, linked to the scan in the left panel.
+22. **Points2Pano viewer**.
+23. **+ Report data** for the panorama.
 
 ## Step by step
 
@@ -103,7 +112,7 @@ basal area for the trees the scanner couldn't see. Quadratic mean diameter
 is a ratio of sizes and doesn't change.
 
 The **Occlusion correction** table on the Metrics tab compares both, and the
-summary says how much of the plot was visible. If a scan has no unoccluded area,
+summary below it (scroll the tab) says how much of the plot was visible. If a scan has no unoccluded area,
 the full plot area is used and per-area values may be too low.
 
 ## Species mix
@@ -128,12 +137,12 @@ which species, and so in per-species metrics and FVS growth.
 ## Prescriptions
 
 <div class="help-shot"><img src="static/help/images/forestry-prescription.png" alt="Thin from below to 120 ft² per acre: 23 of 35 stems marked with a red x, and the metrics showing the residual stand" width="800">
-<span class="help-spot tip-right tip-up" tabindex="0" style="left:22.5%;top:91.8%">1<span class="help-tip"><b>Method</b>: Thin from below, with a residual basal area of 120 ft²/ac.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:59.75%;top:53.5%">2<span class="help-tip"><b>Marked stems</b> are hollow with a red ×.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:45.6%;top:44.3%">3<span class="help-tip"><b>Kept stems</b> stay filled.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:50.6%;top:9.7%">4<span class="help-tip">23 of 35 stems are <b>marked</b> for removal.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:20.6%">5<span class="help-tip">The metrics now describe the <b>residual stand</b>.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:57%">6<span class="help-tip">The <b>stocking summary</b>: residual SDI as a share of the maximum.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:59%">1<span class="help-tip"><b>Method</b>: Thin from below, with a residual basal area of 120 ft²/ac.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:58.75%;top:40%">2<span class="help-tip"><b>Marked stems</b> are hollow with a red ×.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:45.6%;top:44.2%">3<span class="help-tip"><b>Kept stems</b> stay filled.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:47.9%;top:3.8%">4<span class="help-tip">23 of 35 stems are <b>marked</b> for removal.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:87.5%;top:19%">5<span class="help-tip">The metrics now describe the <b>residual stand</b>.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:40%">6<span class="help-tip">Scroll the Metrics tab for the <b>stocking summary</b>: residual SDI as a share of the maximum.</span></span>
 </div>
 
 | Method | What it marks |
@@ -158,7 +167,28 @@ of a maximum of 450:
 The maximum of 450 is a general value, not specific to your species or
 region.
 
-## The right-hand tabs
+## The top right card
+
+The card at the top right holds five tabs: Metrics, Species, Stocking, Size
+bias and FVS. Above the tabs:
+
+- **+ Report data** adds the open tab to the report (see below).
+- **Download** saves the open tab:
+
+  <div class="help-shot"><img src="static/help/images/forestry-download.png" alt="The Download menu of the top right card open on the Size bias tab: CSV data, SVG image and PNG image" width="253"></div>
+
+  - **CSV data** on every tab: the stand metrics, the species table, the
+    stocking values (trees per acre, QMD and SDI before and after the
+    prescription), the stems detected and inferred missing in each diameter
+    class, or the FVS settings.
+  - **SVG image** and **PNG image** on the Stocking and Size bias tabs: the
+    chart on a white background, for documents and slides.
+
+  Files are named after the tab and the scan, for example
+  `forestry_size_bias_CASDU_0003_2025-01-24.png`.
+
+The **Expand** button in the card's lower left corner shows it full screen,
+with the charts enlarged; press **Close** to return.
 
 ### Metrics
 
@@ -202,6 +232,24 @@ missed. It is indicative only and is not applied to the metrics.
 A preview of the first 12 records of the tree list and of the keyword file,
 built from the current settings. Download the files from the left panel.
 
+## Points2Pano viewer
+
+The card at the bottom right shows the Points2Pano panorama of a selected
+scan: a 360° view made from the scan's points, useful for checking the stem
+map against what the plot looks like.
+
+- The label at the top shows the site, plot, scan date and scanner. Use
+  **◀** and **▶** to step through the selected scans.
+- The viewer is **linked to the scan shown**: picking a scan with ◀ and ▶
+  in the left panel moves the panorama to the same scan, and stepping the
+  viewer to a scan with a tree inventory shows that scan's stem map and
+  metrics too. Scans without a tree inventory can still be viewed; the
+  stem map then stays on the last scan with one.
+- **+ Report data**, in the lower right corner of the panorama, adds an
+  image of the default view of the plot to the report.
+- In a narrow card the scan label is shortened with "…". Use the card's
+  **Expand** button to see it in full.
+
 ## FVS export
 
 <div class="help-shot"><img src="static/help/images/forestry-fvs-settings.png" alt="The FVS settings and download buttons at the bottom of the left panel" width="190">
@@ -242,15 +290,14 @@ set. Check its canopy cover against independent airborne lidar or LANDFIRE
 before using it.</strong></p>
 
 <div class="help-shot"><img src="static/help/images/forestry-generative.png" alt="Generative AOI map mode: area, fitted structure and pattern settings on the left and a simulated stem map of 400 by 300 m" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:14.8%">1<span class="help-tip"><b>Source.</b> The stems of the shown scan only, or of all loaded scans pooled.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:28.5%">2<span class="help-tip"><b>Area of interest</b> width and height, in meters.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:47.8%">3<span class="help-tip"><b>Fitted structure.</b> Density and the Weibull diameter distribution fitted to the source stems.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:62.3%">4<span class="help-tip"><b>Override fitted values</b> to enter your own density and Weibull shape and scale.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:66.4%">5<span class="help-tip"><b>Spatial pattern.</b> Clustered, random or regular (plantation).</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:73.6%">6<span class="help-tip"><b>Clumping strength.</b> How many stems form each cluster.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:85.4%">7<span class="help-tip"><b>Re-roll simulation.</b> A new random stem map with the same settings.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:48.75%;top:51.5%">8<span class="help-tip">The <b>simulated stem map</b>, labeled "SIMULATED - not measured".</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:81%;top:31%">9<span class="help-tip">The right-hand card and the stem count above the map still describe the scan shown in Plot inventory mode.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:17.7%">1<span class="help-tip"><b>Source.</b> The stems of the shown scan only, or of all loaded scans pooled.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:33.7%">2<span class="help-tip"><b>Area of interest</b> width and height, in meters.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:24.4%;top:54.7%">3<span class="help-tip"><b>Fitted structure.</b> Density and the Weibull diameter distribution fitted to the source stems.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:62.5%">4<span class="help-tip"><b>Override fitted values</b> to enter your own density and Weibull shape and scale.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:69.5%">5<span class="help-tip"><b>Spatial pattern.</b> Clustered, random or regular (plantation).</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:79%">6<span class="help-tip"><b>Clumping strength.</b> How many stems form each cluster.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:22.5%;top:85.9%">7<span class="help-tip"><b>Re-roll simulation.</b> A new random stem map with the same settings.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:48.75%;top:51.6%">8<span class="help-tip">The <b>simulated stem map</b>, labeled "SIMULATED - not measured".</span></span>
 </div>
 
 1. Set **Mode** to **Generative AOI map**.
@@ -267,11 +314,12 @@ before using it.</strong></p>
 ## + Report data
 
 - The button above the **stem map** adds it, as shown, to the report.
-- The button on the **right-hand card** adds the open tab: Metrics adds the
+- The button on the **top right card** adds the open tab: Metrics adds the
   stand metrics and occlusion correction tables, Species its table, and
   Stocking and Size bias their charts, and FVS a table of the export
   settings (variant, site index, cycles, options and number of tree records).
   Download the FVS files themselves from the left panel.
+- The button on the **Points2Pano** panorama adds a photo of the plot.
 - Each item brings its methods and citations into the report's "About these
   data" section and References: the unoccluded area correction (Murphy et
   al., 2024; Pokswinski et al., 2026), stand density index (Reineke, 1933)

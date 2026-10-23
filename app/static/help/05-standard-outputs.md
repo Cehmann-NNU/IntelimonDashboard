@@ -25,20 +25,21 @@ Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
 <div class="help-shot"><img src="static/help/images/standard-outputs-overview.png" alt="The Standard outputs tab: plot settings and metric lists on the left, three metric graphs and the Points2Pano viewer on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:7.8%">1<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:15%">2<span class="help-tip"><b>Data type.</b> Values in the metric's own units, or percent change from each plot's first scan.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:22%">3<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:29.1%">4<span class="help-tip"><b>Error bars.</b> SD (spread among plots), SE (precision of the mean) or Off.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:35.5%">5<span class="help-tip"><b>Tree statistics.</b> The metric for the upper left graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:42.7%">6<span class="help-tip"><b>Volume statistics.</b> The metric for the upper right graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:20%;top:54%">7<span class="help-tip"><b>Canopy statistics.</b> The metric for the lower left graph.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:31.9%;top:6.4%">8<span class="help-tip"><b>Graph title.</b> The metric shown, with its code in brackets.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:34%;top:29%">9<span class="help-tip"><b>Error bar.</b> ±1 SD or SE around the mean of the time step.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:40.6%;top:19.6%">10<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:46.5%;top:38.1%">11<span class="help-tip"><b>Time step mean.</b> The average of the scans in one time step.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:52.5%;top:13%">12<span class="help-tip"><b>Error bar label.</b> Says what the error bars show.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:52.2%">13<span class="help-tip"><b>Scan label.</b> The site, plot, date and scanner of the panorama. The ◀ and ▶ buttons beside it step through the selected scans; in a narrow window they can be hidden, so expand the card.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:80%;top:74%">14<span class="help-tip"><b>Points2Pano viewer.</b> A 360° panorama made from the scan. Use the viewer's own controls to look around.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:9.9%">1<span class="help-tip"><b>Plot type.</b> How the graphs draw the data: time series, one line per plot, box and whisker, or bars.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:18.75%;top:17.3%">2<span class="help-tip"><b>Data type.</b> Values in the metric's own units, or percent change from each plot's first scan.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:24.4%">3<span class="help-tip"><b>Treatment date lines.</b> Shows or hides the red lines at the treatment dates.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:21.3%;top:31.2%">4<span class="help-tip"><b>Error bars.</b> SD (spread among plots), SE (precision of the mean) or Off.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:38.1%">5<span class="help-tip"><b>Tree statistics.</b> The metric for the upper left graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:45.9%">6<span class="help-tip"><b>Volume statistics.</b> The metric for the upper right graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:20%;top:56.4%">7<span class="help-tip"><b>Canopy statistics.</b> The metric for the lower left graph.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:31.9%;top:5.7%">8<span class="help-tip"><b>Graph title.</b> The metric shown, with its code in brackets.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:34.4%;top:29.5%">9<span class="help-tip"><b>Error bar.</b> ±1 SD or SE around the mean of the time step.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:52.3%;top:20%">10<span class="help-tip"><b>Treatment line.</b> A treatment date from the Set Treatments tab.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:46.5%;top:31.6%">11<span class="help-tip"><b>Time step mean.</b> The average of the scans in one time step.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:46.8%;top:9.3%">12<span class="help-tip"><b>Error bar label.</b> Says what the error bars show.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.5%;top:49.7%">13<span class="help-tip"><b>Scan label.</b> The site, plot, date and scanner of the panorama. Step through the selected scans with ◀ and ▶. In a narrow card the label is shortened with "…"; expand the card to read it in full.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:78.8%;top:69.5%">14<span class="help-tip"><b>Points2Pano viewer.</b> A 360° panorama made from the scan. Use the viewer's own controls to look around.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:86.8%;top:87.4%">15<span class="help-tip"><b>+ Report data.</b> In the lower right of the panorama: adds a photo of the plot showing to the report.</span></span>
 </div>
 
 1. **Plot type**: how the graphs draw the data.
@@ -55,6 +56,7 @@ see what each part does.
 12. **Error bar label**.
 13. **Scan label** of the panorama, with ◀ and ▶ to change scans.
 14. **Points2Pano viewer**.
+15. **+ Report data** for the panorama.
 
 ## The metrics
 
@@ -212,10 +214,10 @@ view made from the scan's points.
 
 - The label at the top shows the site, plot, scan date and scanner.
 - Use **◀** and **▶** to step through the selected scans.
-- **+ Report data** adds an image of the default view of the plot to the
-  report.
-- In a narrow window, part of the card's top bar can be cut off. Use the
-  card's **Expand** button to see all of its buttons.
+- **+ Report data**, in the lower right corner of the panorama, adds an image
+  of the default view of the plot to the report.
+- In a narrow card the scan label is shortened with "…". Use the card's
+  **Expand** button, in the lower left corner, to see it in full.
 
 ## Things to know
 

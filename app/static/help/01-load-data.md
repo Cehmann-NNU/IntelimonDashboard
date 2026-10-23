@@ -144,3 +144,4 @@ coordinates and are selected from the **Table** on the Selection Map (Step
 - **Scans without locations** are selected from the Selection Map table, not
   the map. Tabs that need plot locations, such as the plot locations map in
   the report and the Fuels exports landscape, need located plots.
+- **Questions or problems:** <spokswinski@newmexicoconsortium.org>

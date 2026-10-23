@@ -2,9 +2,9 @@
 
 ## What this tab is for
 
-Set Treatments lists the scans downloaded from the Selection Map. This tab is
-used to examine the scans that have been downloaded and provide context to
-them.
+Set Treatments lists the scans selected on the Selection Map. This tab is
+used to examine the scans that have been downloaded, provide context to
+them, and remove scans you no longer need.
 
 - **Treatment dates** record when a treatment, such as a prescribed burn or
   a thinning, took place, and **what was done**. The graph tabs use the
@@ -37,40 +37,43 @@ The table has one row per scan:
 Move the mouse over a numbered marker, or press Tab to step through them, to
 see what each part does.
 
-<div class="help-shot"><img src="static/help/images/set-treatments-overview.png" alt="The Set Treatments tab: the scan table on the left, and the Add Treatment Dates and Set Unit Name, Remeasurement or Scan Grouping panels on the right" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:26.9%;top:15.9%">1<span class="help-tip"><b>Column headings.</b> Sort the table by heading type: click one to sort by that column; click again to reverse the order.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:48.3%;top:20%">2<span class="help-tip"><b>Column filters.</b> Type or pick a value to show only the matching rows.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:74%;top:8.2%">3<span class="help-tip"><b>Search.</b> Shows only rows with this text in any column.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:32%">4<span class="help-tip"><b>Scans.</b> Click a row to select it; click it again to unselect it. Select rows before you click Assign.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:48.1%;top:39.5%">5<span class="help-tip"><b>Unit.</b> Every scan starts in "My Unit". Give your units their own names.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:47%">6<span class="help-tip"><b>Remeasurement.</b> The visit number of each plot, starting at 0: each plot here was scanned twice, so its scans are 0 and 1.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:54.4%">7<span class="help-tip"><b>Scan grouping.</b> The time step of each scan, starting at 1. The graph tabs and the report average the scans of each grouping together.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:62.5%;top:3.4%">8<span class="help-tip"><b>Clear selection.</b> Unselects every row in the table.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:24.6%">9<span class="help-tip"><b>Select Date.</b> Opens a calendar to pick a treatment date.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:32%">10<span class="help-tip"><b>Treatment.</b> What was done on the date. Pick one or more types; optional.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:36.4%">11<span class="help-tip"><b>Add Date.</b> Adds the date and its treatment to the Treatment Dates list.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:47%">12<span class="help-tip"><b>Treatment Dates.</b> The dates and treatments added so far. Click one to select it, then the trash can above the list to delete it.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:81%">13<span class="help-tip"><b>Unit Name.</b> The name to give the selected scans.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:86.9%">14<span class="help-tip"><b>Scan Remeasurement.</b> The remeasurement number to give the selected scans.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:92.6%">15<span class="help-tip"><b>Scan Grouping.</b> The scan grouping to give the selected scans. The <b>Assign</b> button is below it.</span></span>
+<div class="help-shot"><img src="static/help/images/set-treatments-overview.png" alt="The Set Treatments tab: the scan table with Remove selected scans above it on the left, and the Add Treatment Dates and Set Unit Name, Remeasurement or Scan Grouping panels on the right" width="800">
+<span class="help-spot tip-right" tabindex="0" style="left:26.9%;top:20%">1<span class="help-tip"><b>Column headings.</b> Sort the table by heading type: click one to sort by that column; click again to reverse the order.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:48.3%;top:23.9%">2<span class="help-tip"><b>Column filters.</b> Type or pick a value to show only the matching rows.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:9.8%;top:16.4%">3<span class="help-tip"><b>Rows.</b> How many scans are listed, and how many are hidden by the filters.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:32.3%">4<span class="help-tip"><b>Scans.</b> Click a row to select it; click it again to unselect it. Select rows before you click Assign or Remove selected scans.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:48.1%;top:39.8%">5<span class="help-tip"><b>Unit.</b> Every scan starts in "My Unit". Give your units their own names.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:47.2%">6<span class="help-tip"><b>Remeasurement.</b> The visit number of each plot, starting at 0: each plot here was scanned twice, so its scans are 0 and 1.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:54.8%">7<span class="help-tip"><b>Scan grouping.</b> The time step of each scan, starting at 1. The graph tabs and the report average the scans of each grouping together.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:12.5%;top:9.5%">8<span class="help-tip"><b>Clear selection.</b> Unselects every row in the table.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:58.8%;top:5.1%">9<span class="help-tip"><b>Remove selected scans.</b> Removes the selected scans and their downloaded data from the session, after asking you to confirm.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:26.2%">10<span class="help-tip"><b>Select Date.</b> Opens a calendar to pick a treatment date.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:33.3%">11<span class="help-tip"><b>Treatment.</b> What was done on the date. Pick one or more types; optional.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:37.7%">12<span class="help-tip"><b>Add Date.</b> Adds the date and its treatment to the Treatment dates list.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:47.4%">13<span class="help-tip"><b>Treatment dates.</b> The dates and treatments added so far. Click one to select it.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:94.6%;top:53.4%">14<span class="help-tip"><b>Delete.</b> The trash can deletes the treatment date selected above it.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:82.5%">15<span class="help-tip"><b>Unit Name.</b> The name to give the selected scans.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:88.4%">16<span class="help-tip"><b>Scan Remeasurement.</b> The remeasurement number to give the selected scans.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:94.3%">17<span class="help-tip"><b>Scan Grouping.</b> The scan grouping to give the selected scans. The <b>Assign</b> button is below it.</span></span>
 </div>
 
 1. **Column headings**: sort the table by heading type.
 2. **Column filters**: show only matching rows.
-3. **Search**: find text in any column.
+3. **Rows**: how many scans are listed.
 4. **Scans**: click rows to select them.
 5. **Unit**: the management unit of each scan.
 6. **Remeasurement**: the visit number of each plot.
 7. **Scan grouping**: the time step of each scan.
 8. **Clear selection**: unselect all rows.
-9. **Select Date**: pick a treatment date.
-10. **Treatment**: pick what was done on that date.
-11. **Add Date**: add the date and treatment to the list.
-12. **Treatment Dates**: the dates and treatments added so far, with the
-    trash can to delete the one selected.
-13. **Unit Name**: the name to assign.
-14. **Scan Remeasurement**: the remeasurement number to assign.
-15. **Scan Grouping**: the scan grouping to assign, then **Assign**.
+9. **Remove selected scans**: remove the selected scans and their data.
+10. **Select Date**: pick a treatment date.
+11. **Treatment**: pick what was done on that date.
+12. **Add Date**: add the date and treatment to the list.
+13. **Treatment dates**: the dates and treatments added so far.
+14. **Trash can**: delete the treatment date selected in the list.
+15. **Unit Name**: the name to assign.
+16. **Scan Remeasurement**: the remeasurement number to assign.
+17. **Scan Grouping**: the scan grouping to assign, then **Assign**.
 
 ## Sorting and filtering the table
 
@@ -83,20 +86,20 @@ select scans for management unit assignment or to choose management dates.
 - **Filter:** click the box under a column heading and type or pick a
   value. Only matching rows stay in the table. Clear the box, or click the
   ⊗ under it, to show every row again.
-- **Search:** type in the **Search** box above the table to keep the rows
-  that contain the text in any column.
+- **Rows:** the line above the table counts the scans listed, and how many
+  the filters hide.
 
-After you click **Assign** or **Add Date**, the table is redrawn: the sort
-order, the filters and the selected rows go back to their defaults.
+The sort order, the filters and the selected rows stay as they are after you
+click **Assign**, so you can keep working on the same scans.
 
 ## Name management units
 
 <div class="help-shot"><img src="static/help/images/set-treatments-assign-unit.png" alt="The table filtered to site CASDU, all six CASDU scans selected, and Burn Unit A typed as the unit name" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:8.25%;top:20%">1<span class="help-tip"><b>Filter</b> the site column to CASDU so only that site's scans are listed.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:6.9%;top:15.9%">2<span class="help-tip">The arrow shows the table is <b>sorted</b> by site.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:34.3%">3<span class="help-tip"><b>Selected rows</b> are highlighted. Click each row you want to name.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:81%">4<span class="help-tip">Type the <b>unit name</b>.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:96.6%">5<span class="help-tip">Click <b>Assign</b> to give the selected scans the name.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:8.25%;top:23.9%">1<span class="help-tip"><b>Filter</b> the site column to CASDU so only that site's scans are listed.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:6.9%;top:20%">2<span class="help-tip">The arrow shows the table is <b>sorted</b> by site.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:38.2%">3<span class="help-tip"><b>Selected rows</b> are highlighted. Click each row you want to name.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:82.5%">4<span class="help-tip">Type the <b>unit name</b>.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:97.9%">5<span class="help-tip">Click <b>Assign</b> to give the selected scans the name.</span></span>
 </div>
 
 1. Narrow the table to the scans of one unit, for example by filtering the
@@ -161,12 +164,12 @@ Add one date for each treatment. If the date is already in the list, a
 "Date already added" warning appears.
 
 <div class="help-shot"><img src="static/help/images/set-treatments-date-added.png" alt="After adding a prescribed fire on 2025-05-15: the date and treatment are listed under Treatment Dates" width="800">
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:24.6%">1<span class="help-tip">The <b>treatment date</b> picked in the calendar: 2025-05-15.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:95%;top:32%">2<span class="help-tip">The <b>Treatment</b> box: Prescribed fire was picked, and the box was cleared when the date was added.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:36.4%">3<span class="help-tip"><b>Add Date</b> was clicked.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:77.75%;top:47.2%">4<span class="help-tip">The date and its <b>treatment</b> are now in the Treatment Dates list.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:35.7%">5<span class="help-tip"><b>Remeasurement</b> numbers don't change: they count each plot's visits, before or after a treatment.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:43.3%">6<span class="help-tip"><b>Scan grouping.</b> Scans after the date start a new grouping. Here more than 30 days already separated them, so the groupings stay 1 to 4.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:26.2%">1<span class="help-tip">The <b>treatment date</b> picked in the calendar: 2025-05-15.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:95%;top:33.3%">2<span class="help-tip">The <b>Treatment</b> box: Prescribed fire was picked, and the box was cleared when the date was added.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:96.25%;top:37.7%">3<span class="help-tip"><b>Add Date</b> was clicked.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:76.2%;top:49.2%">4<span class="help-tip">The date and its <b>treatment</b> are now in the Treatment dates list.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:36%">5<span class="help-tip"><b>Remeasurement</b> numbers don't change: they count each plot's visits, before or after a treatment.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:47.2%">6<span class="help-tip"><b>Scan grouping.</b> Scans after the date start a new grouping. Here more than 30 days already separated them, so the groupings stay 1 to 4.</span></span>
 </div>
 
 When you add a date:
@@ -227,11 +230,11 @@ scanned. Groupings are numbered from 1 in date order; on the graphs each one
 is labeled with the average date of its scans.
 
 <div class="help-shot"><img src="static/help/images/set-treatments-scan-grouping.png" alt="The table sorted by Remeasurement, the six initial scans selected, and 1 typed as the scan grouping" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:56.9%;top:12.8%">1<span class="help-tip">The table is <b>sorted by Remeasurement</b>, so the initial scans of both units are listed together.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:32%">2<span class="help-tip">The six <b>initial scans</b> are selected. By default they were split into scan groupings 1 and 2.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:83.9%">3<span class="help-tip"><b>Unit Name</b> and <b>Scan Remeasurement</b> are left empty, so they don't change.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:92.6%">4<span class="help-tip">The new <b>scan grouping</b>: 1.</span></span>
-<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:96.6%">5<span class="help-tip">Click <b>Assign</b> to apply it.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:62.3%;top:20%">1<span class="help-tip">The table is <b>sorted by Remeasurement</b>, so the initial scans of both units are listed together.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:36%">2<span class="help-tip">The six <b>initial scans</b> are selected. By default they were split into scan groupings 1 and 2.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:85.4%">3<span class="help-tip"><b>Unit Name</b> and <b>Scan Remeasurement</b> are left empty, so they don't change.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:94.3%">4<span class="help-tip">The new <b>scan grouping</b>: 1.</span></span>
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:95%;top:97.9%">5<span class="help-tip">Click <b>Assign</b> to apply it.</span></span>
 </div>
 
 To change the grouping, for example to keep a round of scanning that ran
@@ -252,10 +255,10 @@ the graphs compare all initial scans (grouping 1) with all remeasurements
 (grouping 2):
 
 <div class="help-shot"><img src="static/help/images/set-treatments-final.png" alt="Both units named; remeasurements are 0 and 1 for each plot, and scan groupings are 1 for initial scans and 2 for remeasurements" width="800">
-<span class="help-spot tip-right" tabindex="0" style="left:50%;top:32%">1<span class="help-tip">Every scan has its <b>unit name</b>.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:35.7%">2<span class="help-tip">Each plot's <b>remeasurement</b> numbers: 0 for its first scan, 1 for its next.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:32%">3<span class="help-tip">The <b>initial scans</b> of both units are scan grouping 1.</span></span>
-<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:50.7%">4<span class="help-tip">The <b>remeasurements</b> of both units are scan grouping 2.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:50%;top:32.3%">1<span class="help-tip">Every scan has its <b>unit name</b>.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:56.9%;top:36%">2<span class="help-tip">Each plot's <b>remeasurement</b> numbers: 0 for its first scan, 1 for its next.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:32.3%">3<span class="help-tip">The <b>initial scans</b> of both units are scan grouping 1.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:68.5%;top:54.8%">4<span class="help-tip">The <b>remeasurements</b> of both units are scan grouping 2.</span></span>
 </div>
 
 You can also double-click a single **Scan grouping** cell, type the number
@@ -268,18 +271,43 @@ step.
 
 ## Delete a treatment date
 
-<div class="help-shot"><img src="static/help/images/set-treatments-delete-date.png" alt="The 2025-05-15 prescribed fire selected in the Treatment Dates list, with the trash can above it" width="176">
-<span class="help-spot tip-left" tabindex="0" style="left:85%;top:13%">1<span class="help-tip">Then click the <b>trash can</b> to delete it.</span></span>
-<span class="help-spot tip-right" tabindex="0" style="left:7%;top:64%">2<span class="help-tip">First click the <b>date</b> to select it.</span></span>
+<div class="help-shot"><img src="static/help/images/set-treatments-delete-date.png" alt="The 2025-05-15 prescribed fire selected in the Treatment dates list, with the trash can below it" width="176">
+<span class="help-spot tip-left tip-up" tabindex="0" style="left:77%;top:93.6%">1<span class="help-tip">Then click the <b>trash can</b> below the list to delete it.</span></span>
+<span class="help-spot tip-right" tabindex="0" style="left:6%;top:54%">2<span class="help-tip">First click the <b>date</b> to select it.</span></span>
 </div>
 
 1. Click the date in the **Treatment Dates** list to select it.
-2. Click the **trash can** above the list.
+2. Click the **trash can** below the list.
 
 To change a date or its treatment, delete it and add it again with the
 correct date and treatment. Deleting a date
 regroups every scan, which replaces scan groupings you entered by hand;
 remeasurement numbers are kept.
+
+## Remove scans
+
+Scans stay in this table, with their downloaded data, until you remove them.
+Unselecting a downloaded plot or using **Clear All Plots** on the Selection
+Map doesn't remove it. To remove some of the scans:
+
+<div class="help-shot"><img src="static/help/images/set-treatments-remove.png" alt="Both scans of plot WATBR 0111 selected in the table, with Remove selected scans above it" width="800">
+<span class="help-spot tip-right" tabindex="0" style="left:37.5%;top:39.8%">1<span class="help-tip">The <b>scans to remove</b> are selected: both scans of plot WATBR 0111.</span></span>
+<span class="help-spot tip-left" tabindex="0" style="left:57.6%;top:5.1%">2<span class="help-tip">Click <b>Remove selected scans</b>.</span></span>
+</div>
+
+1. Select the scans in the table. Sort or filter it first to find them.
+2. Click **Remove selected scans** above the table.
+3. A window says how many scans will be removed and asks you to confirm:
+
+   <div class="help-shot"><img src="static/help/images/set-treatments-remove-confirm.png" alt="Remove selected scans? This removes 2 scans from this session, with their downloaded data." width="286"></div>
+
+4. Click **Remove**, or **Cancel** to keep them.
+
+The scans leave the table and the session: their metrics, tree inventory and
+model outputs are removed, and the graph tabs and the report stop using
+them. Figures already added to the report are kept. To use the scans again,
+select them on the Selection Map and click **Get Data**. To remove every
+downloaded scan at once, use **Clear All Downloads** on the Selection Map.
 
 ## Things to know
 
@@ -292,9 +320,12 @@ remeasurement numbers are kept.
   Map renumbers and regroups every loaded scan, which replaces remeasurement
   numbers and scan groupings you set by hand. Unit names are kept. Finish
   downloading and adding treatment dates before correcting the numbers.
-- **The table needs downloaded scans.** If you selected plots but didn't
-  click **Get Data**, the table shows a message asking you to go back to the
-  Selection Map.
+- **Download the scans to number them.** Plots you selected but didn't
+  download yet are listed without remeasurement numbers or scan groupings;
+  click **Get Data** on the Selection Map to fill them in. With no plots
+  selected, the table says "No scans to display."
 - **Units and numbers last for one session.** Reloading the page clears
   them along with the downloaded data.
-- **Clearing plots on the Selection Map** removes them from this table too.
+- **Clear All Plots on the Selection Map** removes only plots that haven't
+  been downloaded. Downloaded scans stay in this table until you remove them
+  here or with **Clear All Downloads**.

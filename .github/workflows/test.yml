@@ -11,6 +11,15 @@ on:
   workflow_dispatch:
   # Run if another workflow calls it
   workflow_call:
+
+concurrency:
+  # head-ref is pull requests
+  # ref_name is push branch
+  # stops stale workflows if new ones are triggered
+  # if triggered at the same time, whichever one starts first is canceled
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 jobs:

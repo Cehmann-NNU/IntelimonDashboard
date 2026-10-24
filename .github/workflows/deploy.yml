@@ -23,7 +23,7 @@ jobs:
   # -- checks ----------------------------------------
   is_merged:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     steps:
       - run: |
           echo The PR was merged
@@ -32,6 +32,7 @@ jobs:
     env:
       VERSION_FILE: version.yml
       TEST_PREFIX: "TEST_"
+      BASE_REF: ${{ github.event.pull_request.base.ref  || github.ref_name }}
     needs: is_merged
     runs-on: ubuntu-latest
     outputs:
@@ -41,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
       - name: Read version.yaml and validate 0.0.0-abc format
         id: v
         run: |
@@ -51,7 +52,7 @@ jobs:
           # Identify test flag and remove it
           if [[ "$version" == "$TEST_PREFIX"* ]]; then
             is_test=true
-            version="${raw#"$TEST_PREFIX"}"
+            version="${version#"$TEST_PREFIX"}"
           fi
           
           # Prevent a test/dry-run flag from committing on main.
@@ -84,7 +85,7 @@ jobs:
   # -- Build binaries --------------------------------
   build_electron:
     name: Electron (${{ matrix.os }})
-    needs: tests_pass
+    needs: [tests_pass, is_new_version]
     strategy:
       fail-fast: false
       matrix:
@@ -95,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.release.outputs.tag_name }}
+          ref: ${{ github.event.pull_request.base.ref  || github.ref_name }}
 
       # TODO: setup-r + renv restore, bundle portable R + Rhino app,
       # setup-node, electron-builder, signing/notarization secrets.
@@ -117,7 +118,7 @@ jobs:
     env:
       TAG: ${{ needs.is_new_version.outputs.tag}}
       VERSION: ${{ needs.is_new_version.outputs.version}}
-      SHA: ${{ github.event.pull_request.merge_commit_sha}}
+      SHA: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -30,7 +30,7 @@ jobs:
   is_new_version:
     name: Read version
     env:
-      VERSION_FILE: version.yaml
+      VERSION_FILE: version.yml
       TEST_PREFIX: "TEST_"
     needs: is_merged
     runs-on: ubuntu-latest
